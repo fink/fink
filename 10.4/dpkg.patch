@@ -381,10 +381,10 @@ diff -ruN dpkg-1.17.6.orig/fink/origins dpkg-1.17.6/fink/origins
 +Bugs: http://fink.sourceforge.net/
 diff -ruN dpkg-1.17.6.orig/fink/patches/add-BOD.patch dpkg-1.17.6/fink/patches/add-BOD.patch
 --- dpkg-1.17.6.orig/fink/patches/add-BOD.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/add-BOD.patch	2014-02-08 09:41:22.000000000 -0700
++++ dpkg-1.17.6/fink/patches/add-BOD.patch	2014-03-25 11:37:48.000000000 -0600
 @@ -0,0 +1,10 @@
-+--- dpkg-1.17.6.orig/dpkg-deb/build.c
-++++ dpkg-1.17.6/dpkg-deb/build.c
++--- dpkg.orig/dpkg-deb/build.c
+++++ dpkg/dpkg-deb/build.c
 +@@ -341,6 +341,7 @@
 +   "Installer-Menu-Item",
 +   "Homepage",
@@ -395,10 +395,10 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/add-BOD.patch dpkg-1.17.6/fink/patches/a
 + 
 diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/patches/add-install-info.patch
 --- dpkg-1.17.6.orig/fink/patches/add-install-info.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/add-install-info.patch	2014-02-07 08:45:05.000000000 -0700
++++ dpkg-1.17.6/fink/patches/add-install-info.patch	2014-03-25 11:38:29.000000000 -0600
 @@ -0,0 +1,186 @@
-+--- dpkg-1.17.6/utils.orig/Makefile.am
-++++ dpkg-1.17.6/utils/Makefile.am
++--- dpkg.orig/utils/Makefile.am
+++++ dpkg/utils/Makefile.am
 +@@ -41,6 +41,16 @@
 + 	$(SSD_LIBS)
 + endif
@@ -424,8 +424,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/
 + 
 + TEST_ENV_VARS = DPKG_DATADIR=$(top_srcdir)
 + 
-+--- dpkg-1.17.6/utils.orig/Makefile.in
-++++ dpkg-1.17.6/utils/Makefile.in
++--- dpkg.orig/utils/Makefile.in
+++++ dpkg/utils/Makefile.in
 +@@ -78,7 +78,6 @@
 + install_sh_PROGRAM = $(install_sh) -c
 + install_sh_SCRIPT = $(install_sh) -c
@@ -514,8 +514,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/
 + 
 + TEST_VERBOSE ?= 0
 + 
-+--- dpkg-1.17.6/utils.orig/install-info.c
-++++ dpkg-1.17.6/utils/install-info.c
++--- dpkg.orig/utils/install-info.c
+++++ dpkg/utils/install-info.c
 +@@ -0,0 +1,66 @@
 ++/*
 ++ * install-info.c - transitional ginstall-info wrapper
@@ -585,10 +585,10 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/
 ++}
 diff -ruN dpkg-1.17.6.orig/fink/patches/bsdutils.patch dpkg-1.17.6/fink/patches/bsdutils.patch
 --- dpkg-1.17.6.orig/fink/patches/bsdutils.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/bsdutils.patch	2014-03-05 14:49:09.000000000 -0700
++++ dpkg-1.17.6/fink/patches/bsdutils.patch	2014-03-25 11:37:40.000000000 -0600
 @@ -0,0 +1,24 @@
-+--- dpkg-1.16.4.3.orig/scripts/dpkg-genchanges.pl	2014-01-14 11:39:12.000000000 -0700
-++++ dpkg-1.16.4.3/scripts/dpkg-genchanges.pl	2014-03-05 14:46:01.000000000 -0700
++--- dpkg.orig/scripts/dpkg-genchanges.pl
+++++ dpkg/scripts/dpkg-genchanges.pl
 +@@ -466,8 +466,8 @@
 + $fields->{'Format'} = $substvars->get('Format');
 + 
@@ -600,8 +600,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/bsdutils.patch dpkg-1.17.6/fink/patches/
 +     $fields->{'Date'}= $date822;
 + }
 + 
-+--- dpkg-1.16.4.3.orig/scripts/dpkg-gencontrol.pl	2014-01-15 07:02:16.000000000 -0700
-++++ dpkg-1.16.4.3/scripts/dpkg-gencontrol.pl	2014-03-05 14:48:17.000000000 -0700
++--- dpkg.orig/scripts/dpkg-gencontrol.pl
+++++ dpkg/scripts/dpkg-gencontrol.pl
 +@@ -340,7 +340,7 @@
 +     if (!$c) {
 +         chdir("$packagebuilddir")
@@ -613,11 +613,10 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/bsdutils.patch dpkg-1.17.6/fink/patches/
 +     my $duo = '';
 diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches/build-fix.patch
 --- dpkg-1.17.6.orig/fink/patches/build-fix.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/build-fix.patch	2014-02-10 14:15:40.000000000 -0700
-@@ -0,0 +1,107 @@
-+diff -ruN dpkg-1.16.4.3.orig/dselect/Makefile.am dpkg-1.16.4.3/dselect/Makefile.am
-+--- dpkg-1.16.4.3.orig/dselect/Makefile.am	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/Makefile.am	2012-07-02 16:14:45.000000000 -0600
++++ dpkg-1.17.6/fink/patches/build-fix.patch	2014-03-25 11:40:56.000000000 -0600
+@@ -0,0 +1,102 @@
++--- dpkg.orig/dselect/Makefile.am
+++++ dpkg/dselect/Makefile.am
 +@@ -8,7 +8,7 @@
 + AM_CPPFLAGS = \
 + 	-DLOCALEDIR=\"$(localedir)\" \
@@ -627,9 +626,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches
 + 	-idirafter $(top_srcdir)/lib/compat \
 + 	-iquote $(builddir) \
 + 	-I$(top_builddir) \
-+diff -ruN dpkg-1.16.4.3.orig/dselect/Makefile.in dpkg-1.16.4.3/dselect/Makefile.in
-+--- dpkg-1.16.4.3.orig/dselect/Makefile.in	2012-06-17 02:57:19.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/Makefile.in	2012-07-02 16:14:45.000000000 -0600
++--- dpkg.orig/dselect/Makefile.in
+++++ dpkg/dselect/Makefile.in
 +@@ -374,7 +374,7 @@
 + AM_CPPFLAGS = \
 + 	-DLOCALEDIR=\"$(localedir)\" \
@@ -639,9 +637,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches
 + 	-idirafter $(top_srcdir)/lib/compat \
 + 	-iquote $(builddir) \
 + 	-I$(top_builddir) \
-+diff -ruN dpkg-1.16.4.3.orig/lib/dpkg/subproc.c dpkg-1.16.4.3/lib/dpkg/subproc.c
-+--- dpkg-1.16.4.3.orig/lib/dpkg/subproc.c	2012-06-13 23:12:31.000000000 -0600
-++++ dpkg-1.16.4.3/lib/dpkg/subproc.c	2012-07-02 16:14:45.000000000 -0600
++--- dpkg.orig/lib/dpkg/subproc.c
+++++ dpkg/lib/dpkg/subproc.c
 +@@ -104,7 +104,9 @@
 + 	void (*out)(const char *fmt, ...) DPKG_ATTR_PRINTF(1);
 + 	int n;
@@ -653,9 +650,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches
 + 		out = warning;
 + 	else
 + 		out = ohshit;
-+diff -ruN dpkg-1.16.4.3.orig/src/filesdb.c dpkg-1.16.4.3/src/filesdb.c
-+--- dpkg-1.16.4.3.orig/src/filesdb.c	2012-06-13 23:12:34.000000000 -0600
-++++ dpkg-1.16.4.3/src/filesdb.c	2012-07-02 16:14:45.000000000 -0600
++--- dpkg.orig/src/filesdb.c
+++++ dpkg/src/filesdb.c
 +@@ -34,6 +34,9 @@
 + #include <assert.h>
 + #include <errno.h>
@@ -684,9 +680,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches
 +       break;
 +     pointerp= &(*pointerp)->next;
 +   }
-+diff -ruN dpkg-1.16.4.3.orig/src/help.c dpkg-1.16.4.3/src/help.c
-+--- dpkg-1.16.4.3.orig/src/help.c	2012-06-13 23:12:34.000000000 -0600
-++++ dpkg-1.16.4.3/src/help.c	2012-07-02 16:14:45.000000000 -0600
++--- dpkg.orig/src/help.c
+++++ dpkg/src/help.c
 +@@ -40,6 +40,19 @@
 + #include "filesdb.h"
 + #include "main.h"
@@ -724,11 +719,10 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches
 +       path_len = path_end ? (size_t)(path_end - path) : strlen(path);
 diff -ruN dpkg-1.17.6.orig/fink/patches/c++filt-defaults.patch dpkg-1.17.6/fink/patches/c++filt-defaults.patch
 --- dpkg-1.17.6.orig/fink/patches/c++filt-defaults.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/c++filt-defaults.patch	2013-12-23 09:32:49.000000000 -0700
-@@ -0,0 +1,12 @@
-+diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs/Cppfilt.pm dpkg-1.16.4.3/scripts/Dpkg/Shlibs/Cppfilt.pm
-+--- dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs/Cppfilt.pm	2012-06-09 08:32:08.000000000 -0600
-++++ dpkg-1.16.4.3/scripts/Dpkg/Shlibs/Cppfilt.pm	2012-07-02 16:14:45.000000000 -0600
++++ dpkg-1.17.6/fink/patches/c++filt-defaults.patch	2014-03-25 11:45:03.000000000 -0600
+@@ -0,0 +1,11 @@
++--- dpkg.orig/scripts/Dpkg/Shlibs/Cppfilt.pm
+++++ dpkg/scripts/Dpkg/Shlibs/Cppfilt.pm
 +@@ -44,7 +44,7 @@
 +     } else {
 + 	$filt = { from => undef, to => undef,
@@ -740,10 +734,10 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/c++filt-defaults.patch dpkg-1.17.6/fink/
 + 	syserr(_g('unable to execute %s'), 'c++filt')
 diff -ruN dpkg-1.17.6.orig/fink/patches/coreutils.patch dpkg-1.17.6/fink/patches/coreutils.patch
 --- dpkg-1.17.6.orig/fink/patches/coreutils.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/coreutils.patch	2014-03-05 14:45:28.000000000 -0700
++++ dpkg-1.17.6/fink/patches/coreutils.patch	2014-03-25 11:41:25.000000000 -0600
 @@ -0,0 +1,21 @@
-+--- dpkg-1.16.4.3.orig/scripts/Dpkg/Checksums.pm	2014-03-05 14:41:33.000000000 -0700
-++++ dpkg-1.16.4.3.orig/scripts/Dpkg/Checksums.pm	2014-03-05 14:41:50.000000000 -0700
++--- dpkg.orig/scripts/Dpkg/Checksums.pm
+++++ dpkg/scripts/Dpkg/Checksums.pm
 +@@ -51,15 +51,15 @@
 + 
 + my $CHECKSUMS = {
@@ -763,73 +757,12 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/coreutils.patch dpkg-1.17.6/fink/patches
 + 	regex => qr/[0-9a-f]{64}/,
 +     },
 + };
-diff -ruN dpkg-1.17.6.orig/fink/patches/dselect-methods.patch dpkg-1.17.6/fink/patches/dselect-methods.patch
---- dpkg-1.17.6.orig/fink/patches/dselect-methods.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/dselect-methods.patch	2013-12-23 09:40:31.000000000 -0700
-@@ -0,0 +1,57 @@
-+diff -ruN dpkg-1.16.4.3.orig/dselect/methods/Dselect/Ftp.pm dpkg-1.16.4.3/dselect/methods/Debian/Dselect/Ftp.pm
-+--- dpkg-1.16.4.3.orig/dselect/methods/Dselect/Ftp.pm	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/methods/Dselect/Ftp.pm	2012-07-02 16:14:45.000000000 -0600
-+@@ -79,12 +79,12 @@
-+ }
-+ 
-+ sub view_mirrors {
-+-  if (-f '/usr/lib/dpkg/methods/ftp/README.mirrors.txt') {
-+-    system('pager', '/usr/lib/dpkg/methods/ftp/README.mirrors.txt');
-+-  } elsif (-f '/usr/lib/dpkg/methods/ftp/README.mirrors.txt.gz') {
-+-    system('gzip -dc /usr/lib/dpkg/methods/ftp/README.mirrors.txt.gz | pager');
-++  if (-f '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt') {
-++    system('less', '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt');
-++  } elsif (-f '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt.gz') {
-++    system('gzip -dc @FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt.gz | pager');
-+   } else {
-+-    print "/usr/lib/dpkg/methods/ftp/README.mirrors.txt(.gz): file not found.\n";
-++    print "@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt(.gz): file not found.\n";
-+   }
-+ }
-+ 
-+diff -ruN dpkg-1.16.4.3.orig/dselect/methods/disk/setup dpkg-1.16.4.3/dselect/methods/disk/setup
-+--- dpkg-1.16.4.3.orig/dselect/methods/disk/setup	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/methods/disk/setup	2012-07-02 16:14:45.000000000 -0600
-+@@ -19,7 +19,7 @@
-+ option=$3
-+ 
-+ cd "$vardir/methods/disk"
-+-tp=/var/run/ddm$$
-++tp=@FINKPREFIX@/var/run/ddm$$
-+ 
-+ iarch=`dpkg --admindir $vardir --print-architecture`
-+ 
-+diff -ruN dpkg-1.16.4.3.orig/dselect/methods/ftp/setup dpkg-1.16.4.3/dselect/methods/ftp/setup
-+--- dpkg-1.16.4.3.orig/dselect/methods/ftp/setup	2012-06-09 08:32:06.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/methods/ftp/setup	2012-07-02 16:14:45.000000000 -0600
-+@@ -75,7 +75,7 @@
-+ You must supply an ftp site, use of passive mode, username, password,
-+ path to the debian directory,list of distributions you are interested
-+ in and place to download the binary package files to (relative to
-+-/var/lib/dpkg/methods/ftp). You can add as much sites as you like. Later
-++@FINKPREFIX@/var/lib/dpkg/methods/ftp). You can add as much sites as you like. Later
-+ entries will always override older ones.
-+ 
-+ Supply "?" as a password to be asked each time you connect.
-+diff -ruN dpkg-1.16.4.3.orig/dselect/methods/multicd/install dpkg-1.16.4.3/dselect/methods/multicd/install
-+--- dpkg-1.16.4.3.orig/dselect/methods/multicd/install	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/methods/multicd/install	2012-07-02 16:14:45.000000000 -0600
-+@@ -175,7 +175,7 @@
-+ Perhaps you downloaded it with an unexpected name, or something.
-+ In any case, you must find the file(s) and then either place it with
-+ the correct filename(s) (as listed in the Packages.cd file or in
-+-/var/lib/dpkg/available) and rerun the installation, or upgrade the
-++@FINKPREFIX@/var/lib/dpkg/available) and rerun the installation, or upgrade the
-+ package by using `dpkg --install --auto-deconfigure'\'' by hand.
-+ 
-+ ";
 diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches/extra-env.patch
 --- dpkg-1.17.6.orig/fink/patches/extra-env.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-03-14 11:37:08.000000000 -0600
++++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-03-25 15:29:55.000000000 -0600
 @@ -0,0 +1,196 @@
-+--- dpkg-1.17.6.orig/config.h.in
-++++ dpkg-1.17.6/config.h.in
++--- dpkg.orig/config.h.in
+++++ dpkg/config.h.in
 +@@ -24,6 +24,9 @@
 + /* default dpkg-deb build compressor */
 + #undef DPKG_DEB_DEFAULT_COMPRESSOR
@@ -840,8 +773,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 + /* Define to 1 if translation of program messages to the user's native
 +    language is requested. */
 + #undef ENABLE_NLS
-+--- dpkg-1.17.6.orig/configure
-++++ dpkg-1.17.6/configure
++--- dpkg.orig/configure
+++++ dpkg/configure
 +@@ -819,6 +819,7 @@
 + enable_dselect
 + enable_start_stop_daemon
@@ -870,9 +803,9 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 ++
 ++# Check whether --with-dpkg-env-script was given.
 ++if test "${with_dpkg_env_script+set}" = set; then :
-++  withval=$with_dpkg_env_script; with_dpkg_deb_script=$withval
+++  withval=$with_dpkg_env_script; with_dpkg_env_script=$withval
 ++else
-++  with_dpkg_deb_script=no
+++  with_dpkg_env_script=no
 ++fi
 ++
 ++  if test "x$with_dpkg_env_script" != "xno"; then :
@@ -896,8 +829,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 + # Allow alternate directories
 + 
 +   pkgconfdir="${sysconfdir}/${PACKAGE_NAME}"
-+--- dpkg-1.17.6.orig/configure.ac
-++++ dpkg-1.17.6/configure.ac 
++--- dpkg.orig/configure.ac
+++++ dpkg/configure.ac 
 +@@ -23,6 +23,9 @@
 + DPKG_BUILD_PROG([start-stop-daemon])
 + DPKG_BUILD_PROG([update-alternatives])
@@ -908,8 +841,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 + # Allow alternate directories
 + DPKG_WITH_DIR([pkgconfdir], [${sysconfdir}/${PACKAGE_NAME}],
 +               [dpkg configuration directory [SYSCONFDIR/dpkg]])
-+--- dpkg-1.17.6.orig/m4/dpkg-build.m4
-++++ dpkg-1.17.6/m4/dpkg-build.m4
++--- dpkg.orig/m4/dpkg-build.m4
+++++ dpkg/m4/dpkg-build.m4
 +@@ -52,6 +52,23 @@
 +   AC_MSG_NOTICE([using default dpkg-deb compressor = $with_dpkg_deb_compressor])
 + ]) # DPKG_DEB_COMPRESSOR
@@ -922,7 +855,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 ++  AC_ARG_WITH([dpkg-env-script],
 ++    [AS_HELP_STRING([--with-dpkg-env-script=PATH/TO/SCRIPT],
 ++                   [script to include in the maintainer environment])],
-++    [with_dpkg_deb_script=$withval], [with_dpkg_deb_script=$1])
+++    [with_dpkg_env_script=$withval], [with_dpkg_env_script=$1])
 ++  AS_IF([test "x$with_dpkg_env_script" != "xno"], [
 ++    AC_DEFINE_UNQUOTED([DPKG_MAINT_ENV_SCRIPT], ["$with_dpkg_env_script"], [Define to value if not no.])
 ++  ], [
@@ -934,9 +867,9 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 + # DPKG_DIST_CHECK(COND, ERROR)
 + # ---------------
 + # Check if the condition is fulfilled when preparing a distribution tarball.
-+--- dpkg-1.17.6.orig/src/main.h
-++++ dpkg-1.17.6/src/main.h
-+@@ -242,6 +242,9 @@
++--- dpkg.orig/src/main.h
+++++ dpkg/src/main.h
++@@ -237,6 +237,9 @@
 +                          const char *scriptname, const char *desc,
 +                          const char *cidir, char *cidirrest,
 +                          const char *ifok, const char *iffallback);
@@ -946,8 +879,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 + 
 + /* Callers wanting to run the postinst use these two as they want to postpone
 +  * trigger incorporation until after updating the package status. The effect
-+--- dpkg-1.17.6.orig/src/script.c
-++++ dpkg-1.17.6/src/script.c
++--- dpkg.orig/src/script.c
+++++ dpkg/src/script.c
 +@@ -217,6 +217,11 @@
 + 		    setenv("DPKG_RUNNING_VERSION", PACKAGE_VERSION, 1))
 + 			ohshite(_("unable to setenv for maintainer script"));
@@ -1024,12 +957,410 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 ++	return 1;
 ++}
 ++#endif
+diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/patches/extra-statusfile.patch
+--- dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/extra-statusfile.patch	2014-03-25 19:37:00.000000000 -0600
+@@ -0,0 +1,394 @@
++--- dpkg.orig/config.h.in
+++++ dpkg/config.h.in
++@@ -27,6 +27,9 @@
++ /* Define if we are including an env script for maintainer script ENV */
++ #undef DPKG_MAINT_ENV_SCRIPT
++
+++/* Define if we are including an alt status file */
+++#undef DPKG_EXTRA_STATUSFILE
+++
++ /* Define to 1 if translation of program messages to the user's native
++    language is requested. */
++ #undef ENABLE_NLS
++--- dpkg.orig/configure
+++++ dpkg/configure
++@@ -820,6 +820,7 @@
++ enable_start_stop_daemon
++ enable_update_alternatives
++ with_dpkg_env_script
+++with_dpkg_extra_statusfile
++ with_pkgconfdir
++ with_admindir
++ with_logdir
++@@ -1511,6 +1512,8 @@
++   --without-libintl-prefix     don't search for libintl in includedir and libdir
++   --with-dpkg-env-script=PATH/TO/SCRIPT
++                           script to include in the maintainer environment
+++  --with-dpkg-extra-statusfile=FILENAME
+++                          filename for the extra status file
++   --with-pkgconfdir=DIR   dpkg configuration directory [SYSCONFDIR/dpkg]
++   --with-admindir=DIR     dpkg database directory [LOCALSTATEDIR/lib/dpkg]
++   --with-logdir=DIR       system logging directory [LOCALSTATEDIR/log]
++@@ -7080,6 +7083,36 @@
++ $as_echo "$with_dpkg_env_script" >&6; }
++
++
+++# Check if we want an extra statusfile
+++
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for extra statusfile" >&5
+++$as_echo_n "checking for extra statusfile... " >&6; }
+++
+++# Check whether --with-dpkg-extra-statusfile was given.
+++if test "${with_dpkg_extra_statusfile+set}" = set; then :
+++  withval=$with_dpkg_extra_statusfile; with_dpkg_extra_statusfile=$withval
+++else
+++  with_dpkg_extra_statusfile=no
+++fi
+++
+++  if test "x$with_dpkg_extra_statusfile" != "xno"; then :
+++
+++
+++cat >>confdefs.h <<_ACEOF
+++#define DPKG_EXTRA_STATUSFILE "$with_dpkg_extra_statusfile"
+++_ACEOF
+++
+++
+++else
+++
+++    $as_echo "#define DPKG_EXTRA_STATUSFILE 0" >>confdefs.h
+++
+++
+++fi
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_dpkg_extra_statusfile" >&5
+++$as_echo "$with_dpkg_extra_statusfile" >&6; }
+++
+++
++ # Allow alternate directories
++ 
++   pkgconfdir="${sysconfdir}/${PACKAGE_NAME}"
++--- dpkg.orig/configure.ac
+++++ dpkg/configure.ac 
++@@ -26,6 +26,9 @@
++ # Check if we want to run a script to set extra env vars
++ DPKG_ENV_SCRIPT([no])
++
+++# Check if we want an alternative statusfile
+++DPKG_EXTRA_STATUSFILE([no])
+++
++ # Allow alternate directories
++ DPKG_WITH_DIR([pkgconfdir], [${sysconfdir}/${PACKAGE_NAME}],
++               [dpkg configuration directory [SYSCONFDIR/dpkg]])
++--- dpkg.orig/m4/dpkg-build.m4
+++++ dpkg/m4/dpkg-build.m4
++@@ -69,6 +69,23 @@
++   AC_MSG_RESULT([$with_dpkg_env_script])
++ ]) # DPKG_ENV_SCRIPT
++
+++# DPKG_EXTRA_STATUSFILE(FILE)
+++# -------------------
+++# Second status file to parse and add to the Pkg DB
+++AC_DEFUN([DPKG_EXTRA_STATUSFILE], [
+++  AC_MSG_CHECKING([for extra statusfile])
+++  AC_ARG_WITH([dpkg-extra-statusfile],
+++    [AS_HELP_STRING([--with-dpkg-extra-statusfile=FILENAME],
+++                   [filename for the extra status file])],
+++    [with_dpkg_extra_statusfile=$withval], [with_dpkg_extra_statusfile=$1])
+++  AS_IF([test "x$with_dpkg_extra_statusfile" != "xno"], [
+++    AC_DEFINE_UNQUOTED([DPKG_EXTRA_STATUSFILE], ["$with_dpkg_extra_statusfile"], [Define to value if not no.])
+++  ], [
+++    AC_DEFINE([DPKG_EXTRA_STATUSFILE], [0])
+++  ])
+++  AC_MSG_RESULT([$with_dpkg_extra_statusfile])
+++]) # DPKG_EXTRA_STATUSFILE
+++
++ # DPKG_DIST_CHECK(COND, ERROR)
++ # ---------------
++ # Check if the condition is fulfilled when preparing a distribution tarball.
++--- dpkg.orig/lib/dpkg/dbmodify.c
+++++ dpkg/lib/dpkg/dbmodify.c
++@@ -51,6 +51,9 @@
++ static enum modstatdb_rw cstatus=-1, cflags=0;
++ static char *lockfile;
++ static char *statusfile, *availablefile;
+++#ifdef DPKG_EXTRA_STATUSFILE
+++static char *extrastatusfile;
+++#endif
++ static char *importanttmpfile=NULL;
++ static FILE *importanttmp;
++ static int nextupdate;
++@@ -79,6 +82,9 @@
++   int cdn, i;
++ 
++   parsedb(statusfile, pdb_parse_status, NULL);
+++#ifdef DPKG_EXTRA_STATUSFILE
+++  parsedb(extrastatusfile, pdb_parse_status, NULL);
+++#endif
++ 
++   *updatefnrest = '\0';
++   updateslength= -1;
++@@ -138,6 +144,9 @@
++ } fnis[] = {
++   {   LOCKFILE,                   &lockfile           },
++   {   STATUSFILE,                 &statusfile         },
+++#ifdef DPKG_EXTRA_STATUSFILE
+++  {   DPKG_EXTRA_STATUSFILE,      &extrastatusfile    },
+++#endif
++   {   AVAILFILE,                  &availablefile      },
++   {   UPDATESDIR,                 &updatesdir         },
++   {   UPDATESDIR IMPORTANTTMP,    &importanttmpfile   },
++--- dpkg.orig/lib/dpkg/dpkg-db.h
+++++ dpkg/lib/dpkg/dpkg-db.h
++@@ -175,7 +175,8 @@
++     stat_halfconfigured,
++     stat_triggersawaited,
++     stat_triggerspending,
++-    stat_installed
+++    stat_installed,
+++    stat_virtual
++   } status;
++   enum pkgpriority {
++     pri_required,
++--- dpkg.orig/lib/dpkg/parsehelp.c
+++++ dpkg/lib/dpkg/parsehelp.c
++@@ -108,6 +108,7 @@
++   NAMEVALUE_DEF("triggers-awaited", stat_triggersawaited),
++   NAMEVALUE_DEF("triggers-pending", stat_triggerspending),
++   NAMEVALUE_DEF("installed",        stat_installed),
+++  NAMEVALUE_DEF("virtual",          stat_virtual),
++   { .name = NULL }
++ };
++ 
++--- dpkg.orig/lib/dpkg/pkg.c
+++++ dpkg/lib/dpkg/pkg.c
++@@ -189,7 +189,8 @@
++ 	if (pkgbin == &pkg->installed &&
++ 	    (pkg->want != want_unknown ||
++ 	     pkg->eflag != eflag_ok ||
++-	     pkg->status != stat_notinstalled ||
+++	     (pkg->status != stat_notinstalled &&
+++	      pkg->status != stat_virtual) ||
++ 	     dpkg_version_is_informative(&pkg->configversion)))
++ 		return true;
++ 
++--- dpkg.orig/lib/dpkg/pkg-show.c
+++++ dpkg/lib/dpkg/pkg-show.c
++@@ -158,7 +158,7 @@
++ int
++ pkg_abbrev_status(const struct pkginfo *pkg)
++ {
++-	return "ncHUFWti"[pkg->status];
+++	return "ncHUFWtiv"[pkg->status];
++ }
++ 
++ int
++--- dpkg.orig/lib/dpkg/dump.c
+++++ dpkg/lib/dpkg/dump.c
++@@ -90,6 +90,7 @@
++   if (!dpkg_version_is_informative(&pkg->configversion))
++     return;
++   if (pkg->status == stat_installed ||
+++      pkg->status == stat_virtual ||
++       pkg->status == stat_notinstalled ||
++       pkg->status == stat_triggerspending)
++     return;
++@@ -271,6 +272,7 @@
++     assert(PEND);
++     assert(!AW);
++     break;
+++  case stat_virtual:
++   case stat_installed:
++     assert(!PEND);
++     assert(!AW);
++@@ -491,7 +493,7 @@
++   while ((pkg = pkg_db_iter_next_pkg(it)) != NULL) {
++     pkgbin = (flags & wdb_dump_available) ? &pkg->available : &pkg->installed;
++     /* Don't dump records which have no useful content. */
++-    if (!pkg_is_informative(pkg, pkgbin))
+++    if (!pkg_is_informative(pkg, pkgbin) || pkg->status == stat_virtual)
++       continue;
++     varbufrecord(&vb, pkg, pkgbin);
++     varbuf_add_char(&vb, '\n');
++--- dpkg.orig/lib/dpkg/parse.c
+++++ dpkg/lib/dpkg/parse.c
++@@ -227,11 +227,11 @@
++    * ‘not-installed’ (in which case there is no Config-Version). */
++   if (!(ps->flags & pdb_recordavailable)) {
++     if (pkg->configversion.version) {
++-      if (pkg->status == stat_installed || pkg->status == stat_notinstalled)
+++      if (pkg->status == stat_installed || pkg->status == stat_virtual || pkg->status == stat_notinstalled)
++         parse_error(ps,
++                     _("Config-Version for package with inappropriate Status"));
++     } else {
++-      if (pkg->status == stat_installed)
+++      if (pkg->status == stat_installed || pkg->status == stat_virtual)
++         pkg->configversion = pkgbin->version;
++     }
++   }
++--- dpkg.orig/dselect/pkgcmds.cc
+++++ dpkg/dselect/pkgcmds.cc
++@@ -152,7 +152,8 @@
++ 
++   if (wantvalue == pkginfo::want_install) return 1;
++   if (wantvalue != pkginfo::want_hold) return 0;
++-  if (pkg->status == pkginfo::stat_installed) return 1;
+++  if (pkg->status == pkginfo::stat_installed ||
+++      pkg->status == pkginfo::stat_virtual) return 1;
++   if (pkg->status == pkginfo::stat_notinstalled ||
++       pkg->status == pkginfo::stat_configfiles) return 0;
++   return -1;
++--- dpkg.orig/dselect/pkgdepcon.cc
+++++ dpkg/dselect/pkgdepcon.cc
++@@ -38,6 +38,7 @@
++       pkg->clientdata->selected == pkginfo::want_install &&
++       pkg_is_informative(pkg, &pkg->available) &&
++       (!(pkg->status == pkginfo::stat_installed ||
+++         pkg->status == pkginfo::stat_virtual ||
++          pkg->status == pkginfo::stat_triggersawaited ||
++          pkg->status == pkginfo::stat_triggerspending) ||
++        dpkg_version_compare(&pkg->available.version,
++@@ -443,6 +444,7 @@
++       return true;
++     if (fixbyupgrade && !*fixbyupgrade &&
++         (!(provider->up->up->status == pkginfo::stat_installed ||
+++           provider->up->up->status == pkginfo::stat_virtual ||
++            provider->up->up->status == pkginfo::stat_triggerspending ||
++            provider->up->up->status == pkginfo::stat_triggersawaited) ||
++          dpkg_version_compare(&provider->up->up->available.version,
++--- dpkg.orig/dselect/pkglist.cc
+++++ dpkg/dselect/pkglist.cc
++@@ -203,6 +203,7 @@
++           table[index]->ssavail= ssa_notinst_seen;
++         }
++         break;
+++      case pkginfo::stat_virtual:
++       case pkginfo::stat_installed:
++         veri= &table[index]->pkg->installed.version;
++         vera= &table[index]->pkg->available.version;
++@@ -244,6 +245,7 @@
++       case pkginfo::stat_configfiles:
++         table[index]->ssstate= sss_configfiles;
++         break;
+++      case pkginfo::stat_virtual:
++       case pkginfo::stat_installed:
++         table[index]->ssstate= sss_installed;
++         break;
++@@ -403,6 +405,7 @@
++         state->original == pkginfo::want_unknown) {
++       state->suggested=
++         pkg->status == pkginfo::stat_installed ||
+++          pkg->status == pkginfo::stat_virtual ||
++           pkg->priority <= pkginfo::pri_standard /* FIXME: configurable */
++             ? pkginfo::want_install : pkginfo::want_purge;
++       state->spriority= sp_inherit;
++--- dpkg.orig/src/archives.c
+++++ dpkg/arc/archives.c
++@@ -1444,6 +1444,7 @@
++              pkg_name(fixbyrm, pnaw_nonambig),
++              pkgbin_name(pkg, &pkg->available, pnaw_nonambig));
++       if (!(fixbyrm->status == stat_installed ||
+++            fixbyrm->status == stat_virtual ||
++             fixbyrm->status == stat_triggerspending ||
++             fixbyrm->status == stat_triggersawaited)) {
++         notice(_("%s is not properly installed; ignoring any dependencies on it"),
++--- dpkg.orib/src/depcon.c
+++++ dpkg/src/depcon.c
++@@ -331,6 +331,7 @@
++   case itb_normal:
++     /* Only installed packages can be make dependency problems. */
++     switch (dep->up->status) {
+++    case stat_virtual:
++     case stat_installed:
++     case stat_triggerspending:
++     case stat_triggersawaited:
++@@ -389,6 +390,7 @@
++         case itb_normal:
++         case itb_preinstall:
++           switch (pkg_pos->status) {
+++          case stat_virtual:
++           case stat_installed:
++           case stat_triggerspending:
++             if (versionsatisfied(&pkg_pos->installed, possi)) {
++@@ -490,6 +492,7 @@
++             break;
++           case itb_normal: case itb_preinstall:
++             if (provider->up->up->status == stat_installed ||
+++                provider->up->up->status == stat_virtual ||
++                 provider->up->up->status == stat_triggerspending)
++               return true;
++             if (provider->up->up->status == stat_triggersawaited)
++@@ -568,6 +571,7 @@
++           case stat_halfconfigured:
++             if (dep->type == dep_breaks)
++               break; /* No problem. */
+++          case stat_virtual:
++           case stat_installed:
++           case stat_triggerspending:
++           case stat_triggersawaited:
++@@ -642,6 +646,7 @@
++           case stat_halfconfigured:
++             if (dep->type == dep_breaks)
++               break; /* No problem. */
+++          case stat_virtual:
++           case stat_installed:
++           case stat_triggerspending:
++           case stat_triggersawaited:
++--- dpkg.orig/src/enquiry.c
+++++ dpkg/src/enquiry.c
++@@ -230,7 +230,7 @@
++     return false;
++ 
++   switch (pkg->status) {
++-  case stat_unpacked: case stat_installed: case stat_halfconfigured:
+++  case stat_unpacked: case stat_virtual: case stat_installed: case stat_halfconfigured:
++   case stat_triggerspending:
++   case stat_triggersawaited:
++     return false;
++--- dpkg.orig/src/filesdb.c
+++++ dpkg/src/filesdb.c
++@@ -238,6 +238,7 @@
++               pkg_name(pkg, pnaw_nonambig));
++     onerr_abort--;
++     if (pkg->status != stat_configfiles &&
+++        pkg->status != stat_virtual &&
++         dpkg_version_is_informative(&pkg->configversion)) {
++       warning(_("files list file for package '%.250s' missing; assuming "
++                 "package has no files currently installed"),
++--- dpkg.orig/src/help.c
+++++ dpkg/src/help.c.new
++@@ -61,7 +61,8 @@
++   [stat_halfconfigured]  = N_("broken due to postinst failure"),
++   [stat_triggersawaited] = N_("awaiting trigger processing by another package"),
++   [stat_triggerspending] = N_("triggered"),
++-  [stat_installed]       = N_("installed")
+++  [stat_installed]       = N_("installed"),
+++  [stat_virtual]         = N_("installed")
++ };
++ 
++ struct filenamenode *
++--- dpkg.orig/src/packages.c
+++++ dpkg/src/packages.c
++@@ -223,7 +223,7 @@
++       }
++     }
++ 
++-    assert(pkg->status <= stat_installed);
+++    assert(pkg->status <= stat_virtual);
++ 
++     if (setjmp(ejbuf)) {
++       /* Give up on it from the point of view of other packages, i.e. reset
++@@ -359,6 +359,7 @@
++   case stat_halfconfigured:
++   case stat_triggersawaited:
++   case stat_triggerspending:
+++  case stat_virtual:
++   case stat_installed:
++     if (checkversion && !versionsatisfied(&possdependee->installed,checkversion)) {
++       varbuf_printf(oemsgs, _("  Version of %s on system is %s.\n"),
++@@ -373,6 +374,7 @@
++       return thisf;
++     }
++     if (possdependee->status == stat_installed ||
+++        possdependee->status == stat_virtual ||
++         possdependee->status == stat_triggerspending) {
++       debug(dbg_depcondetail,"      is installed, ok and found");
++       return found_ok;
 diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/patches/fink-as-vendor.patch
 --- dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/fink-as-vendor.patch	2012-07-31 15:46:48.000000000 -0600
++++ dpkg-1.17.6/fink/patches/fink-as-vendor.patch	2014-03-25 11:47:45.000000000 -0600
 @@ -0,0 +1,101 @@
-+--- a/scripts/Dpkg/Vendor/Fink.pm	2012-07-31 15:29:11.000000000 -0600
-++++ b/scripts/Dpkg/Vendor/Fink.pm	2012-07-31 14:57:25.000000000 -0600
++--- dpkg.orig/scripts/Dpkg/Vendor/Fink.pm
+++++ dpkg/scripts/Dpkg/Vendor/Fink.pm
 +@@ -0,0 +1,98 @@
 ++# Copyright © 2009-2011 Raphaël Hertzog <hertzog@debian.org>
 ++#
@@ -1131,10 +1462,10 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/pa
 ++1;
 diff -ruN dpkg-1.17.6.orig/fink/patches/fink-bld_no_fakeroot.patch dpkg-1.17.6/fink/patches/fink-bld_no_fakeroot.patch
 --- dpkg-1.17.6.orig/fink/patches/fink-bld_no_fakeroot.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/fink-bld_no_fakeroot.patch	2014-03-05 14:58:48.000000000 -0700
++++ dpkg-1.17.6/fink/patches/fink-bld_no_fakeroot.patch	2014-03-25 11:48:18.000000000 -0600
 @@ -0,0 +1,19 @@
-+--- dpkg-1.16.4.3.orig/scripts/dpkg-buildpackage.pl	2014-01-15 07:02:15.000000000 -0700
-++++ dpkg-1.16.4.3/scripts/dpkg-buildpackage.pl	2014-03-05 14:53:44.000000000 -0700
++--- dpkg.orig/scripts/dpkg-buildpackage.pl
+++++ dpkg/scripts/dpkg-buildpackage.pl
 +@@ -319,12 +319,15 @@
 + 
 + if ($< == 0) {
@@ -1152,580 +1483,12 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/fink-bld_no_fakeroot.patch dpkg-1.17.6/f
 +         error(_g("fakeroot not found, either install the fakeroot\n" .
 +                  'package, specify a command with the -r option, ' .
 +                  'or run this as root'));
-diff -ruN dpkg-1.17.6.orig/fink/patches/fink-virtuals.patch dpkg-1.17.6/fink/patches/fink-virtuals.patch
---- dpkg-1.17.6.orig/fink/patches/fink-virtuals.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/fink-virtuals.patch	2014-02-07 08:51:43.000000000 -0700
-@@ -0,0 +1,563 @@
-+diff -ruN dpkg-1.16.4.3.orig/dselect/main.cc dpkg-1.16.4.3/dselect/main.cc
-+--- dpkg-1.16.4.3.orig/dselect/main.cc	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/main.cc	2012-07-02 16:42:33.000000000 -0600
-+@@ -24,6 +24,7 @@
-+ #include <compat.h>
-+ 
-+ #include <sys/types.h>
-++#include <sys/stat.h>
-+ #include <sys/wait.h>
-+ 
-+ #include <assert.h>
-+@@ -56,6 +56,12 @@
-+ #include <dpkg/dpkg-db.h>
-+ #include <dpkg/options.h>
-+ 
-++/* FINK LOCAL begin */
-++#include <sys/utsname.h>
-++#include <CoreFoundation/CoreFoundation.h>
-++static void finkinit();
-++/* FINK LOCAL end */
-++
-+ #include "dselect.h"
-+ #include "bindings.h"
-+ #include "pkglist.h"
-+@@ -504,6 +510,173 @@
-+   return urqr_quitmenu;
-+ }
-+ 
-++/* FINK LOCAL begin */
-++extern "C" {
-++struct FinkVirtualPkgs {
-++  struct FinkVirtualPkgs *next;
-++  char *pkgname;
-++  struct dpkg_version version;
-++};
-++
-++struct FinkVirtualPkgs *fink_virt_pkg = NULL;
-++}
-++static void finkinit()
-++{
-++  FILE *virt_pkg_stream = NULL;
-++  struct stat sb;
-++  struct FinkVirtualPkgs *pkg;
-++  char name[256];
-++  char version[256];
-++  char revision[256];
-++  unsigned int  epoch;
-++  Boolean status;
-++  SInt32 errorCode;
-++  CFURLRef fileURL = NULL;
-++  CFDataRef resourceData = NULL;
-++  CFPropertyListRef propertyList = NULL;    CFStringRef string;
-++  static char buffer[256];  // This is static, to ensure the buffer stays around
-++  static struct utsname ver;  // This is static, to ensure the buffer stays around
-++
-++  // Set PERL5LIB for the scripts to use. This is necessary because some
-++  // package scripts use Dpkg.pm and it's in a "non-standard" Fink location.
-++  {
-++    char *perl5lib     = getenv("PERL5LIB");
-++    size_t perl5lib_s  = 0;
-++    if( perl5lib != NULL )
-++      perl5lib_s       = strlen( perl5lib );
-++    const char *perl5lib_add = ":@FINKPREFIX@/lib/perl5";
-++    char *perl5lib_new = (char*)malloc(perl5lib_s + strlen(perl5lib_add) + 1);
-++    char *perl5lib_set = perl5lib_new;
-++    if( perl5lib_s > 0 )
-++      perl5lib_set = stpcpy( perl5lib_set, perl5lib );
-++    perl5lib_set = stpcpy( perl5lib_set, perl5lib_add );
-++    perl5lib_set[0] = '\0';
-++    setenv( "PERL5LIB", perl5lib_new, 1 );
-++    free( perl5lib_new );
-++  }
-++
-++  if (0 == stat("@FINKPREFIX@/bin/fink-virtual-pkgs", &sb))
-++  {
-++    virt_pkg_stream =popen("@FINKPREFIX@/bin/fink-virtual-pkgs --dpkg","r");
-++    if (virt_pkg_stream)
-++    {
-++      while (fscanf(virt_pkg_stream,"%s\t%u\t%s\t%s\n",name,&epoch,version, revision) == 4)
-++      {
-++        pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-++        if (pkg)
-++        {
-++          pkg->next = fink_virt_pkg;
-++          pkg->pkgname = strdup(name);
-++          pkg->version.epoch = epoch;
-++          pkg->version.version = strdup(version);
-++          pkg->version.revision = strdup(revision);
-++          /* Quick and simple sanity check */
-++          if ((NULL != pkg->pkgname) && (0 != strlen(pkg->pkgname)) &&
-++              (NULL != pkg->version.version) && (0 != strlen(pkg->version.version)) &&
-++              (NULL != pkg->version.revision) && (0 != strlen(pkg->version.revision)))
-++          {
-++            /* We are leaking here if something fails the sanity check above */
-++            fink_virt_pkg = pkg;
-++          }
-++        }
-++      }
-++      if (pclose(virt_pkg_stream))
-++      {
-++        /* The fink-virtual-pkgs script returned a non zero exit status *
-++         * clean up and try the old way.                                */
-++        while(NULL != fink_virt_pkg)
-++        {
-++          pkg = fink_virt_pkg;
-++          if (NULL != pkg->pkgname) free(pkg->pkgname);
-++          if (NULL != pkg->version.version) free((void*)pkg->version.version);
-++          if (NULL != pkg->version.revision) free((void*)pkg->version.revision);
-++          fink_virt_pkg = pkg->next;
-++          free(pkg);
-++        }
-++      }
-++    }
-++  }
-++  if (NULL == fink_virt_pkg)
-++  {
-++    /* Determine system version */
-++    /* TODO - should maybe check if this is really Darwin? */
-++    if (!uname(&ver)) {
-++        pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-++        if (pkg) {
-++        pkg->next = fink_virt_pkg;
-++        pkg->pkgname = strdup("darwin");
-++        pkg->version.epoch = 0;
-++        pkg->version.version = ver.release;
-++        pkg->version.revision = NULL;
-++        fink_virt_pkg = pkg;
-++        }
-++    }
-++
-++    /* Check whether this is Mac OS X, and which version of it */
-++
-++    fileURL = CFURLCreateWithFileSystemPath( NULL,
-++      CFSTR("/System/Library/CoreServices/SystemVersion.plist"),
-++      kCFURLPOSIXPathStyle,
-++      false );
-++    if (!fileURL)
-++    goto BAIL;
-++
-++    /* Read the XML */
-++    status = CFURLCreateDataAndPropertiesFromResource(
-++      NULL,
-++      fileURL,
-++      &resourceData,
-++      NULL,
-++      NULL,
-++      &errorCode);
-++    if (!status || errorCode != 0)
-++    goto BAIL;
-++
-++    /* Reconstitute the dictionary using the XML data. */
-++    propertyList = CFPropertyListCreateFromXMLData( NULL,
-++      resourceData,
-++      kCFPropertyListImmutable,
-++      &string);
-++    if (!propertyList)
-++    goto BAIL;
-++
-++    /* Try to read the system version from it. */
-++    status = CFDictionaryGetValueIfPresent(
-++      (CFDictionaryRef)propertyList,
-++      (const void*)CFSTR("ProductVersion"),
-++      (const void**)&string);
-++    if (!status)
-++    goto BAIL;
-++
-++    /* Convert into a C string */
-++    status = CFStringGetCString( string,
-++      buffer,
-++      sizeof(buffer),
-++      kCFStringEncodingISOLatin1);
-++    if (!status)
-++    goto BAIL;
-++    pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-++    if (pkg)
-++    {
-++      pkg->next = fink_virt_pkg;
-++      pkg->pkgname = strdup("macosx");
-++      pkg->version.epoch = 0;
-++      pkg->version.version = buffer;
-++      pkg->version.revision = NULL;
-++      fink_virt_pkg = pkg;
-++    }
-++  BAIL:
-++    // Release all of the CF objects we're responsible for.
-++    if (fileURL)
-++    CFRelease(fileURL);
-++    if (resourceData)
-++    CFRelease(resourceData);
-++    if (propertyList)
-++    CFRelease(propertyList);
-++  }
-++}
-++/* FINK LOCAL end */
-++
-+ static void
-+ dselect_catch_fatal_error()
-+ {
-+@@ -515,6 +687,10 @@
-+ main(int, const char *const *argv)
-+ {
-+   dpkg_locales_init(DSELECT);
-++  /* FINK LOCAL begin */
-++  finkinit();
-++  /* FINK LOCAL end */
-++
-+   dpkg_set_progname(DSELECT);
-+ 
-+   push_error_context_func(dselect_catch_fatal_error, print_fatal_error, nullptr);
-+diff -ruN dpkg-1.16.4.3.orig/dselect/pkgdepcon.cc dpkg-1.16.4.3/dselect/pkgdepcon.cc
-+--- dpkg-1.16.4.3.orig/dselect/pkgdepcon.cc	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/pkgdepcon.cc	2012-07-03 10:39:12.000000000 -0600
-+@@ -211,6 +211,17 @@
-+   return 2;
-+ }
-+ 
-++/* FINK LOCAL begin */
-++extern "C" {
-++struct FinkVirtualPkgs {
-++  struct FinkVirtualPkgs *next;
-++  char *pkgname;
-++  struct dpkg_version version;
-++};
-++extern struct FinkVirtualPkgs *fink_virt_pkg;
-++}
-++/* FINK LOCAL end */
-++
-+ int packagelist::resolvedepcon(dependency *depends) {
-+   perpackagestate *best, *fixbyupgrade;
-+   deppossi *possi, *provider;
-+@@ -385,6 +396,29 @@
-+   int would;
-+   pkginfo::pkgwant want= pkginfo::want_purge;
-+ 
-++  /* FINK LOCAL begin */
-++  {
-++    int interestingwarnings;
-++    struct varbuf oemsgs;
-++    struct FinkVirtualPkgs *virt_pkg = NULL;
-++    varbuf_init(&oemsgs, 1024);
-++    interestingwarnings= 0;
-++    virt_pkg = fink_virt_pkg;
-++    while (virt_pkg)
-++    {
-++      if (strcasecmp(possi->ed->name, virt_pkg->pkgname) == 0) {
-++        debug(dbg_depcondetail,"Found package : %s from VirtPackages.pm, depended by %s\n",virt_pkg->pkgname, possi->ed->name);
-++        if (dpkg_version_relate(&virt_pkg->version,possi->verrel,&possi->version))
-++        {
-++          return 1;
-++        }
-++      }
-++      virt_pkg = virt_pkg->next;
-++    }
-++    varbuf_destroy(&oemsgs);
-++  }
-++  /* FINK LOCAL end */
-++
-+   if (possi->ed->pkg.clientdata) {
-+     want = possi->ed->pkg.clientdata->selected;
-+     would = would_like_to_install(want, &possi->ed->pkg);
-+diff -ruN dpkg-1.16.4.3.orig/src/main.c dpkg-1.16.4.3/src/main.c
-+--- dpkg-1.16.4.3.orig/src/main.c	2012-06-13 23:12:34.000000000 -0600
-++++ dpkg-1.16.4.3/src/main.c	2012-07-02 16:44:43.000000000 -0600
-+@@ -25,6 +25,7 @@
-+ #include <compat.h>
-+ 
-+ #include <sys/types.h>
-++#include <sys/stat.h>
-+ #include <sys/wait.h>
-+ 
-+ #include <errno.h>
-+@@ -50,6 +50,11 @@
-+ #include <dpkg/command.h>
-+ #include <dpkg/pkg-spec.h>
-+ #include <dpkg/options.h>
-++/* FINK LOCAL begin */
-++#include <sys/utsname.h>
-++#include <CoreFoundation/CoreFoundation.h>
-++static void finkinit();
-++/* FINK LOCAL end */
-+ 
-+ #include "main.h"
-+ #include "filesdb.h"
-+@@ -852,6 +857,172 @@
-+   return ret;
-+ }
-+ 
-++/* FINK LOCAL begin */
-++struct FinkVirtualPkgs {
-++  struct FinkVirtualPkgs *next;
-++  char *pkgname;
-++  struct dpkg_version version;
-++};
-++
-++struct FinkVirtualPkgs *fink_virt_pkg = NULL;
-++static void finkinit()
-++{
-++  FILE *virt_pkg_stream = NULL;
-++  struct stat sb;
-++  struct FinkVirtualPkgs *pkg;
-++  char name[256];
-++  char version[256];
-++  char revision[256];
-++  unsigned int  epoch;
-++  Boolean status;
-++  SInt32 errorCode;
-++  CFURLRef fileURL = NULL;
-++  CFDataRef resourceData = NULL;
-++  CFPropertyListRef propertyList = NULL;
-++  CFStringRef string;
-++  static char buffer[256];  // This is static, to ensure the buffer stays around
-++  static struct utsname ver;  // This is static, to ensure the buffer stays around
-++
-++  // Set PERL5LIB for the scripts to use. This is necessary because some
-++  // package scripts use Dpkg.pm and it's in a "non-standard" Fink location.
-++  {
-++    char *perl5lib     = getenv("PERL5LIB");
-++    size_t perl5lib_s  = 0;
-++    if( perl5lib != NULL )
-++      perl5lib_s       = strlen( perl5lib );
-++    const char *perl5lib_add = ":@FINKPREFIX@/lib/perl5";
-++    char *perl5lib_new = (char*)malloc(perl5lib_s + strlen(perl5lib_add) + 1);
-++    char *perl5lib_set = perl5lib_new;
-++    if( perl5lib_s > 0 )
-++      perl5lib_set = stpcpy( perl5lib_set, perl5lib );
-++    perl5lib_set = stpcpy( perl5lib_set, perl5lib_add );
-++    perl5lib_set[0] = '\0';
-++    setenv( "PERL5LIB", perl5lib_new, 1 );
-++    free( perl5lib_new );
-++  }
-++
-++  if (0 == stat("@FINKPREFIX@/bin/fink-virtual-pkgs", &sb))
-++  {
-++    virt_pkg_stream =popen("@FINKPREFIX@/bin/fink-virtual-pkgs --dpkg","r");
-++    if (virt_pkg_stream)
-++    {
-++      while (fscanf(virt_pkg_stream,"%s\t%u\t%s\t%s\n",name,&epoch,version,revision) == 4)
-++      {
-++        pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-++        if (pkg)
-++        {
-++          pkg->next = fink_virt_pkg;
-++          pkg->pkgname = strdup(name);
-++          pkg->version.epoch = epoch;
-++          pkg->version.version = strdup(version);
-++          pkg->version.revision = strdup(revision);
-++          /* Quick and simple sanity check */
-++          if ((NULL != pkg->pkgname) && (0 != strlen(pkg->pkgname)) &&
-++              (NULL != pkg->version.version) && (0 != strlen(pkg->version.version)) &&
-++              (NULL != pkg->version.revision) && (0 != strlen(pkg->version.revision)))
-++          {
-++            /* We are leaking here if something fails the sanity check above */
-++            fink_virt_pkg = pkg;
-++          }
-++        }
-++      }
-++      if (pclose(virt_pkg_stream))
-++      {
-++        /* The fink-virtual-pkgs script returned a non zero exit status *
-++         * clean up and try the old way.                                */
-++        while(NULL != fink_virt_pkg)
-++        {
-++          pkg = fink_virt_pkg;
-++          if (NULL != pkg->pkgname) free(pkg->pkgname);
-++          if (NULL != pkg->version.version) free(pkg->version.version);
-++          if (NULL != pkg->version.revision) free(pkg->version.revision);
-++          fink_virt_pkg = pkg->next;
-++          free(pkg);
-++        }
-++        fink_virt_pkg = NULL;
-++      }
-++    }
-++  }
-++  if (NULL == fink_virt_pkg)
-++  {
-++    /* Determine system version */
-++    /* TODO - should maybe check if this is really Darwin? */
-++    if (!uname(&ver)) {
-++        pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-++        if (pkg) {
-++        pkg->next = fink_virt_pkg;
-++        pkg->pkgname = strdup("darwin");
-++        pkg->version.epoch = 0;
-++        pkg->version.version = ver.release;
-++        pkg->version.revision = NULL;
-++        fink_virt_pkg = pkg;
-++        }
-++    }
-++
-++    /* Check whether this is Mac OS X, and which version of it */
-++
-++    fileURL = CFURLCreateWithFileSystemPath( NULL,
-++      CFSTR("/System/Library/CoreServices/SystemVersion.plist"),
-++      kCFURLPOSIXPathStyle,
-++      false );
-++    if (!fileURL)
-++    goto BAIL;
-++
-++    /* Read the XML */
-++    status = CFURLCreateDataAndPropertiesFromResource(
-++      NULL,
-++      fileURL,
-++      &resourceData,
-++      NULL,
-++      NULL,
-++      &errorCode);
-++    if (!status || errorCode != 0)
-++    goto BAIL;
-++
-++    /* Reconstitute the dictionary using the XML data. */
-++    propertyList = CFPropertyListCreateFromXMLData( NULL,
-++      resourceData,
-++      kCFPropertyListImmutable,
-++      &string);
-++    if (!propertyList)
-++    goto BAIL;
-++
-++    /* Try to read the system version from it. */
-++    status = CFDictionaryGetValueIfPresent( propertyList,
-++      CFSTR("ProductVersion"),
-++      (void*)&string);
-++    if (!status)
-++    goto BAIL;
-++
-++    /* Convert into a C string */
-++    status = CFStringGetCString( string,
-++      buffer,
-++      sizeof(buffer),
-++      kCFStringEncodingISOLatin1);
-++    if (!status)
-++    goto BAIL;
-++    pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-++    if (pkg)
-++    {
-++      pkg->next = fink_virt_pkg;
-++      pkg->pkgname = strdup("macosx");
-++      pkg->version.epoch = 0;
-++      pkg->version.version = buffer;
-++      pkg->version.revision = NULL;
-++      fink_virt_pkg = pkg;
-++    }
-++  BAIL:
-++    // Release all of the CF objects we're responsible for.
-++    if (fileURL)
-++    CFRelease(fileURL);
-++    if (resourceData)
-++    CFRelease(resourceData);
-++    if (propertyList)
-++    CFRelease(propertyList);
-++  }
-++}
-++/* FINK LOCAL end */
-++
-+ int main(int argc, const char *const *argv) {
-+   int ret;
-+ 
-+@@ -878,6 +1049,10 @@
-+ 
-+   filesdbinit();
-+ 
-++  /* FINK LOCAL begin */
-++  finkinit();
-++  /* FINK LOCAL end */
-++
-+   ret = cipaction->action(argv);
-+ 
-+   if (is_invoke_action(cipaction->arg_int))
-+diff -ruN dpkg-1.16.4.3.orig/src/main.h dpkg-1.16.4.3/src/main.h
-+--- dpkg-1.16.4.3.orig/src/main.h	2012-06-13 23:12:34.000000000 -0600
-++++ dpkg-1.16.4.3/src/main.h	2012-07-02 16:43:04.000000000 -0600
-+@@ -134,6 +134,11 @@
-+ 	const char *command;
-+ };
-+ 
-++/* FINK LOCAL begin */
-++extern struct dpkg_version darwin_version;
-++extern struct dpkg_version macosx_version;
-++/* FINK LOCAL end */
-++
-+ /* from archives.c */
-+ 
-+ int archivefiles(const char *const *argv);
-+diff -ruN dpkg-1.16.4.3.orig/src/packages.c dpkg-1.16.4.3/src/packages.c
-+--- dpkg-1.16.4.3.orig/src/packages.c	2012-06-13 23:12:34.000000000 -0600
-++++ dpkg-1.16.4.3/src/packages.c	2012-07-02 16:52:10.000000000 -0600
-+@@ -538,6 +538,40 @@
-+   return ok;
-+ }
-+ 
-++/* FINK LOCAL begin */
-++static int
-++check_pseudo_package(const struct dpkg_version *versrev, const struct deppossi *possi, int *interestingwarnings, struct varbuf *oemsgs) {
-++
-++  if( dpkg_version_relate(versrev,possi->verrel,&possi->version)) {
-++    debug(dbg_depcondetail,"        virtual version %s >= %s, PASS", versiondescribe(versrev, vdew_nonambig), versiondescribe(&possi->version, vdew_nonambig));
-++    return found_ok;
-++  } else {
-++    (*interestingwarnings)++;
-++    varbuf_add_str(oemsgs, _("  Version of "));
-++    varbuf_add_str(oemsgs, possi->ed->name);
-++    varbuf_add_str(oemsgs, _(" on system is "));
-++    varbuf_add_str(oemsgs, versiondescribe(versrev, vdew_nonambig));
-++    varbuf_add_str(oemsgs, ".\n");
-++    /* If fink-virtual-pkgs returns 0-0 we assume that it satisfies the
-++       version requirements no matter what, this is temp till f-v-p is fixed */
-++    const char *forcedversion = "0-0";
-++    if (strcasecmp(versiondescribe(versrev, vdew_nonambig), forcedversion) == 0) {
-++      debug(dbg_depcondetail,"        virtual version %s, Forced!", versiondescribe(versrev, vdew_nonambig));
-++      return found_forced;
-++    } else {
-++      debug(dbg_depcondetail,"        virtual version %s < %s, FAIL", versiondescribe(versrev, vdew_nonambig), versiondescribe(&possi->version, vdew_nonambig));
-++      return found_none;
-++    }
-++  }
-++}
-++struct FinkVirtualPkgs {
-++  struct FinkVirtualPkgs *next;
-++  char *pkgname;
-++  struct dpkg_version version;
-++};
-++extern struct FinkVirtualPkgs *fink_virt_pkg;
-++/* FINK LOCAL end */
-++
-+ /*
-+  * Checks [Pre]-Depends only.
-+  */
-+@@ -555,6 +589,7 @@
-+   struct dependency *dep;
-+   struct deppossi *possi, *provider;
-+   struct pkginfo *possfixbytrig, *canfixbytrig;
-++  struct FinkVirtualPkgs *virt_pkg = NULL;
-+ 
-+   interestingwarnings= 0;
-+   ok = dep_check_ok;
-+@@ -595,6 +630,28 @@
-+       }
-+       deppossi_pkg_iter_free(possi_iter);
-+ 
-++      /* FINK LOCAL begin */
-++      if (found != found_ok) {
-++        virt_pkg = fink_virt_pkg;
-++        while (virt_pkg) {
-++          if (strcasecmp(possi->ed->name, virt_pkg->pkgname) == 0) {
-++              found = check_pseudo_package(&virt_pkg->version, possi,
-++				           &interestingwarnings, &oemsgs);
-++            if (found == found_ok || found == found_forced) {
-++              debug(dbg_depcondetail,"        is fink-virtual, ok and found");
-++	      break;
-++	    }
-++          }
-++          virt_pkg = virt_pkg->next;
-++        }
-++      }
-++      if (found == found_ok || found == found_forced) {
-++        /* found done */
-++        debug(dbg_depcondetail,"    found %d",found);
-++        break;
-++      }
-++      /* FINK LOCAL end */
-++
-+       if (found != found_ok && possi->verrel == dpkg_relation_none) {
-+         for (provider = possi->ed->depended.installed;
-+              found != found_ok && provider;
 diff -ruN dpkg-1.17.6.orig/fink/patches/full-path-calls.patch dpkg-1.17.6/fink/patches/full-path-calls.patch
 --- dpkg-1.17.6.orig/fink/patches/full-path-calls.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/full-path-calls.patch	2012-07-09 16:10:10.000000000 -0600
-@@ -0,0 +1,44 @@
-+diff -ruN dpkg-1.16.4.3.orig/dselect/dselect.h dpkg-1.16.4.3/dselect/dselect.h
-+--- dpkg-1.16.4.3.orig/dselect/dselect.h	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dselect/dselect.h	2012-07-02 16:14:45.000000000 -0600
++++ dpkg-1.17.6/fink/patches/full-path-calls.patch	2014-03-25 11:50:16.000000000 -0600
+@@ -0,0 +1,36 @@
++--- dpkg.orig/dselect/dselect.h
+++++ dpkg/dselect/dselect.h
 +@@ -33,7 +33,7 @@
 + 
 + #include "dselect-curses.h"
@@ -1735,16 +1498,9 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/full-path-calls.patch dpkg-1.17.6/fink/p
 + 
 + #define TOTAL_LIST_WIDTH 180
 + #define MAX_DISPLAY_INFO 120
-+diff -ruN dpkg-1.16.4.3.orig/lib/dpkg/dpkg.h dpkg-1.16.4.3/lib/dpkg/dpkg.h
-+--- dpkg-1.16.4.3.orig/lib/dpkg/dpkg.h	2012-06-13 23:12:31.000000000 -0600
-++++ dpkg-1.16.4.3/lib/dpkg/dpkg.h	2012-07-02 16:14:45.000000000 -0600
-+@@ -94,19 +94,19 @@
-+ #define MAXUPDATES         250
-+ 
-+ #define DEFAULTSHELL        "sh"
-+-#define DEFAULTPAGER        "pager"
-++#define DEFAULTPAGER        "less"
-+ 
++--- dpkg.orig/lib/dpkg/dpkg.h
+++++ dpkg/lib/dpkg/dpkg.h
++@@ -99,14 +99,14 @@
 + #define MD5HASHLEN           32
 + #define MAXTRIGDIRECTIVE     256
 + 
@@ -1769,29 +1525,26 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/full-path-calls.patch dpkg-1.17.6/fink/p
 + #define RM		"rm"
 diff -ruN dpkg-1.17.6.orig/fink/patches/gzip-rsyncable-fix.patch dpkg-1.17.6/fink/patches/gzip-rsyncable-fix.patch
 --- dpkg-1.17.6.orig/fink/patches/gzip-rsyncable-fix.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/gzip-rsyncable-fix.patch	2013-12-23 10:28:23.000000000 -0700
-@@ -0,0 +1,14 @@
-+diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Compression.pm dpkg-1.16.4.3/scripts/Dpkg/Compression.pm
-+--- dpkg-1.16.4.3.orig/scripts/Dpkg/Compression.pm	2012-06-13 23:12:33.000000000 -0600
-++++ dpkg-1.16.4.3/scripts/Dpkg/Compression.pm	2012-07-02 16:14:45.000000000 -0600
-+@@ -50,7 +50,9 @@
++++ dpkg-1.17.6/fink/patches/gzip-rsyncable-fix.patch	2014-03-25 11:51:17.000000000 -0600
+@@ -0,0 +1,12 @@
++--- dpkg.orig/scripts/Dpkg/Compression.pm
+++++ dpkg/scripts/Dpkg/Compression.pm
++@@ -50,7 +50,8 @@
 + my $COMP = {
 +     gzip => {
 + 	file_ext => 'gz',
 +-	comp_prog => [ 'gzip', '--no-name', '--rsyncable' ],
-++        # Fink doesn't have rsyncable bzip2/gzip yet
-++        # comp_prog => [ 'gzip', '--no-name', '--rsyncable' ],
+++	# Fink doesn't have rsyncable bzip2/gzip yet
 ++	comp_prog => [ 'gzip', '--no-name' ],
 + 	decomp_prog => [ 'gunzip' ],
 + 	default_level => 9,
 +     },
 diff -ruN dpkg-1.17.6.orig/fink/patches/location-fixes.patch dpkg-1.17.6/fink/patches/location-fixes.patch
 --- dpkg-1.17.6.orig/fink/patches/location-fixes.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/location-fixes.patch	2013-12-23 11:39:45.000000000 -0700
-@@ -0,0 +1,49 @@
-+diff -ruN dpkg-1.16.4.3.orig/dpkg-split/queue.c dpkg-1.16.4.3/dpkg-split/queue.c
-+--- dpkg-1.16.4.3.orig/dpkg-split/queue.c	2012-06-13 23:12:30.000000000 -0600
-++++ dpkg-1.16.4.3/dpkg-split/queue.c	2012-07-02 16:14:45.000000000 -0600
++++ dpkg-1.17.6/fink/patches/location-fixes.patch	2014-03-25 11:54:19.000000000 -0600
+@@ -0,0 +1,101 @@
++--- dpkg.orig/dpkg-split/queue.c
+++++ dpkg/dpkg-split/queue.c
 +@@ -46,7 +46,7 @@
 + #include "dpkg-split.h"
 + 
@@ -1838,13 +1591,65 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/location-fixes.patch dpkg-1.17.6/fink/pa
 +        /emul/ia32-linux/lib /emul/ia32-linux/usr/lib);
 + 
 + # Adjust set of directories to consider when we're in a situation of a
++--- dpkg.orig/dselect/methods/Dselect/Ftp.pm
+++++ dpkg/dselect/methods/Dselect/Ftp.pm
++@@ -79,12 +79,12 @@
++ }
++ 
++ sub view_mirrors {
++-  if (-f '/usr/lib/dpkg/methods/ftp/README.mirrors.txt') {
++-    system('pager', '/usr/lib/dpkg/methods/ftp/README.mirrors.txt');
++-  } elsif (-f '/usr/lib/dpkg/methods/ftp/README.mirrors.txt.gz') {
++-    system('gzip -dc /usr/lib/dpkg/methods/ftp/README.mirrors.txt.gz | pager');
+++  if (-f '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt') {
+++    system('pager', '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt');
+++  } elsif (-f '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt.gz') {
+++    system('gzip -dc @FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt.gz | pager');
++   } else {
++-    print "/usr/lib/dpkg/methods/ftp/README.mirrors.txt(.gz): file not found.\n";
+++    print "@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt(.gz): file not found.\n";
++   }
++ }
++ 
++--- dpkg.orig/dselect/methods/disk/setup
+++++ dpkg/dselect/methods/disk/setup
++@@ -19,7 +19,7 @@
++ option=$3
++ 
++ cd "$vardir/methods/disk"
++-tp=/var/run/ddm$$
+++tp=@FINKPREFIX@/var/run/ddm$$
++ 
++ iarch=`dpkg --admindir $vardir --print-architecture`
++ 
++--- dpkg.orig/dselect/methods/ftp/setup
+++++ dpkg/dselect/methods/ftp/setup
++@@ -75,7 +75,7 @@
++ You must supply an ftp site, use of passive mode, username, password,
++ path to the debian directory,list of distributions you are interested
++ in and place to download the binary package files to (relative to
++-/var/lib/dpkg/methods/ftp). You can add as much sites as you like. Later
+++@FINKPREFIX@/var/lib/dpkg/methods/ftp). You can add as much sites as you like. Later
++ entries will always override older ones.
++ 
++ Supply "?" as a password to be asked each time you connect.
++--- dpkg.orig/dselect/methods/multicd/install
+++++ dpkg/dselect/methods/multicd/install
++@@ -175,7 +175,7 @@
++ Perhaps you downloaded it with an unexpected name, or something.
++ In any case, you must find the file(s) and then either place it with
++ the correct filename(s) (as listed in the Packages.cd file or in
++-/var/lib/dpkg/available) and rerun the installation, or upgrade the
+++@FINKPREFIX@/var/lib/dpkg/available) and rerun the installation, or upgrade the
++ package by using `dpkg --install --auto-deconfigure'\'' by hand.
++ 
++ ";
 diff -ruN dpkg-1.17.6.orig/fink/patches/protect-system-dirs.patch dpkg-1.17.6/fink/patches/protect-system-dirs.patch
 --- dpkg-1.17.6.orig/fink/patches/protect-system-dirs.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/protect-system-dirs.patch	2013-12-23 11:40:53.000000000 -0700
-@@ -0,0 +1,29 @@
-+diff -ruN dpkg-1.16.4.3.orig/src/help.c dpkg-1.16.4.3/src/help.c
-+--- dpkg-1.16.4.3.orig/src/help.c	2012-06-13 23:12:34.000000000 -0600
-++++ dpkg-1.16.4.3/src/help.c	2012-07-02 16:14:45.000000000 -0600
++++ dpkg-1.17.6/fink/patches/protect-system-dirs.patch	2014-03-25 11:54:57.000000000 -0600
+@@ -0,0 +1,28 @@
++--- dpkg.orig/src/help.c
+++++ dpkg/src/help.c
 +@@ -271,6 +271,25 @@
 +   debug(dbg_veryverbose, "dir_is_used_by_others '%s' (except %s)", file->name,
 +         pkg ? pkg_name(pkg, pnaw_always) : "<none>");
@@ -1873,11 +1678,10 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/protect-system-dirs.patch dpkg-1.17.6/fi
 +     debug(dbg_veryverbose, "dir_is_used_by_others considering %s ...",
 diff -ruN dpkg-1.17.6.orig/fink/patches/so-to-dylib.patch dpkg-1.17.6/fink/patches/so-to-dylib.patch
 --- dpkg-1.17.6.orig/fink/patches/so-to-dylib.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/so-to-dylib.patch	2014-02-07 10:01:19.000000000 -0700
-@@ -0,0 +1,266 @@
-+diff -ruN dpkg-1.16.10/scripts.orig/Dpkg/Shlibs/Objdump.pm dpkg-1.16.10/scripts/Dpkg/Shlibs/Objdump.pm
-+--- dpkg-1.16.10/scripts.orig/Dpkg/Shlibs/Objdump.pm	2013-03-17 21:40:28.000000000 -0600
-++++ dpkg-1.16.10/scripts/Dpkg/Shlibs/Objdump.pm	2013-04-18 13:35:21.000000000 -0600
++++ dpkg-1.17.6/fink/patches/so-to-dylib.patch	2014-03-25 11:56:56.000000000 -0600
+@@ -0,0 +1,263 @@
++--- dpkg.orig/scripts/Dpkg/Shlibs/Objdump.pm
+++++ dpkg/scripts/Dpkg/Shlibs/Objdump.pm
 +@@ -28,9 +28,15 @@
 + 
 + # Decide which objdump to call
@@ -2070,9 +1874,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/so-to-dylib.patch dpkg-1.17.6/fink/patch
 + sub parse_objdump_output {
 +     my ($self, $fh) = @_;
 + 
-+diff -ruN dpkg-1.16.10/scripts.orig/dpkg-gensymbols.pl dpkg-1.16.10/scripts/dpkg-gensymbols.pl
-+--- dpkg-1.16.10/scripts.orig/dpkg-gensymbols.pl	2013-03-17 21:40:29.000000000 -0600
-++++ dpkg-1.16.10/scripts/dpkg-gensymbols.pl	2013-04-17 15:28:52.000000000 -0600
++--- dpkg.orig/scripts/dpkg-gensymbols.pl
+++++ dpkg/scripts/dpkg-gensymbols.pl
 +@@ -195,8 +195,9 @@
 + 	opendir(my $libdir_dh, "$libdir")
 + 	    or syserr(_g("can't read directory %s: %s"), $libdir, $!);
@@ -2085,9 +1888,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/so-to-dylib.patch dpkg-1.17.6/fink/patch
 + 	} map { "$libdir/$_" } readdir($libdir_dh);
 + 	closedir $libdir_dh;
 +     }
-+diff -ruN dpkg-1.16.10/scripts.orig/dpkg-shlibdeps.pl dpkg-1.16.10/scripts/dpkg-shlibdeps.pl
-+--- dpkg-1.16.10/scripts.orig/dpkg-shlibdeps.pl	2013-03-17 21:40:29.000000000 -0600
-++++ dpkg-1.16.10/scripts/dpkg-shlibdeps.pl	2013-04-18 11:12:48.000000000 -0600
++--- dpkg.orig/scripts/dpkg-shlibdeps.pl
+++++ dpkg/scripts/dpkg-shlibdeps.pl
 +@@ -185,13 +185,15 @@
 + 	unless (defined $lib) {
 + 	    $soname_notfound{$soname} = 1;
@@ -2143,11 +1945,10 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/so-to-dylib.patch dpkg-1.17.6/fink/patch
 + 	    # the dep only as a default that can be overriden by a later
 diff -ruN dpkg-1.17.6.orig/fink/patches/test-fix.patch dpkg-1.17.6/fink/patches/test-fix.patch
 --- dpkg-1.17.6.orig/fink/patches/test-fix.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/test-fix.patch	2014-02-07 08:52:42.000000000 -0700
-@@ -0,0 +1,20 @@
-+diff -ruN dpkg-1.16.4.3.orig/src/t/100_dpkg_divert.t dpkg-1.16.4.3/src/t/100_dpkg_divert.t
-+--- dpkg-1.16.4.3.orig/src/t/100_dpkg_divert.t	2012-06-13 23:12:34.000000000 -0600
-++++ dpkg-1.16.4.3/src/t/100_dpkg_divert.t	2012-07-02 16:14:45.000000000 -0600
++++ dpkg-1.17.6/fink/patches/test-fix.patch	2014-03-25 11:55:21.000000000 -0600
+@@ -0,0 +1,19 @@
++--- dpkg.orig/src/t/100_dpkg_divert.t
+++++ dpkg/src/t/100_dpkg_divert.t
 +@@ -601,6 +601,7 @@
 +                 expect_failure => 1, expect_stderr_like => qr/Permission denied/);
 +     diversions_eq('');
@@ -2165,424 +1966,3 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/test-fix.patch dpkg-1.17.6/fink/patches/
 + }
 + 
 + system("rm -f $admindir/diversions-new; mkdir $admindir/diversions-old");
-diff -ruN dpkg-1.17.6.orig/src/script.c.new dpkg-1.17.6/src/script.c.new
---- dpkg-1.17.6.orig/src/script.c.new	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/src/script.c.new	2014-02-07 11:43:57.000000000 -0700
-@@ -0,0 +1,417 @@
-+/*
-+ * dpkg - main program for package management
-+ * script.c - maintainer script routines
-+ *
-+ * Copyright © 1995 Ian Jackson <ian@chiark.greenend.org.uk>
-+ * Copyright © 2007-2013 Guillem Jover <guillem@debian.org>
-+ *
-+ * This is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-+ */
-+
-+#include <config.h>
-+#include <compat.h>
-+
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+
-+#include <assert.h>
-+#include <errno.h>
-+#include <string.h>
-+#include <unistd.h>
-+#include <stdlib.h>
-+
-+#ifdef WITH_SELINUX
-+#include <selinux/selinux.h>
-+#include <selinux/flask.h>
-+#include <selinux/context.h>
-+#endif
-+
-+#include <dpkg/i18n.h>
-+#include <dpkg/dpkg.h>
-+#include <dpkg/dpkg-db.h>
-+#include <dpkg/pkg.h>
-+#include <dpkg/subproc.h>
-+#include <dpkg/command.h>
-+#include <dpkg/triglib.h>
-+
-+#include "filesdb.h"
-+#include "infodb.h"
-+#include "main.h"
-+
-+void
-+post_postinst_tasks(struct pkginfo *pkg, enum pkgstatus new_status)
-+{
-+	if (new_status < stat_triggersawaited)
-+		pkg_set_status(pkg, new_status);
-+	else if (pkg->trigaw.head)
-+		pkg_set_status(pkg, stat_triggersawaited);
-+	else if (pkg->trigpend_head)
-+		pkg_set_status(pkg, stat_triggerspending);
-+	else
-+		pkg_set_status(pkg, stat_installed);
-+	modstatdb_note(pkg);
-+
-+	debug(dbg_triggersdetail, "post_postinst_tasks - trig_incorporate");
-+	trig_incorporate(modstatdb_get_status());
-+}
-+
-+static void
-+post_script_tasks(void)
-+{
-+	debug(dbg_triggersdetail, "post_script_tasks - ensure_diversions");
-+	ensure_diversions();
-+
-+	debug(dbg_triggersdetail, "post_script_tasks - trig_incorporate");
-+	trig_incorporate(modstatdb_get_status());
-+}
-+
-+static void
-+cu_post_script_tasks(int argc, void **argv)
-+{
-+	post_script_tasks();
-+}
-+
-+static void
-+setexecute(const char *path, struct stat *stab)
-+{
-+	if ((stab->st_mode & 0555) == 0555)
-+		return;
-+	if (!chmod(path, 0755))
-+		return;
-+	ohshite(_("unable to set execute permissions on `%.250s'"), path);
-+}
-+
-+/**
-+ * Returns the path to the script inside the chroot.
-+ */
-+static const char *
-+maintscript_pre_exec(struct command *cmd)
-+{
-+	const char *admindir = dpkg_db_get_dir();
-+	size_t instdirl = strlen(instdir);
-+
-+	if (*instdir) {
-+		if (strncmp(admindir, instdir, instdirl) != 0)
-+			ohshit(_("admindir must be inside instdir for dpkg to work properly"));
-+		if (setenv("DPKG_ADMINDIR", admindir + instdirl, 1) < 0)
-+			ohshite(_("unable to setenv for subprocesses"));
-+
-+		if (chroot(instdir))
-+			ohshite(_("failed to chroot to `%.250s'"), instdir);
-+	}
-+	/* Switch to a known good directory to give the maintainer script
-+	 * a saner environment, also needed after the chroot(). */
-+	if (chdir("/"))
-+		ohshite(_("failed to chdir to `%.255s'"), "/");
-+	if (debug_has_flag(dbg_scripts)) {
-+		struct varbuf args = VARBUF_INIT;
-+		const char **argv = cmd->argv;
-+
-+		while (*++argv) {
-+			varbuf_add_char(&args, ' ');
-+			varbuf_add_str(&args, *argv);
-+		}
-+		varbuf_end_str(&args);
-+		debug(dbg_scripts, "fork/exec %s (%s )", cmd->filename,
-+		      args.buf);
-+		varbuf_destroy(&args);
-+	}
-+	if (!instdirl)
-+		return cmd->filename;
-+
-+	assert(strlen(cmd->filename) >= instdirl);
-+	return cmd->filename + instdirl;
-+}
-+
-+/**
-+ * Set a new security execution context for the maintainer script.
-+ *
-+ * Try to create a new execution context based on the current one and the
-+ * specific maintainer script filename. If it's the same as the current
-+ * one, use the given fallback.
-+ */
-+static int
-+maintscript_set_exec_context(struct command *cmd, const char *fallback)
-+{
-+	int rc = 0;
-+#ifdef WITH_SELINUX
-+	security_context_t curcon = NULL, newcon = NULL, filecon = NULL;
-+	context_t tmpcon = NULL;
-+
-+	if (is_selinux_enabled() < 1)
-+		return 0;
-+
-+	rc = getcon(&curcon);
-+	if (rc < 0)
-+		goto out;
-+
-+	rc = getfilecon(cmd->filename, &filecon);
-+	if (rc < 0)
-+		goto out;
-+
-+	rc = security_compute_create(curcon, filecon, SECCLASS_PROCESS, &newcon);
-+	if (rc < 0)
-+		goto out;
-+
-+	if (strcmp(curcon, newcon) == 0) {
-+		/* No default transition, use fallback for now. */
-+		rc = -1;
-+		tmpcon = context_new(curcon);
-+		if (tmpcon == NULL)
-+			goto out;
-+		if (context_type_set(tmpcon, fallback))
-+			goto out;
-+		freecon(newcon);
-+		newcon = strdup(context_str(tmpcon));
-+		if (newcon == NULL)
-+			goto out;
-+	}
-+
-+	rc = setexeccon(newcon);
-+
-+out:
-+	if (rc < 0 && security_getenforce() == 0)
-+		rc = 0;
-+
-+	context_free(tmpcon);
-+	freecon(newcon);
-+	freecon(curcon);
-+	freecon(filecon);
-+#endif
-+
-+	return rc < 0 ? rc : 0;
-+}
-+
-+static int
-+maintscript_exec(struct pkginfo *pkg, struct pkgbin *pkgbin,
-+                 struct command *cmd, struct stat *stab, int warn)
-+{
-+	pid_t pid;
-+	int rc;
-+
-+	setexecute(cmd->filename, stab);
-+
-+	push_cleanup(cu_post_script_tasks, ehflag_bombout, NULL, 0, 0);
-+
-+	pid = subproc_fork();
-+	if (pid == 0) {
-+		char *pkg_count;
-+
-+		m_asprintf(&pkg_count, "%d", pkgset_installed_instances(pkg->set));
-+
-+		if (setenv("DPKG_MAINTSCRIPT_PACKAGE", pkg->set->name, 1) ||
-+		    setenv("DPKG_MAINTSCRIPT_PACKAGE_REFCOUNT", pkg_count, 1) ||
-+		    setenv("DPKG_MAINTSCRIPT_ARCH", pkgbin->arch->name, 1) ||
-+		    setenv("DPKG_MAINTSCRIPT_NAME", cmd->argv[0], 1) ||
-+		    setenv("DPKG_RUNNING_VERSION", PACKAGE_VERSION, 1))
-+			ohshite(_("unable to setenv for maintainer script"));
-+
-+#ifdef WITH_EXTRA_ENV
-+		if (set_extra_env())
-+			ohshite(_("unable to set extra env for maintainer script"));
-+#endif
-+
-+		cmd->filename = cmd->argv[0] = maintscript_pre_exec(cmd);
-+
-+		if (maintscript_set_exec_context(cmd, "dpkg_script_t") < 0)
-+			ohshite(_("cannot set security execution context for "
-+			          "maintainer script"));
-+
-+		command_exec(cmd);
-+	}
-+	subproc_signals_setup(cmd->name); /* This does a push_cleanup(). */
-+	rc = subproc_wait_check(pid, cmd->name, warn);
-+	pop_cleanup(ehflag_normaltidy);
-+
-+	pop_cleanup(ehflag_normaltidy);
-+
-+	return rc;
-+}
-+
-+static int
-+vmaintscript_installed(struct pkginfo *pkg, const char *scriptname,
-+                       const char *desc, va_list args)
-+{
-+	struct command cmd;
-+	const char *scriptpath;
-+	struct stat stab;
-+	char buf[100];
-+
-+	scriptpath = pkg_infodb_get_file(pkg, &pkg->installed, scriptname);
-+	sprintf(buf, _("installed %s script"), desc);
-+
-+	command_init(&cmd, scriptpath, buf);
-+	command_add_arg(&cmd, scriptname);
-+	command_add_argv(&cmd, args);
-+
-+	if (stat(scriptpath, &stab)) {
-+		command_destroy(&cmd);
-+		if (errno == ENOENT) {
-+			debug(dbg_scripts,
-+			      "vmaintscript_installed nonexistent %s",
-+			      scriptname);
-+			return 0;
-+		}
-+		ohshite(_("unable to stat %s `%.250s'"), buf, scriptpath);
-+	}
-+	maintscript_exec(pkg, &pkg->installed, &cmd, &stab, 0);
-+
-+	command_destroy(&cmd);
-+
-+	return 1;
-+}
-+
-+/*
-+ * All ...'s in maintscript_* are const char *'s.
-+ */
-+
-+int
-+maintscript_installed(struct pkginfo *pkg, const char *scriptname,
-+                      const char *desc, ...)
-+{
-+	va_list args;
-+	int rc;
-+
-+	va_start(args, desc);
-+	rc = vmaintscript_installed(pkg, scriptname, desc, args);
-+	va_end(args);
-+
-+	if (rc)
-+		post_script_tasks();
-+
-+	return rc;
-+}
-+
-+int
-+maintscript_postinst(struct pkginfo *pkg, ...)
-+{
-+	va_list args;
-+	int rc;
-+
-+	va_start(args, pkg);
-+	rc = vmaintscript_installed(pkg, POSTINSTFILE, "post-installation", args);
-+	va_end(args);
-+
-+	if (rc)
-+		ensure_diversions();
-+
-+	return rc;
-+}
-+
-+int
-+maintscript_new(struct pkginfo *pkg, const char *scriptname,
-+                const char *desc, const char *cidir, char *cidirrest, ...)
-+{
-+	struct command cmd;
-+	struct stat stab;
-+	va_list args;
-+	char buf[100];
-+
-+	strcpy(cidirrest, scriptname);
-+	sprintf(buf, _("new %s script"), desc);
-+
-+	va_start(args, cidirrest);
-+	command_init(&cmd, cidir, buf);
-+	command_add_arg(&cmd, scriptname);
-+	command_add_argv(&cmd, args);
-+	va_end(args);
-+
-+	if (stat(cidir, &stab)) {
-+		command_destroy(&cmd);
-+		if (errno == ENOENT) {
-+			debug(dbg_scripts,
-+			      "maintscript_new nonexistent %s '%s'",
-+			      scriptname, cidir);
-+			return 0;
-+		}
-+		ohshite(_("unable to stat %s `%.250s'"), buf, cidir);
-+	}
-+	maintscript_exec(pkg, &pkg->available, &cmd, &stab, 0);
-+
-+	command_destroy(&cmd);
-+	post_script_tasks();
-+
-+	return 1;
-+}
-+
-+int
-+maintscript_fallback(struct pkginfo *pkg,
-+                     const char *scriptname, const char *desc,
-+                     const char *cidir, char *cidirrest,
-+                     const char *ifok, const char *iffallback)
-+{
-+	struct command cmd;
-+	const char *oldscriptpath;
-+	struct stat stab;
-+	char buf[100];
-+
-+	oldscriptpath = pkg_infodb_get_file(pkg, &pkg->installed, scriptname);
-+	sprintf(buf, _("old %s script"), desc);
-+
-+	command_init(&cmd, oldscriptpath, buf);
-+	command_add_args(&cmd, scriptname, ifok,
-+	                 versiondescribe(&pkg->available.version, vdew_nonambig),
-+	                 NULL);
-+
-+	if (stat(oldscriptpath, &stab)) {
-+		if (errno == ENOENT) {
-+			debug(dbg_scripts,
-+			      "maintscript_fallback nonexistent %s '%s'",
-+			      scriptname, oldscriptpath);
-+			command_destroy(&cmd);
-+			return 0;
-+		}
-+		warning(_("unable to stat %s '%.250s': %s"),
-+		        cmd.name, oldscriptpath, strerror(errno));
-+	} else {
-+		if (!maintscript_exec(pkg, &pkg->installed, &cmd, &stab, PROCWARN)) {
-+			command_destroy(&cmd);
-+			post_script_tasks();
-+			return 1;
-+		}
-+	}
-+	notice(_("trying script from the new package instead ..."));
-+
-+	strcpy(cidirrest, scriptname);
-+	sprintf(buf, _("new %s script"), desc);
-+
-+	command_destroy(&cmd);
-+	command_init(&cmd, cidir, buf);
-+	command_add_args(&cmd, scriptname, iffallback,
-+	                 versiondescribe(&pkg->installed.version, vdew_nonambig),
-+	                 NULL);
-+
-+	if (stat(cidir, &stab)) {
-+		command_destroy(&cmd);
-+		if (errno == ENOENT)
-+			ohshit(_("there is no script in the new version of the package - giving up"));
-+		else
-+			ohshite(_("unable to stat %s `%.250s'"), buf, cidir);
-+	}
-+
-+	maintscript_exec(pkg, &pkg->available, &cmd, &stab, 0);
-+	notice(_("... it looks like that went OK"));
-+
-+	command_destroy(&cmd);
-+	post_script_tasks();
-+
-+	return 1;
-+}
-+
-+#ifdef WITH_EXTRA_ENV
-+int
-+set_extra_env() {
-+	return 0;
-+}
-+#endif

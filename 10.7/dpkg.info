@@ -1,26 +1,27 @@
 Package: dpkg
 Version: 1.17.6
-Revision: 1.2
+Revision: 1.3
 GCC: 4.0
 ## Remove po4a
 BuildDepends: <<
-  fink (>= 0.32),
-  libgettext8-dev,
-  gettext-tools (>= 0.18),
-  liblzma5,
-  libncursesw5,
-  bzip2-dev
+	fink (>= 0.32),
+	libgettext8-dev,
+	gettext-tools (>= 0.18),
+	liblzma5,
+	libncursesw5,
+	bzip2-dev
 <<
 Depends: <<
-  bzip2-shlibs,
-  libgettext8-shlibs,
-  liblzma5-shlibs
+	bzip2-shlibs,
+	libgettext8-shlibs,
+	liblzma5-shlibs
 <<
 ## debianutils is a runtime dep for the cron job with calls savelog
 RuntimeDepends: <<
-  tar,
-  install-info,
-  debianutils
+	tar,
+	install-info,
+	debianutils,
+	sensible-utils
 <<
 Conflicts: dpkg-bootstrap
 Replaces: dpkg-bootstrap
@@ -37,7 +38,7 @@ Source-MD5: bdb6d88470c901d35fa19d776a8e8828
 SourceDirectory: dpkg-%v
 
 PatchFile: dpkg.patch
-PatchFile-MD5: ae173cc5bdb1429a1878fefb319c9131
+PatchFile-MD5: 74d0bf8ea4a60708a762906250ded550
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -45,8 +46,6 @@ sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
 patch -p1 < fink/patches/add-BOD.patch
 patch -p1 < fink/patches/build-fix.patch
 patch -p1 < fink/patches/c++filt-defaults.patch
-patch -p1 < fink/patches/dselect-methods.patch
-patch -p1 < fink/patches/fink-virtuals.patch
 patch -p1 < fink/patches/full-path-calls.patch
 patch -p1 < fink/patches/gzip-rsyncable-fix.patch
 patch -p1 < fink/patches/location-fixes.patch
@@ -57,6 +56,7 @@ patch -p1 < fink/patches/so-to-dylib.patch
 patch -p1 < fink/patches/fink-as-vendor.patch
 patch -p1 < fink/patches/add-install-info.patch
 patch -p1 < fink/patches/extra-env.patch
+patch -p1 < fink/patches/extra-statusfile.patch
 patch -p1 < fink/patches/coreutils.patch
 patch -p1 < fink/patches/bsdutils.patch
 patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
@@ -71,29 +71,28 @@ perl -pi -e 's,^(\#\!/usr/bin/perl.*)$,$1\nuse lib "%p/lib/perl5";,' %b/scripts/
 
 # fix paths
 for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.[13578]; do \
-  perl -pi -e 's,/usr,%p,g' $i; \
-  perl -pi -e 's,/var,%p/var,g' $i; \
-  perl -pi -e 's,/etc,%p/etc,g' $i; \
-  perl -pi -e 's,amd64,x86_64,g' $i; \
+	perl -pi -e 's,/usr,%p,g' $i; \
+	perl -pi -e 's,/var,%p/var,g' $i; \
+	perl -pi -e 's,/etc,%p/etc,g' $i; \
+	perl -pi -e 's,amd64,x86_64,g' $i; \
 done 
 
-cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
-
 # Fink uses "x86_64" instead of "amd64"
+cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
 perl -pi -e 's,amd64,x86_64,g' *table scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
 
 # Fix for tar (Slightly modified for dpkg-bootstrap)
 if [ "%n" = "dpkg-bootstrap" ]; then \
-  if [[ $(uname -a | cut -d' ' -f3) > 12 ]]; then \
-    perl -pi -e 's,\"tar\",\"/usr/bin/tar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
-    perl -pi -e 's,--warning=no-timestamp,-v,g' dpkg-deb/extract.c; \
-    perl -pi -e 's,--format=gnu,--format=ustar,g' dpkg-deb/build.c; \
-  else \
-    perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
-    perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c; \
-  fi \
+	if [[ $(uname -a | cut -d' ' -f3) > 12 ]]; then \
+		perl -pi -e 's,\"tar\",\"/usr/bin/tar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+		perl -pi -e 's,--warning=no-timestamp,-v,g' dpkg-deb/extract.c; \
+		perl -pi -e 's,--format=gnu,--format=ustar,g' dpkg-deb/build.c; \
+	else \
+		perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+		perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c; \
+	fi \
 else \
-  perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+	perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
 fi
 
 # Fix for older gcc ie: 10.5
@@ -112,74 +111,75 @@ perl -pi -e 's,AUTOHEADER=.*$,AUTOHEADER=echo,g' configure
 perl -pi -e 's,ACLOCAL_AMFLAGS =.*$,ACLOCAL_AMFLAGS = ,g' Makefile.in
 <<
 
-SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -F/System/Library/Frameworks/CoreFoundation.framework -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
+SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
 SetCPPFLAGS: -D_FORTIFY_SOURCE=2
 SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
-SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework CoreFoundation
+SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie
 
 ConfigureParams: <<
-  --with-dpkg-env-script=%p/bin/init.sh \
-  --disable-start-stop-daemon \
-  --with-admindir=%p/var/lib/dpkg \
-  --mandir=%p/share/man \
-  --infodir=%p/share/info \
-  --sysconfdir=%p/etc \
-  --sbindir=%p/sbin \
-  --localstatedir=%p/var \
-  --with-zlib \
-  --with-liblzma \
-  --with-bz2 \
-  --srcdir=%b \
-  --build=%m-apple-darwin \
-  --disable-linker-optimisations \
-  PERL_LIBDIR=%p/lib/perl5 \
-  PERL=/usr/bin/perl
+	--with-dpkg-extra-statusfile=status-fink \
+	--with-dpkg-env-script=%p/bin/init.sh \
+	--disable-start-stop-daemon \
+	--with-admindir=%p/var/lib/dpkg \
+	--mandir=%p/share/man \
+	--infodir=%p/share/info \
+	--sysconfdir=%p/etc \
+	--sbindir=%p/sbin \
+	--localstatedir=%p/var \
+	--with-zlib \
+	--with-liblzma \
+	--with-bz2 \
+	--srcdir=%b \
+	--build=%m-apple-darwin \
+	--disable-linker-optimisations \
+	PERL_LIBDIR=%p/lib/perl5 \
+	PERL=/usr/bin/perl
 <<
 
 InfoTest: <<
-  TestConfigureParams: <<
-    --disable-silent-rules
-  <<
-  TestDepends: <<
-    io-string-pm,
-    time-date-pm,
-    objtools,
-    sensible-utils
-  <<
-  TestScript: <<
-    make check || exit 2
-  <<
+	TestConfigureParams: <<
+		--disable-silent-rules
+	<<
+	TestDepends: <<
+		io-string-pm,
+		time-date-pm,
+		objtools,
+		sensible-utils
+	<<
+	TestScript: <<
+		make check || exit 2
+	<<
 <<
 
 InstallScript: <<
-  install -d -m 0755 %i/share/doc/dpkg
+install -d -m 0755 %i/share/doc/dpkg
 
-  make install DESTDIR=%d
+make install DESTDIR=%d
 
-  install -d -m 0755 %i/etc/dpkg/origins
-  install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
-  install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
-  ## currently in fink
-  # install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
-  install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
-  install -c -p -m 644 fink/buildflags.conf %i/etc/dpkg
-  rm -rf %i/lib/dpkg/methods/*
+install -d -m 0755 %i/etc/dpkg/origins
+install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
+install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
+## currently in fink
+# install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
+install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
+install -c -p -m 644 fink/buildflags.conf %i/etc/dpkg
+rm -rf %i/lib/dpkg/methods/*
 
-  install -m 0755 fink/md5sum %i/bin
+install -m 0755 fink/md5sum %i/bin
 
-  install -d -m 0755 %i/etc/cron.daily
-  install -d -m 0755 %i/var/backups
-  install -m 0644 fink/dpkg.cron.daily %i/etc/cron.daily/dpkg
+install -d -m 0755 %i/etc/cron.daily
+install -d -m 0755 %i/var/backups
+install -m 0644 fink/dpkg.cron.daily %i/etc/cron.daily/dpkg
 
-  # install fink as a vendor
-  install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
+# install fink as a vendor
+install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
 <<
 ConfFiles: <<
-  %p/etc/dpkg/origins/fink
+	%p/etc/dpkg/origins/fink
 <<
 DocFiles: <<
-  ABOUT-NLS AUTHORS COPYING ChangeLog NEWS
-  README* THANKS TODO
+	ABOUT-NLS AUTHORS COPYING ChangeLog NEWS
+	README* THANKS TODO
 <<
 Description: The Debian package manager
 DescDetail: <<
@@ -381,13 +381,19 @@ if [ ! -f %p/var/lib/dpkg/status ]; then
   chown root: %p/var/lib/dpkg/status
 fi
 
+if [ ! -f %p/var/lib/dpkg/status-fink ]; then
+  echo > %p/var/lib/dpkg/status-fink
+  chmod 644 %p/var/lib/dpkg/status-fink
+  chown root: %p/var/lib/dpkg/status-fink
+fi
+
 ### end base-files postinst stuff
 
 # Create the database files if they don't already exist
 create_database() {
     admindir=${DPKG_ADMINDIR:-%p/var/lib/dpkg}
 
-    for file in diversions statoverride status; do
+    for file in diversions statoverride status status-fink; do
 	if [ ! -f "$admindir/$file" ]; then
 	    touch "$admindir/$file"
 	fi
@@ -687,101 +693,107 @@ License: GPL
 Homepage: https://wiki.debian.org/Teams/Dpkg
 
 SplitOff: <<
-  Package: lib%N-dev
-  Replaces: dpkg (<< 1.15.8)
-  Suggests: apt
-  BuildDependsOnly: True
-  # Fink doesn't allow Deps on BODs, but these should be installed to use this
-  #Depends: zlib1g-dev, liblzma-dev, libbz2-dev
-  Files: <<
-    include
-    lib/pkgconfig
-    lib/libdpkg.a
-  <<
-  DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule
-  Description: Debian package management static library
-  DescDetail: <<
+	Package: lib%N-dev
+	Replaces: <<
+		dpkg (<< 1.15.8)
+	<<
+	Suggests: <<
+		apt
+	<<
+	BuildDependsOnly: True
+	# Fink doesn't allow Deps on BODs, but these should be installed
+	# zlib1g-dev, liblzma-dev, libbz2-dev
+	Files: <<
+		include
+		lib/pkgconfig
+		lib/libdpkg.a
+	<<
+	DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule
+	Description: Debian package management static library
+	DescDetail: <<
 This package provides the header files and static library necessary to
 develop software using libdpkg, the same library used internally by dpkg.
 .
 Note though, that the API is to be considered volatile, and might change
 at any time, use at your own risk.
-  <<
+	<<
 <<
 
 SplitOff2: <<
-  Package: %N-dev
-  Depends: <<
-    lib%N-pm (= %v-%r),
-    base-files (>= 1.9.12-1)
-  <<
-  RuntimeDepends: <<
-    objtools,
-    bzip2,
-    xz
-  <<
-  Recommends: <<
-    patch,
-    make,
-    gnupg2,
-    algorithm-merge-pm
-  <<
-  Replaces: dpkg (<< 1.15.8)
-  Essential: yes
-  ### Currently in fink
-  # ConfFiles: %p/etc/dpkg/shlibs.default %p/etc/dpkg/shlibs.override
-  ConfFiles: <<
-    %p/etc/dpkg/shlibs.override
-    %p/etc/dpkg/buildflags.conf
-  <<
-  Files: <<
-    etc/dpkg/shlibs.override
-    etc/dpkg/buildflags.conf
-    bin/dpkg-architecture
-    bin/dpkg-buildflags
-    bin/dpkg-buildpackage
-    bin/dpkg-checkbuilddeps
-    bin/dpkg-distaddfile
-    bin/dpkg-genchanges
-    bin/dpkg-gencontrol
-    bin/dpkg-gensymbols
-    bin/dpkg-mergechangelogs
-    bin/dpkg-name
-    bin/dpkg-parsechangelog
-    bin/dpkg-scanpackages
-    bin/dpkg-scansources
-    bin/dpkg-shlibdeps
-    bin/dpkg-source
-    bin/dpkg-vendor
-    share/dpkg/*.mk
-    share/man/man1/dpkg-architecture.1
-    share/man/man1/dpkg-buildflags.1
-    share/man/man1/dpkg-buildpackage.1
-    share/man/man1/dpkg-checkbuilddeps.1
-    share/man/man1/dpkg-distaddfile.1
-    share/man/man1/dpkg-genchanges.1
-    share/man/man1/dpkg-gencontrol.1
-    share/man/man1/dpkg-gensymbols.1
-    share/man/man1/dpkg-mergechangelogs.1
-    share/man/man1/dpkg-name.1
-    share/man/man1/dpkg-parsechangelog.1
-    share/man/man1/dpkg-scanpackages.1
-    share/man/man1/dpkg-scansources.1
-    share/man/man1/dpkg-shlibdeps.1
-    share/man/man1/dpkg-source.1
-    share/man/man1/dpkg-vendor.1
-    share/man/man5/deb*
-  <<
-  DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule doc/triggers.txt
-  Description: Debian package development tools
-  DescDetail: <<
+	Package: %N-dev
+	Depends: <<
+		lib%N-pm (= %v-%r),
+		base-files (>= 1.9.12-1)
+	<<
+	RuntimeDepends: <<
+		objtools,
+		bzip2,
+		xz
+	<<
+	Recommends: <<
+		patch,
+		make,
+		gnupg2,
+		algorithm-merge-pm
+	<<
+	Replaces: <<
+		dpkg (<< 1.15.8)
+	<<
+	Essential: yes
+	### Currently in fink
+	# ConfFiles: %p/etc/dpkg/shlibs.default %p/etc/dpkg/shlibs.override
+	ConfFiles: <<
+		%p/etc/dpkg/shlibs.override
+		%p/etc/dpkg/buildflags.conf
+	<<
+	Files: <<
+		etc/dpkg/shlibs.override
+		etc/dpkg/buildflags.conf
+		bin/dpkg-architecture
+		bin/dpkg-buildflags
+		bin/dpkg-buildpackage
+		bin/dpkg-checkbuilddeps
+		bin/dpkg-distaddfile
+		bin/dpkg-genchanges
+		bin/dpkg-gencontrol
+		bin/dpkg-gensymbols
+		bin/dpkg-mergechangelogs
+		bin/dpkg-name
+		bin/dpkg-parsechangelog
+		bin/dpkg-scanpackages
+		bin/dpkg-scansources
+		bin/dpkg-shlibdeps
+		bin/dpkg-source
+		bin/dpkg-vendor
+		share/dpkg/*.mk
+		share/man/man1/dpkg-architecture.1
+		share/man/man1/dpkg-buildflags.1
+		share/man/man1/dpkg-buildpackage.1
+		share/man/man1/dpkg-checkbuilddeps.1
+		share/man/man1/dpkg-distaddfile.1
+		share/man/man1/dpkg-genchanges.1
+		share/man/man1/dpkg-gencontrol.1
+		share/man/man1/dpkg-gensymbols.1
+		share/man/man1/dpkg-mergechangelogs.1
+		share/man/man1/dpkg-name.1
+		share/man/man1/dpkg-parsechangelog.1
+		share/man/man1/dpkg-scanpackages.1
+		share/man/man1/dpkg-scansources.1
+		share/man/man1/dpkg-shlibdeps.1
+		share/man/man1/dpkg-source.1
+		share/man/man1/dpkg-vendor.1
+		share/man/man5/deb*
+	<<
+	DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule doc/triggers.txt
+	Description: Debian package development tools
+	DescDetail: <<
 This package provides the development tools (including dpkg-source)
 required to unpack, build and upload Debian source packages.
 .
 Most Debian source packages will require additional tools to build;
 for example, most packages need make and the C compiler gcc.
-  <<
-  PreInstScript: <<
+	<<
+	PreInstScript: <<
 # This script can be called in the following ways:
 #
 # Before the package is installed:
@@ -822,48 +834,48 @@ case "$1" in
 	exit 1
 	;;
 esac
-  <<
+	<<
 <<
 
 SplitOff3: <<
-  Package: lib%N-pm
-  Depends: <<
-    %N (>= 1.15.8)
-  <<
-  # sensible-utils is a runtime dep for V2.pm
-  RuntimeDepends: <<
-    time-date-pm,
-    sensible-utils
-  <<
-  Recommends: <<
-    bzip2,
-    xz,
-    file-fcntllock-pm
-  <<
-  Suggests: <<
-    gnupg2,
-    objtools,
-    coretuils,
-    patch
-  <<
-  Replaces: <<
-    dpkg (<< 1.15.8),
-    dpkg-dev (<< 1.15.6)
-  <<
-  Essential: yes
-  Files: <<
-    lib/dpkg/parsechangelog
-    lib/perl5/Dpkg
-    lib/perl5/Dpkg.pm
-    share/man/man3
-  <<
-  InstallScript: <<
-    mkdir -p %i/share
-    mv %I/share/locale-perl %i/share/locale
-  <<
-  DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule
-  Description: Dpkg perl modules
-  DescDetail: <<
+	Package: lib%N-pm
+	Depends: <<
+		%N (>= 1.15.8)
+	<<
+	# sensible-utils is a runtime dep for V2.pm
+	RuntimeDepends: <<
+		time-date-pm,
+		sensible-utils
+	<<
+	Recommends: <<
+		bzip2,
+		xz,
+		file-fcntllock-pm
+	<<
+	Suggests: <<
+		gnupg2,
+		objtools,
+		coretuils,
+		patch
+	<<
+	Replaces: <<
+		dpkg (<< 1.15.8),
+		dpkg-dev (<< 1.15.6)
+	<<
+	Essential: yes
+	Files: <<
+		lib/dpkg/parsechangelog
+		lib/perl5/Dpkg
+		lib/perl5/Dpkg.pm
+		share/man/man3
+	<<
+	InstallScript: <<
+		mkdir -p %i/share
+		mv %I/share/locale-perl %i/share/locale
+	<<
+	DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule
+	Description: Dpkg perl modules
+	DescDetail: <<
 This package provides the perl modules used by the scripts
 in dpkg-dev. They cover a wide range of functionality. Among them
 there are the following public modules:
@@ -890,52 +902,53 @@ there are the following public modules:
 .
 All the packages listed in Suggests or Recommends are used by some of the
 modules.
-  <<
+	<<
 <<
 
 SplitOff4: <<
-  Package: dselect
-  Depends: <<
-    libgettext8-shlibs,
-    libncursesw5-shlibs (>= 5.6+20070908)
-  <<
-  RuntimeDepends: <<
-    dpkg (>= 1.13.1)
-  <<
-  Conflicts: <<
-    dpkg-ftp,
-    dpkg-multicd
-  <<
-  Replaces: <<
-    dpkg-ftp,
-    dpkg-multicd,
-    dpkg (<< 1.15.8),
-    dpkg-dev (<< 1.15.6)
-  <<
-  ConfFiles: %p/etc/dpkg/dselect.cfg
-  Files: <<
-    etc/dpkg/dselect.cfg
-    etc/dpkg/dselect.cfg.d
-    bin/dselect
-    lib
-    share/man/man1/dselect.1
-    var/lib/dpkg/methods
-    share/man/man5/dselect.cfg.5
-  <<
-  InstallScript: <<
-    mkdir -p %i/share
-    mv %I/share/locale-dselect %i/share/locale
-  <<
-  DocFiles: AUTHORS THANKS doc/README.feature-removal-schedule
-  Description: Debian package management front-end
-  DescDetail: <<
+	Package: dselect
+	Depends: <<
+		libgettext8-shlibs,
+		libncursesw5-shlibs (>= 5.6+20070908)
+	<<
+	RuntimeDepends: <<
+		dpkg (>= 1.13.1),
+		sensible-utils
+	<<
+	Conflicts: <<
+		dpkg-ftp,
+		dpkg-multicd
+	<<
+	Replaces: <<
+		dpkg-ftp,
+		dpkg-multicd,
+		dpkg (<< 1.15.8),
+		dpkg-dev (<< 1.15.6)
+	<<
+	ConfFiles: %p/etc/dpkg/dselect.cfg
+	Files: <<
+		etc/dpkg/dselect.cfg
+		etc/dpkg/dselect.cfg.d
+		bin/dselect
+		lib
+		share/man/man1/dselect.1
+		var/lib/dpkg/methods
+		share/man/man5/dselect.cfg.5
+	<<
+	InstallScript: <<
+		mkdir -p %i/share
+		mv %I/share/locale-dselect %i/share/locale
+	<<
+	DocFiles: AUTHORS THANKS doc/README.feature-removal-schedule
+	Description: Debian package management front-end
+	DescDetail: <<
 dselect is a high-level interface for managing the installation and
 removal of Debian software packages.
 .
 Many users find dselect intimidating and new users may prefer to use
 apt-based user interfaces.
-  <<
-  PreInstScript: <<
+	<<
+	PreInstScript: <<
 # This script can be called in the following ways:
 #
 # Before the package is installed:
@@ -976,5 +989,5 @@ case "$1" in
 	exit 1
 	;;
 esac
-  <<
+	<<
 <<
