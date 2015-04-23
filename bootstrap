@@ -368,7 +368,7 @@ my $xcode_version;
 		# Extrapolate for future releases
 		#
 		$min_xcode="5.0";
-		$max_xcode="99.9";
+		$max_xcode="6.2";
 	} elsif ($vers == 14) {
 		$min_xcode="6.0";
 		$max_xcode="99.9";
