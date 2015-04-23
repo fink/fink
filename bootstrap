@@ -7,7 +7,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2015 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -28,11 +28,12 @@ use 5.008_001;	 # perl 5.8.1 or newer required
 use strict;
 use warnings;
 
-$ENV{'PATH'} = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin";
+$ENV{'PATH'} = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/X11/bin:/opt/X11/bin";
 
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use IO::Handle;
+use version 0.77;
 
 # beware of old, stray FinkVersion.pm files
 unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
@@ -135,35 +136,60 @@ if ($arch eq "i386") {
 			print "ERROR: fink requires a 64-bit-capable CPU for your version of OS X\n";
 			exit 1;
 		} elsif ($vers >= 11) {
-			# 10.7 we support only 64-bit
+			# on 10.7+ we support only 64-bit
 			$arch = "x86_64";
-			# check that Java SDK is installed (otherwise Lion autoinstalls it on-demand)
+			# check that JDK/Legacy Java SDK is installed (otherwise Lion+ autoinstalls it on-demand)
 			if (-x '/usr/bin/javac') {
 				my $need_java_sdk = `/usr/bin/javac -version 2>&1>/dev/null`;
 				if ($need_java_sdk =~ m/No Java runtime present\, requesting install\./) {
-					die "Please install Java SDK before re-attempting fink bootstrap\n";
+					die "Please install an Oracle JDK from\n" .
+						"http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html\n" .
+						"or\n" .
+						"http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html\n" .
+						"or the Apple Legacy Java package from\n" .
+						"http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg\n" .
+						"before re-attempting the fink bootstrap.\n";
 				}
 			}
 		} elsif ($is64bit) {
 			# 10.[56] can do either 32- or 64-bit: user choice
-			my $arch_intro= "Your hardware is a 64bit-compatible intel " .
-				"processor, so you have the option of running Fink in ".
-				"64bit-only mode.  This is not recommended for most ".
-				"users, since many more packages are available for the ".
-				"default mode (which is mostly 32bit but includes some ".
-				"64bit packages).  Which mode would you like to use?";
-			$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "Default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ] );
-			if (($vers == 9) and ($arch eq "x86_64")) {
-				my $answer = &prompt_boolean("\nWARNING: On OS X 10.5, ".
-											 "selecting 64bit-only mode will ".
-											 "not allow you to build perl ".
-											 "modules that work with the ".
-											 "built-in /usr/bin/perl.  (They ".
-											 "will work with fink's perl ".
-											 "however.)  Are you sure you ".
-											 "want to do this?", default => 0);
-				&print_breaking("\n");
-				$arch = "i386" unless ($answer);
+			if ($vers == 10) {
+				# prefer 64-bit on 10.6 though:
+				my $arch_intro= "Your hardware is a 64bit-compatible intel " .
+						"processor, so you have the option of running Fink in ".
+						"64bit-only mode.  This is recommended for most ".
+						"users, since newer versions of OS X are all 64bit-only, ".
+						"so using the 64bit-only distribution should be closer ".
+						"to the distributions for newer OSes.  It used to be ".
+						"the case that the 32-bit distribution had significantly ".
+						"more packages than the 32-bit one, but that gap has ".
+						"closed recently, and the 64bit-only distribution does ".
+						"actually contain some 32-bit packages.  ".
+						"Which mode would you like to use?";
+
+				$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "x86_64" ], choices => [ "mostly 32bit" => "i386" , "mostly 64bit" => "x86_64" ]);
+			} elsif ($vers == 9) {
+				my $arch_intro= "Your hardware is a 64bit-compatible intel " .
+						"processor, so you have the option of running Fink in ".
+						"64bit-only mode.  This is not recommended for most ".
+						"users, since many more packages are available for the ".
+						"default mode (which is mostly 32bit but includes some ".
+						"64bit packages).  Which mode would you like to use?";
+
+				$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "Default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ]);
+				# it is already the case that $vers == 9 in this condition, so no need to check for it again:
+				if ($arch eq "x86_64") {
+					my $answer = &prompt_boolean("\nWARNING: On OS X 10.5, ".
+								     "selecting 64bit-only mode will ".
+								     "not allow you to build perl ".
+								     "modules that work with the ".
+								     "built-in /usr/bin/perl.  (They ".
+								     "will work with fink's perl ".
+								     "however.)  Are you sure you ".
+								     "want to do this?", default => 0);
+					&print_breaking("\n");
+					$arch = "i386" unless ($answer);
+				}
 			}
 		} # 32-bit-only machines get no choice, and $arch is already set to 'i386', so do nothing else.
 	}
@@ -227,7 +253,7 @@ if ($host =~ /^\s*$/) {
 print " $host\n";
 
 $distribution = check_host($host,1,$arch);
-if (($distribution eq "unknown") or ($distribution lt "10.5")) {
+if (($distribution eq "unknown") or (version->parse('v'.$distribution) lt version->parse("v10.7"))) {
 	exit(1);
 }
 
@@ -336,13 +362,17 @@ my $xcode_version;
 		$max_xcode="4.6.3";
 	} elsif ($vers == 12) {
 		$min_xcode="4.4";
-		$max_xcode="5.0.9";
+		$max_xcode="5.1.1";
 	} elsif ($vers >= 13) {
 		#
 		# Extrapolate for future releases
 		#
 		$min_xcode="5.0";
-		$max_xcode="5.9";
+		$max_xcode="99.9";
+	} elsif ($vers == 14) {
+		$min_xcode="6.0";
+		$max_xcode="99.9";
+		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 	} else {
 		die "ERROR:\n\tUnsupported OS X version.\n";
 	}
@@ -354,23 +384,25 @@ my $xcode_version;
 	$xcode_version = '0.0' if !defined $xcode_version; # set a value for later
 
 	# Check that we're using the right CLI tools for the OS.	
-	my ($receipt_to_check, $error_msg);
-	my $error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools\n".
+	my ($receipt_to_check, $os_dep_error_msg, $error_msg)=('','','');
+	my $os_indep_error_msg1 = "ERROR: I couldn't find the correct receipt for the Command Line Tools\n".
 					 "for your OS X version.  Tools from a prior OS X version won't work properly.\n";
-	my $error_msg2 = "or download them from developer.apple.com.\n".
+	my $os_indep_error_msg2 = "or download them from developer.apple.com.\n".
 					 "After they are installed, try the bootstrap operation again.\n" ;
 	if ($vers >= 13) {
 		$receipt_to_check = "com.apple.pkg.CLTools_Executables";
-		$error_msg = $error_msg1 . "You can install them by running the command\n".
-					  			   "\n\txcode-select --install\n\n".
-					 			   "in a terminal window, and then selecting Install in the dialog window that\n".
-					  			   "pops up, ".$error_msg2;					  				
+		$os_dep_error_msg = "You can install them by running the command\n".
+					  		"\n\txcode-select --install\n\n".
+					 		"in a terminal window, and then selecting Install in the dialog window that\n".
+					  		"pops up, ";					  				
 	} elsif ($vers == 12 or $vers == 11) { 	# 10.7 or 10.8
 		$receipt_to_check = "com.apple.pkg.DeveloperToolsCLI";
-		$error_msg = $error_msg1 . "You can install them via the Downloads Pane of the Xcode Preferences,\n".$error_msg2;
-	} else { # 10.6
+		$os_dep_error_msg = "You can install them via the Downloads Pane of the Xcode Preferences,\n";
+	} else { # 10.6-
 		$receipt_to_check = "com.apple.pkg.bogus";
 	}
+	# this will look insane for a monolithic xcode, but should not be seen in that case.
+	$error_msg = $os_indep_error_msg1 . $os_dep_error_msg . $os_indep_error_msg2;
 	chomp(my $result = `pkgutil --pkg-info $receipt_to_check 2>&1`);
 	if (not $?) {
 		# didn't fail
@@ -382,6 +414,8 @@ my $xcode_version;
 		} 
 		# TODO:  Should we check if we're in the legal range of CLI tools on 10.7/10.8?
 		print "$version is OK\n";
+		# We'll continue to use &version_cmp() in case we need to put an Epoch on an Xcode
+		# version someday.
 	} elsif (&version_cmp ("$xcode_version", "<<", "4.3")) { # failed, but using monolithic Xcode 
 		print "Skipping.\nXcode $xcode_version is monolithic and includes command-line tools.\n";
 	} else { # all other failures
@@ -389,7 +423,7 @@ my $xcode_version;
 	}
 	
 	print "Verifying that installed Xcode app version is supported...\n";
-	if (!$xcode_version) {
+	if ($xcode_version eq '0.0') {
 		# OS version specific messages
 		if ($vers < 11) {
 			die "ERROR:\n\tXcode is not set up properly.\n";
@@ -497,7 +531,8 @@ $installto =~ s,^(/.*?)/*$,$1,;
 foreach my $forbidden (
 	qw(/ /etc /usr /var /bin /sbin /lib /tmp /dev
 	   /usr/lib /usr/include /usr/bin /usr/sbin /usr/share
-	   /usr/libexec /usr/X11R6 /usr/X11
+	   /usr/libexec 
+	   /usr/X11R6 /usr/X11 /opt/X11
 	   /root /private /cores /boot
 	   /debian /debian/.*
 	   /usr/local /usr/local/.* /opt/local /opt/local/.*)
@@ -703,8 +738,10 @@ if ($distribution eq "10.6") {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.10.0";
 } elsif (($distribution eq "10.7") or ($distribution eq "10.8")) {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.12";
-} elsif ($distribution gt "10.8") {
+} elsif ($distribution eq "10.9") {
 	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.16";
+} elsif ($distribution eq "10.10") {
+	$perlexe = "/usr/bin/arch -arch $arch /usr/bin/perl5.18";
 } elsif (($arch eq "x86_64") and ($distribution eq "10.5")) {
 	$perlexe = "$bsbase/bin/perl5.8.8";
 }
@@ -742,10 +779,6 @@ You can add the package descriptions at a later time if you want to
 compile packages yourself.
 You can get them
 EOF
-		if (defined $dbv) {
-			$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
-tarball, or";
-		}
 		$endmsg .= " by running either of the commands:  
 'fink selfupdate-rsync', to update via rsync (generally preferred); 
 or  

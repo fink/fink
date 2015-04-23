@@ -1,4 +1,4 @@
-Generated from $Fink: readme.en.xml,v 1.9 2013/11/01 02:27:27 alexkhansen
+Generated from $Fink: readme.en.xml,v 1.11 2014/06/05 03:43:54 alexkhansen
 Exp $
 
  Fink ReadMe
@@ -28,16 +28,12 @@ file COPYING for details.
 --------------
 You need:
 
- * An installed Mac OS X system, version 10.6 or later. Earlier versions
-   will not work with fink-0.36.3.1.
+ * An installed Mac OS X system, version 10.7 or later.
 
- * Development tools. For 10.6, you should install Xcode 3.2.6, which can be
-   downloaded from connect.apple.com after registering. For 10.7-10.9,
-   installing the Xcode Command Line Tools is mandatory to use the most
-   current build applications. This can be installed either by downloading
-   it directly via connect.apple.com, through the Xcode application via the
-   Components page of the Downloads tab of the Preferences, or on 10.9 by
-   running the
+ * The Xcode Command Line Tools are mandatory. This package can be installed
+   either by downloading it directly via developer.apple.com, through the
+   Xcode application, on via the Components page of the Downloads tab of the
+   Preferences on 10.7 and 10.8, or on 10.9 and 10.10 by running the
 
       xcode-select --install
 
@@ -47,7 +43,15 @@ You need:
    problems.
 
    If you're doing a manual download, make sure that the tools you install
-   match your Mac OS X version.
+   match your Mac OS X version as well as your Xcode app version (if that is
+   present).
+
+ * Java. Entering
+
+      javac
+
+   from a Terminal.app window should suffice to make the system download it
+   for you.
 
  * Internet access. All source code is downloaded from mirror sites.
 
@@ -71,8 +75,8 @@ packages. It also has a complete list of available commands.
  Further Questions?
 --------------------
 If the documentation included here doesn't answer your question, stroll over
-to the Fink website at <http://fink.sourceforge.net/> and check out the Help page there:
-<http://fink.sourceforge.net/help/>. It
+to the Fink website at <http://www.finkproject.org/> and check out the Help page there:
+<http://www.finkproject.org/help/>. It
 will point you at the other documentation that is available and sources for
 support if you need it.
 
@@ -82,11 +86,11 @@ a list of things you can do, like testing or creating packages.
 
  Staying Informed
 ------------------
-The project's website is at <http://fink.sourceforge.net/>.
+The project's website is at <http://www.finkproject.org/>.
 
 To be informed of new releases, go to
-http://fink.sourceforge.net/lists/fink-announce.php
-[http://fink.sourceforge.net/lists/fink-announce.php] and subscribe to the 
+http://www.finkproject.org/lists/fink-announce.php
+[http://www.finkproject.org/lists/fink-announce.php] and subscribe to the 
 fink-announce mailing list.
 The list is moderated and low-traffic.
 

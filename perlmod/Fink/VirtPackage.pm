@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2015 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -74,7 +74,7 @@ BEGIN {
 our @EXPORT_OK;
 
 my $pkgconfig_virtual_prefix = 'system-pkgconfig-';
-my @xservers                 = ('XDarwin', 'Xquartz', 'XDarwinQuartz');
+my @xservers                 = ('Xquartz', 'XDarwin', 'XDarwinQuartz');
 my $the_instance             = undef;
 
 END { }				# module clean-up code here (global destructor)
@@ -283,7 +283,6 @@ END
 				'cgi',
 				'data-dumper',
 				'db',
-				( $perlver < 5.015000 && 'devel-dprof' ),
 				'devel-peek',
 				'digest',
 				'digest-md5',
@@ -303,7 +302,6 @@ END
 				'mime-base64',
 				'podparser',
 				'pod-parser',
-				( $perlver < 5.013001 && 'switch' ),
 				'sys-syslog',
 				'term-readline',
 				'test-harness',
@@ -313,6 +311,16 @@ END
 				'time-hires',
 				'unicode-normalize',
 			);
+			if ($perlver < 5.015000) {
+				push(@modules,
+					 'devel-dprof',
+				);
+			}
+			if ($perlver < 5.013001) {
+				push(@modules,
+					 'switch',
+				);
+			}
 		}
 		if ($perlver >= 5.008006) {
 			push(@modules,
@@ -329,7 +337,6 @@ END
 				'algorithm-diff',
 				'carp',
 				'class-autouse',
-				( $perlver < 5.013001 && 'class-isa' ),
 				'corefoundation',
 				'data-hierarchy',
 				'freezethaw',
@@ -338,27 +345,36 @@ END
 				'perlio-eol',
 				'pod-simple',
 			);
+			if ($perlver < 5.013001) {
+				push(@modules,
+					 'class-isa',
+				);
+			}
 		}
 		if ($perlver >= 5.010000) {
 			push(@modules,
 				 'archive-tar',
-				 ( $perlver < 5.019000 && 'cpanplus' ),
-				 ( $perlver < 5.019000 && 'cpanplus-dist-build' ),
 				 'compress-raw-zlib',
 				 'digest-sha',
 				 'extutils-cbuilder',
 				 'extutils-parsexs',
 				 'io-zlib',
 				 'locale-maketext-simple',
-				 ( $perlver < 5.019000 && 'module-build' ),
 				 'module-corelist',
 				 'module-load',
 				 'module-load-conditional',
-				 ( $perlver < 5.019000 && 'module-pluggable' ),
 				 'package-constants',
 				 'params-check',
 				 'pod-escapes',
+			);
+			if ($perlver < 5.019000) {
+				push(@modules,
+					 'cpanplus',
+					 'cpanplus-dist-build',
+					 'module-build',
+					 'module-pluggable',
 				);
+			}
 		}
 		if ($perlver >= 5.012000) {
 			push(@modules,
@@ -378,23 +394,33 @@ END
 
 This package represents an installed version of Apple's and/or Oracle's Java.
 It is considered present if the
-/System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Commands
-and or the /Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/bin
+/System/Library/Frameworks/JavaVM.framework/Versions/<version>/Commands (for versions<=1.6)
+and/or the /Library/Java/JavaVirtualMachines/jdk<version>_<uversion>.jdk/Contents/Home/bin (for versions>=1.7)
 directories exist.
 
 =cut
 
 	# create dummy object for java
 	print STDERR "- checking Java versions:\n" if ($options{debug});
-	my @jdktest= split /\n/, `/usr/libexec/java_home -V 2>&1`;
-	my ($latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
-	my $javadir = '/System/Library/Frameworks/JavaVM.framework/Versions';
+	# check all Javas on system so that we can generate virtual packages
+	# for each version (even those new at the time of this fink release) and
+	# add hardcoded patterns for Javas which are known to be available 
+	# on supported OS X so that their system-* packages will show up as
+	# potentially installable.
+	my @jdktest = ( split (/\n/, `/usr/libexec/java_home -V 2>&1`),
+					'1.4.2_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.4.2.jdk/Contents/Home',
+					'1.5.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.5.0.jdk/Contents/Home',
+					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home',
+					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
+					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
+					);
+	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
-		my ($ver,$javadir) = m|(\d.*),.*\s(/.*)$|; #extract version and directory info
-		# However, we'll have to switch the directory for JDK 1.6 and earlier.
-		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/) ;
+		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
+		# Tweak $javadir to point to where stuff actually lives for JDK 1.6 and earlier.
+		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if $javadir =~ /System/;
 		if (opendir(DIR, $javadir)) {
 			chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
 			for my $dir (reverse(sort(@dirs))) {
@@ -448,8 +474,8 @@ END
 
 This package represents an installed version of Apple's Java SDK or Oracle's JDK.
 It is considered present if the
-/System/Library/Frameworks/JavaVM.framework/Versions/[VERSION]/Headers
-and or /Library/Java/JavaVirtualMachines/jdk<version>.jdk/Contents/Home/include
+/System/Library/Frameworks/JavaVM.framework/Versions/<version>/Headers (for versions<=1.6)
+and or /Library/Java/JavaVirtualMachines/jdk<version>.jdk/Contents/Home/include (for versions>=1.7)
 directories exist.
 
 =cut
@@ -460,20 +486,27 @@ directories exist.
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-					$hash->{descdetail}  = <<END;
+					if ($ver <= 16) {
+						$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
-you must download the Java SDK from Apple at:
+you must download and install Java for OS X 2014-001 from Apple:
 
-  http://connect.apple.com/
-
-(free registration required)
-
-or the Java JDK from Oracle at:
-
-http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg
 
 END
+					} else {
+						$hash->{descdetail}  = <<END;
+This package represents the development headers for
+Java $dir.  If this package shows as not being installed,
+you must download the corresponding Java JDK from Oracle at:
+
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  
+(registration required).  
+
+END
+					}
 					$hash->{compilescript} = &gen_compile_script($hash);
 
 					if (-r "$javadir/$dir/Headers/jni.h") {
@@ -499,6 +532,80 @@ END
 				last if $javadir !~ /System/ ; #JDK 1.7 and later
 			}
 			closedir(DIR);
+		# if the directory isn't valid start by assuming that we're on a dummy placeholder
+		# and create 
+		} elsif ($ver =~ /1\.[4-6]\.\d_AB/) {
+			my $legacy_boilerplate = <<END;
+This package represents the currently installed version
+of Java 1.6.0.  If this package shows as not being installed,
+you must download and install Java for OS X 2014-001 from Apple:
+
+  http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg
+
+END
+			$hash = {};
+			$hash->{package}     = "system-java16";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "1.6.0-1";
+			$hash->{description} = "[virtual package representing Java 1.6.0]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java, jdbc, jdbc2, jdbc3, jdbc-optional';
+			$hash->{descdetail}  = $legacy_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			unless (exists $self->{$hash->{package}}) {
+				$self->{$hash->{package}} = $hash;
+				print STDERR "  - 1.6.0... not present on system\n" if ($options{debug});	
+			} 		
+
+			$hash = {};
+			$hash->{package}     = "system-java16-dev";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "1.6.0-1";
+			$hash->{description} = "[virtual package representing Java 1.6.0 development headers]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{descdetail}  = $legacy_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+
+		} elsif ($ver =~ /(1)\.([78])\.(0)_XY/) {
+			my $real_ver = "$1.$2.$3";
+			my $short_ver = $1.$2; 
+			my $oracle_boilerplate = <<END;
+This package represents the currently installed version
+of Java $real_ver.  If this package shows as not being installed,
+you must download the corresponding Java JDK from Oracle at:
+
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  
+(registration required).  
+
+END
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java, jdbc, jdbc2, jdbc3, jdbc-optional';
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			unless (exists $self->{$hash->{package}}) {
+				$self->{$hash->{package}} = $hash ;
+				print STDERR "  - $real_ver... not present on system\n" if ($options{debug});	
+			}
+			
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver-dev";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver development headers]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
+		
+		} else {
+			print STDERR "  - $ver isn't recognized.  Contact the Fink Core Developers at fink-core\@lists.sourceforge.net .\n" if ($options{debug});
 		}
 	}
 =item "system-java"
@@ -632,7 +739,7 @@ This package represents Xcode.app and 'xcodebuild',
 provided by Apple.  If it does not show as installed,
 you can download it from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later and have in fact installed
@@ -688,11 +795,11 @@ This package represents your Xcode CLI tools version.
 	$hash->{descdetail} = <<END;
 This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,
-you can download Xcode (for OS 10.5, 10.6, and 10.7)
-or the Command Line Tools For Xcode (OS 10.7 or later)
+you can download Xcode (for OS X 10.5 - 10.10)
+or the Command Line Tools For Xcode (OS X 10.7 or later)
 from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 END
@@ -779,6 +886,12 @@ as part of the Xcode tools.
 		@SDKDIRS=qw(
 			MacOSX10.8.sdk
 			MacOSX10.9.sdk
+			MacOSX10.10.sdk
+		);
+	} elsif ($osxversion == 14) {
+		@SDKDIRS=qw(
+			MacOSX10.9.sdk
+			MacOSX10.10.sdk
 		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
@@ -828,7 +941,7 @@ This package represents the Mac OS X $versiontext SDK
 provided by Apple as part of Xcode.  If it does not show as
 installed, you can download Xcode from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or  later and have in fact installed
@@ -895,7 +1008,7 @@ This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,
 you can download it from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -949,7 +1062,7 @@ flag in the development tools provided by Apple.  If it
 does not show as installed, you can download the latest
 developer tools (called Xcode) from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1091,7 +1204,7 @@ in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
 Xcode for your OS X version from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1150,7 +1263,7 @@ in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
 Xcode for your OS X version from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1201,9 +1314,9 @@ cc1plus.
 This package represents broken versions of the GCC compiler
 as shipped by Apple.  If this package shows as installed,
 you should see if there is a newer version of the developer
-tools at:
+tools for your OS X version at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required)
 END
@@ -1249,7 +1362,7 @@ system.  You can obtain them by installing the Apple developer
 tools (also known as Xcode).  The latest versions of the Apple
 developer tools are always available from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
 (free registration required).
 If you are on OS X 10.7 or later, you should install the
@@ -1260,10 +1373,14 @@ from the Downloads pane of Xcode 4.3+'s Preferences.
 END
 	};
 
-	print STDERR "- checking for dev-tools commands:\n" if ($options{debug});
+	print STDERR "- checking heuristics for dev-tools:\n" if ($options{debug});
 	foreach my $file (qw| /usr/bin/gcc /usr/bin/make |) {
-		$options{debug} && printf STDERR " - %s... %s\n", $file, -x $file ? "found" : "missing!";
+		$options{debug} && printf STDERR " - program %s... %s\n", $file, -x $file ? "found" : "missing!";
 		$hash->{status} = STATUS_ABSENT if not -x $file;
+	}
+	foreach my $file (qw| /usr/include |) {
+		$options{debug} && printf STDERR " - directory %s... %s\n", $file, -d $file ? "found" : "missing!";
+		$hash->{status} = STATUS_ABSENT if not -d $file;
 	}
 
 	$hash->{compilescript} = &gen_compile_script($hash);
@@ -1337,7 +1454,12 @@ virtual packages. (See &package_from_pkgconfig).
 
 =cut
 
-	for my $dir ('/usr/X11/lib/pkgconfig', '/usr/X11R6/lib/pkgconfig', '/usr/lib/pkgconfig') {
+	our @x11_dirs=('/usr/X11R6'); 
+#   uncomment the line below when 10.7 and 10.8 are no longer supported, or 
+#   better yet, just put /opt/X11 above without a conditional.
+#	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later 
+	for my $base_dir (@x11_dirs, '/usr') {
+		my $dir = "$base_dir/lib/pkgconfig";
 		next unless (-d $dir);
 		if (opendir(PKGCONFIG_DIR, $dir)) {
 			while (my $file = readdir(PKGCONFIG_DIR)) {
@@ -1460,17 +1582,19 @@ END
 				($xver) = check_x11_version();
 			}
 
+			my $x_tree; # Once we've got the X11 tree, we'll be using it later
 			if (defined $xver) {
 				$hash = {};
 				my $provides;
 
 				my $found_xserver = 0;
 				print STDERR "- checking for X servers... " if ($options{debug});
-				XSERVERLOOP: for my $xdir ('/usr/X11R6', '/usr/X11') {
+				XSERVERLOOP: for my $xdir (@x11_dirs) {
 					for my $xserver (@xservers) {
 						if (-x $xdir . '/bin/' . $xserver) {
 							print STDERR "$xdir/bin/$xserver\n" if ($options{debug});
 							$found_xserver++;
+							$x_tree = $xdir ; 
 							last XSERVERLOOP;
 						}
 					}
@@ -1583,8 +1707,8 @@ only version 1 is considered.
 =cut
 
 				if ( has_lib('libXft.dylib') ) {
-					if ( defined readlink('/usr/X11R6/lib/libXft.dylib') ) {
-						my $link = readlink('/usr/X11R6/lib/libXft.dylib');
+					if ( defined readlink("$x_tree/lib/libXft.dylib") ) {
+						my $link = readlink("$x_tree/lib/libXft.dylib");
 						if ($link =~ /libXft\.(\d)/) {
 							my $major_version = $1;
 							if ($major_version ne 1) {
@@ -1620,14 +1744,12 @@ It is considered present if /usr/X11R6/bin/rman exists.
 =cut
 
 				print STDERR "- checking for rman... " if ($options{debug});
-				for my $xdir ('/usr/X11R6', '/usr/X11') {
-					print STDERR "$xdir... " if ($options{debug});
-					if (-x $xdir . '/bin/rman') {
-						print STDERR "found, system-xfree86 provides rman\n" if ($options{debug});
-						push(@{$provides->{'system-xfree86'}}, 'rman');
-					} else {
-						print STDERR "missing\n" if ($options{debug});
-					}
+				print STDERR "$x_tree... " if ($options{debug});
+				if (-x "$x_tree/bin/rman") {
+					print STDERR "found, system-xfree86 provides rman\n" if ($options{debug});
+					push(@{$provides->{'system-xfree86'}}, 'rman');
+				} else {
+					print STDERR "missing\n" if ($options{debug});
 				}
 
 =item "xfree86-base-threaded" and "xfree86-base-threaded-shlibs"
@@ -1641,8 +1763,8 @@ in the library.
 =cut
 
 				print STDERR "- checking for threaded libXt... " if ($options{debug});
-				if (-f '/usr/X11R6/lib/libXt.6.dylib' and -x '/usr/bin/grep') {
-					if (system('/usr/bin/grep', '-q', '-a', 'pthread_mutex_lock', '/usr/X11R6/lib/libXt.6.dylib') == 0) {
+				if (-f "$x_tree/lib/libXt.6.dylib" and -x '/usr/bin/grep') {
+					if (system('/usr/bin/grep', '-q', '-a', 'pthread_mutex_lock', "$x_tree/lib/libXt.6.dylib") == 0) {
 						print STDERR "threaded\n" if ($options{debug});
 						print STDERR "  - system-xfree86-shlibs provides xfree86-base-threaded-shlibs\n" if ($options{debug});
 						push(@{$provides->{'system-xfree86-shlibs'}}, 'xfree86-base-threaded-shlibs');
@@ -1876,15 +1998,16 @@ Returns true if found, false if not.
 
 sub has_header {
 	my $headername = shift;
-	my $dir;
+
+	our @x11_dirs;
 
 	print STDERR "- checking for header $headername... " if ($options{debug});
 	if ($headername =~ /^\// and -f $headername) {
 		print STDERR "found\n" if ($options{debug});
 		return 1;
 	} else {
-		for $dir ('/usr/X11R6/include', $basepath . '/include', '/usr/include') {
-			if (-f $dir . '/' . $headername) {
+		for my $dir (@x11_dirs, $basepath, '/usr') {
+			if (-f $dir. '/include/' . $headername) {
 				print STDERR "found in $dir\n" if ($options{debug});
 				return 1;
 			}
@@ -1904,15 +2027,16 @@ Returns true if found, false if not.
 
 sub has_lib {
 	my $libname = shift;
-	my $dir;
+
+	our @x11_dirs;
 
 	print STDERR "- checking for library $libname... " if ($options{debug});
 	if ($libname =~ /^\// and -f $libname) {
 		print STDERR "found\n" if ($options{debug});
 		return 1;
 	} else {
-		for $dir ('/usr/X11R6/lib', $basepath . '/lib', '/usr/lib') {
-			if (-f $dir . '/' . $libname) {
+		for my $dir (@x11_dirs, $basepath , '/usr') {
+			if (-f $dir . '/lib/' . $libname) {
 				print STDERR "found in $dir\n" if ($options{debug});
 				return 1;
 			}
@@ -2017,9 +2141,10 @@ Returns the X11 version if found.
 
 ### Check the installed x11 version
 sub check_x11_version {
+	our @x11_dirs;
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
 	for my $checkfile ('xterm.1', 'bdftruncate.1', 'gccmakedep.1') {
-		for my $xdir ('/usr/X11R6', '/usr/X11') {
+		for my $xdir (@x11_dirs) {
 			if (-f "$xdir/man/man1/$checkfile") {
 				if (open(CHECKFILE, "$xdir/man/man1/$checkfile")) {
 					while (<CHECKFILE>) {
@@ -2041,7 +2166,7 @@ sub check_x11_version {
 	}
 	if (not defined $XF_VERSION) {
 		for my $binary (@xservers, 'X') {
-			for my $xdir ('/usr/X11R6', '/usr/X11') {
+			for my $xdir (@x11_dirs) {
 				if (-x $xdir . '/bin/' . $binary) {
 					if (open (XBIN, "$xdir/bin/$binary -version 2>\&1 |")) {
 						while (my $line = <XBIN>) {
@@ -2113,9 +2238,9 @@ which is part of the Apple developer tools (Xcode). The latest
 versions of the Apple developer tools are always available
 from Apple at:
 
-  http://connect.apple.com/
+  http://developer.apple.com/
 
-(free registration required)
+(free registration required).
 
 Note that some versions of GCC are *not* installed by default
 when installing some versions of Xcode.  Make sure you customize

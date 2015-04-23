@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2015 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -314,6 +314,7 @@ our %pkglist_fields = map {lc $_, 1}
 	 'Suggests',
 	 'Recommends',
 	 'Enhances',
+	 'Replaces',
 	 # 'Architecture' is not a "Depends"-style list, but its syntax is
 	 # like a package-list, so piggy-back on those fields' parser
 	 'Architecture',
@@ -573,17 +574,20 @@ sub validate_info_file {
 	#
 
 	if ($pkgname =~ /[^+\-.a-z0-9]/) {
-		print "Error: Package name may only contain lowercase letters, numbers,";
+		print "Error: Package name ' $pkgname ' is invalid. ";
+		print "Package names may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgversion =~ /[^+\-.a-z0-9]/) {
-		print "Error: Package version may only contain lowercase letters, numbers,";
+		print "Error: Version ' $pkgversion ' is invalid. ";
+		print "Package versions may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgrevision =~ /[^+.a-z0-9]/) {
-		print "Error: Package revision may only contain lowercase letters, numbers,";
+		print "Error: Revision ' $pkgrevision ' is invalid. ";
+		print "Package revisions may only contain lowercase letters, numbers,";
 		print "'.' and '+' ($filename)\n";
 		$looks_good = 0;
 	}
@@ -916,50 +920,53 @@ sub validate_info_file {
 	# check the contents of PatchFile (if any)
 	if (exists $expand->{patchfile}) {
 		for my $field (keys %patchfile_fields) {
+			my $pretty_field = $field;
+			$pretty_field =~ s/patchfile/PatchFile/i;
 			$value = "\%{$field}";
 			$value = &expand_percent($value, $expand, $filename.' Patch');
 			unless (-f $value) {
-				print "Error: can't find patchfile \"$value\"\n";
+				print "Error: can't read $pretty_field. ($value)\n";
 				$looks_good = 0;
 			}
 			else {
 				# Check patch file
-				open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+				open(INPUT, "<$value") or die "Couldn't read $pretty_field ($value): $!\n";
 				my $patch_file_content = <INPUT>;
-				close INPUT or die "Couldn't read $value: $!\n";
+				close INPUT or die "Couldn't read $pretty_field ($value): $!\n";
 				# Check for empty patch file
 				if (!$patch_file_content) {
-					print "Warning: Patch file is empty. ($value)\n";
+					print "Warning: $pretty_field is an empty file. ($value)\n";
 					$looks_good = 0;
 				}
 				# Check for line endings of patch file
 				elsif ($patch_file_content =~ m/\r\n/s) {
-					print "Error: Patch file has DOS line endings. ($value)\n";
+					print "Error: $pretty_field has DOS line endings. ($value)\n";
 					$looks_good = 0;
 				}
 				elsif ($patch_file_content =~ m/\r/s) {
-					print "Error: Patch file has Mac line endings. ($value)\n";
+					print "Error: $pretty_field has Mac line endings. ($value)\n";
 					$looks_good = 0;
 				}
 				# Check for hardcoded /sw.
-				open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+				open(INPUT, "<$value") or die "Couldn't read $pretty_field ($value): $!\n";
 				while (defined($patch_file_content=<INPUT>)) {
 					# only check lines being added (and skip diff header line)
 					next unless $patch_file_content =~ /^\+(?!\+\+ )/;
 					if ($patch_file_content =~ /\/sw([\s\/]|\Z)/) {
-						print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
+						print "Warning: $pretty_field appears to contain a hardcoded /sw. ($value)\n";
 						$looks_good = 0;
 						last;
 					}
 				}
-				close INPUT or die "Couldn't read $value: $!\n";
+				close INPUT or die "Couldn't read $pretty_field ($value): $!\n";
 			}
 		}
 	}
 
 	# if we are using new PatchFile field, check some things about it
 	for my $field (keys %patchfile_fields) {
-		my $pretty_field = $field; $pretty_field =~ s/patchfile/PatchFile/i;
+		my $pretty_field = $field;
+		$pretty_field =~ s/patchfile/PatchFile/i;
 
 		if (not exists $patchfile_md5_fields{$field.'-md5'}) {
 			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";
@@ -1073,6 +1080,46 @@ sub validate_info_file {
 			if ($desc =~ m/^\[/) {
 				print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
 				$looks_good = 0;
+			}
+		}
+
+		# Language-versioned packages need the language itself
+		# (otherwise mis- or fail-to-build, and not usable at
+		# runtime). Require only for bottom of lang-versioned
+		# dep-trees (e.g., varianted perlmods that do not depend on
+		# other varianted perlmods must depend on varianted perl
+		# interp). Higher parts of dep-tree thus get them indirectly.
+		# Skip obsolete packages (replacement might be unified).
+		if ($name =~ /-(pm|py|rb)(\d+)/) {
+			my $modpkg = "-$1$2";
+			my $langpkg;
+			if ($1 eq 'pm') {
+				$langpkg = "perl$2-core";
+			} elsif ($1 eq 'py') {
+				$langpkg = "python$2";
+			} else {
+				$langpkg = "ruby$2";
+			}
+
+			my $depends = $pv->pkglist_default('depends', '');
+			unless ($depends =~ /(\A|,|\s)($langpkg|.*$modpkg)(-|\z|,|\s|\()/ || $pv->is_obsolete) {
+				print "Error: language-versioned package $name needs Depends on another $modpkg (package of the same language-version) or on $langpkg (the language interpretter itself). ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+
+		foreach my $field (sort keys %pkglist_fields) {
+			next if $field eq 'architecture'; # same format but entries not same as for dpkg package specs
+			foreach my $altspecs (@{&pkglist2lol($pv->pkglist_default($field, ''))}) {
+				foreach my $depspec (@$altspecs) {
+					$depspec =~ s/\s+//g;
+					my $verspec = ($depspec =~ s/\((.*)\)//);
+					if ($depspec =~ /[^+\-.a-z0-9]/) {
+						print "Error: invalid character in packagename \"$depspec\" in $field of package $name. ($filename)\n";
+						$looks_good = 0;
+					}
+					# TODO: check epoch, version, revision
+				}
 			}
 		}
 	}
@@ -1416,7 +1463,7 @@ sub validate_info_component {
 				my ($cond, $pkgname, $vers) = ($1, $2, $3);
 				# no logical AND (OR would be split() and give broken atoms)
 				if (defined $cond and $cond =~ /&/) {
-					print "Warning: invalid dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
+					print "Warning: invalid conditional in dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
 				}
 				if ($field eq 'architecture') {
 					$pkgname .= " ($vers)" if defined $vers;
@@ -1483,12 +1530,12 @@ sub validate_info_component {
 				$looks_good = 0;
 				next;
 			}
-			if (not $shlibs_parts[0] =~ /^(\%p)?\//) {
-				print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p in field \"shlibs\"$splitoff_field. ($filename)\n";
+			if (not $shlibs_parts[0] =~ /^(\%p|@[a-z,_]*path)?\//) {
+				print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p or a runtime path in field \"shlibs\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
 			}
 			if ($shlibs{$shlibs_parts[0]}++) {
-				print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\"$splitoff_field. ($filename)\n";
+				print "Warning: Entry \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
 			}
 			if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
@@ -1957,6 +2004,22 @@ sub _validate_dpkg {
 		if ($filename =~/\/include\// && !-d $File::Find::name) {
 			$installed_headers = 1;
 		}
+		if ($filename =~/\.framework\/(.+)/) {
+			# heuristic for Framework library suites
+			if (-d $File::Find::name && !-l $File::Find::name) {
+				# allow real directory (only care about real file or
+				# symlink to dir ("real file" on disk) that would
+				# collide among .deb)
+			} else {
+				my $component = $1;
+				if ($component eq 'Versions/Current/' or $component !~ /^Versions\//) {
+					# non-libversioned Framework files
+					if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
+						&stack_msg($msgs, "Framework files not part of a specific library-version, but package does not declare BuildDependsOnly to be true (or false)", $filename);
+					}
+				}
+			}
+		}
 
 		if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
 			if ($filename =~ /\.dylib$/) {
@@ -2240,16 +2303,24 @@ sub _validate_dpkg {
 		print "Warning: Package has shlibs data but otool is not in the path; skipping parts of shlibs validation.\n";
 	}
 	foreach my $shlibs_file (sort keys %$deb_shlibs) {
-		my $file = resolve_rooted_symlink($destdir, $shlibs_file);
+		my ($file, $named_file);
+		#discard runtime path portion of the install_name
+		($named_file) = $shlibs_file =~ /^\@[a-z,_]*path\/(.*)/ ; 
+		if ( $named_file ) {
+			find ({wanted => sub {$file = $File::Find::name if m,$named_file,}, no_chdir=>1 }, $destdir);
+		} else {
+			$file = resolve_rooted_symlink($destdir, $shlibs_file);
+		}
 		if (not defined $file) {
 			if ($deb_control->{'package'} eq 'fink') {
-				# fink is a special case, it has an shlibs field that provides system-shlibs
+				# fink is a special case, it has a shlibs field that provides system-shlibs
 			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
+				# AKH: it appears that we've been allowing @rpath and friends for private libraries?
 				if ($shlibs_file !~ /^\@/) {
-					print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
+					print "Warning: Shlibs field specifies private install_name '$shlibs_file', but it does not exist!\n";
 				}
 			} else {
-				print "Error: Shlibs field specifies file '$shlibs_file', but it does not exist!\n";
+				print "Error: Shlibs field specifies install_name '$shlibs_file', but it does not exist!\n";
 				$looks_good = 0;
 			}
 		} elsif (not -f $file) {
@@ -2261,7 +2332,7 @@ sub _validate_dpkg {
 			if (defined $otool) {
 				if (open (OTOOL, "$otool -L '$file' |")) {
 					<OTOOL>; # skip the first line
-					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+					my ($libname, undef, $compat_version) = <OTOOL> =~ /^\s*((\/|@[a-z,_]*path\/).+?)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
 
 					if (!defined $libname or !defined $compat_version) {
@@ -2274,11 +2345,12 @@ sub _validate_dpkg {
 						}
 					}
 					if (!defined $libname or !defined $compat_version) {
-						print "Error: File name '$shlibs_file' specified in Shlibs does not appear to have linker data at all\n";
+						print "Error: Name '$shlibs_file' specified in Shlibs does not appear to have linker data at all\n";
 						$looks_good = 0;
 					} else {
 						if ($shlibs_file ne $libname) {
-							print "Error: File name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
+							print "Error: Name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
+							$looks_good = 0;
 						}
 						if ($deb_shlibs->{$shlibs_file}->{'compatibility_version'} ne $compat_version) {
 							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_file}->{'compatibility_version'}.", but it is actually $compat_version.\n";
@@ -2304,12 +2376,12 @@ sub _validate_dpkg {
 					<OTOOL>; # skip first line
 					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
 					close (OTOOL);
-					if ($libname !~ /^\//) {
+					if (($libname !~ /^\//) and ($libname !~ /^\@[a-z,_]*path\//)) {
 						print "Error: package contains the shared library\n";
 						print "          $dylib\n";
 						print "       but the corresponding install_name\n";
 						print "          $libname\n";
-						print "       is not an absolute pathname.\n";
+						print "       is not an absolute pathname or runtime path.\n";
 						$looks_good = 0;
 					} elsif (not exists $deb_shlibs->{$libname}) {
 						$libname =~ s/^$basepath/%p/;
@@ -2320,6 +2392,21 @@ sub _validate_dpkg {
 						print "       are not listed in the Shlibs field.  See the packaging manual.\n";
 						$looks_good = 0;
 					}
+				}
+				if (open (OTOOL, "$otool -hv '$dylib_temp' |")) {
+					<OTOOL>; <OTOOL>; <OTOOL>; # skip first three lines
+					unless ( <OTOOL> =~ /TWOLEVEL/ ) {
+						print "Error: $dylib_temp appears to have been linked using a flat namespace.\n";
+						print "       If this package BuildDepends on libtool2, make sure that you use\n";
+						print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
+						print "       and use autoreconf to regenerate the configure script.\n";
+						print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
+						print "       update its build procedure to avoid passing\n";	 
+						print "          -Wl,-flat_namespace\n"; 
+						print "       when linking libraries.\n";
+						$looks_good = 0;
+					} 
+					close (OTOOL);
 				}
 			}
 		}

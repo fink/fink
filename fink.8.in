@@ -385,7 +385,11 @@ and other
 tools (compare to the human-readable list format of the
 .Cm fink show-deps
 command). This output mode just gives runtime dependencies of each
-package You can parse the output to get reverse-depends
+package. This format mode also supports the
+.Cm --recursive
+list-option.
+.Pp
+You can parse the output to get reverse-depends
 information, for example:
 .Dl fink list --format=dotty | grep ' \*[q]libgettext8-shlibs\*[q]'
 will list all packages that have a runtime dependency on the
@@ -404,10 +408,15 @@ tools (compare to the human-readable list format of the
 .Cm fink show-deps
 command). This output mode gives compiletime dependencies of each
 package, which includes runtime and build dependencies of every
-package in a family (packages built together). Using the
+package in a family (packages built together). This format mode also
+supports the
+.Cm --recursive
+list-option. Using the
 .Cm -m
 flag will also include dependencies for the package-family's
-self-testing (i.e., including TestDepends data). You can parse the
+self-testing (i.e., including TestDepends data).
+.Pp
+You can parse the
 output to get reverse-builddepends information, for example:
 .Dl fink -m list --format=dotty-build | grep ' \*[q]libgettext8-dev\*[q]'
 will list all packages that have a compiletime dependency on the

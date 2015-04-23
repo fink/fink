@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2015 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -110,15 +110,15 @@ numerical values for some specific methods:
 
 =over 4
 
-=item 0
+=item Z<>0
 
 Use the current default method
 
-=item 1
+=item Z<>1
 
 Use the "cvs" method
 
-=item 2
+=item Z<>2
 
 Use the "rsync" method
 

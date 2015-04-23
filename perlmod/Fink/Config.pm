@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2015 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -336,7 +336,7 @@ HELPFORMAT
 		print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2013 The Fink Package Manager Team
+Copyright (c) 2001-2015 The Fink Package Manager Team
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -735,7 +735,7 @@ EOF
 	# We only include the remote debs if the bindist looks like it's ok
 	if (!$self->bindist_check_prefix && !$self->bindist_check_distro) {
 
-		my $apt_mirror = "http://us.dl.sourceforge.net/fink/direct_download";
+		my $apt_mirror = "http://bindist.finkmirrors.net";
 
 		if ($self->has_param("Mirror-apt")) {
 			$apt_mirror = $self->param("Mirror-apt");
@@ -748,14 +748,8 @@ EOF
 # Official binary distribution: download location for packages
 # from the latest release
 EOF
-
-	$body .= "deb $apt_mirror $distribution/release $apt_trees\n\n";
-		$body .= <<EOF;
-# Official binary distribution: download location for updated
-# packages built between releases
-EOF
-
-	$body .= "deb $apt_mirror $distribution/current $apt_trees\n\n";
+	# bindist structure for supported distros as of 3/2014.  
+	$body .= "deb $apt_mirror/$distribution stable $apt_trees\n\n";
 
 	}
 
@@ -932,26 +926,25 @@ Return the current verbosity level as a value 0-3, where 0 is the
 quietest. This is affected by the --verbose and --quiet command line
 options as well as by the "Verbose" setting in fink.conf. A --quiet
 always takes precedence; otherwise the more verbose of the fink.conf
-and cmdline values is used. The former documentation here described
-the values as:
+and cmdline values is used. The general sense of each level is:
 
 =over 4
 
-=item 
+=item Z<>3
 
-3 full
+full
 
-=item 
+=item Z<>2
 
-2 download and tarballs
+download and tarballs
 
-=item
+=item Z<>1
 
-1 download
+download
 
-=item
+=item Z<>0
 
-0 none
+none
 
 =back
 

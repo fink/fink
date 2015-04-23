@@ -1,22 +1,24 @@
---- gettext-0.18.1.1/gettext-tools/tests/lang-bash.orig	2012-07-17 10:50:24.000000000 -0400
-+++ gettext-0.18.1.1/gettext-tools/tests/lang-bash	2012-07-17 10:50:40.000000000 -0400
-@@ -12,6 +12,8 @@
- tmpfiles=""
- trap 'rm -fr $tmpfiles' 1 2 3 15
+diff -ruNp gettext-0.19.3-orig/gettext-tools/tests/lang-bash gettext-0.19.3/gettext-tools/tests/lang-bash
+--- gettext-0.19.3-orig/gettext-tools/tests/lang-bash	2014-04-14 20:52:10.000000000 -0500
++++ gettext-0.19.3/gettext-tools/tests/lang-bash	2014-06-18 20:26:48.000000000 -0500
+@@ -10,6 +10,8 @@
+ # output when accessing any .mo file not generated from a .po file in UTF-8
+ # encoding.
  
 +echo "Skipping test: Darwin's bash lacks iconv support"; rm -fr $tmpfiles; exit 77;
 +
- tmpfiles="$tmpfiles prog.bash"
  cat <<\EOF > prog.bash
  #! /bin/bash
---- gettext-0.18.1.1/gettext-tools/tests/lang-vala	2013-08-15 12:15:56.000000000 -0400
-+++ gettext-0.18.1.1/gettext-tools/tests/lang-vala	2013-08-26 07:05:54.000000000 -0400
-@@ -26,7 +26,7 @@
  
- tmpfiles="$tmpfiles l-vala-prog.vala l-vala-prog.c l-vala-prog l-vala-prog.err"
+diff -ruNp gettext-0.19.3-orig/gettext-tools/tests/lang-vala gettext-0.19.3/gettext-tools/tests/lang-vala
+--- gettext-0.19.3-orig/gettext-tools/tests/lang-vala	2014-10-01 02:29:54.000000000 -0500
++++ gettext-0.19.3/gettext-tools/tests/lang-vala	2014-10-26 12:15:16.000000000 -0500
+@@ -22,7 +22,7 @@ test $? -le 1 \
+   || { echo "Skipping test: valac not found"; exit 77; }
+ 
  : ${VALAC=valac}
--${VALAC} --Xcc=-DGETTEXT_PACKAGE=\"prog\" l-vala-prog.vala 2>l-vala-prog.err \
-+${VALAC} --Xcc="-I@FINKPREFIX@/include" --Xcc=-DGETTEXT_PACKAGE=\"prog\" l-vala-prog.vala 2>l-vala-prog.err \
-   || { cat l-vala-prog.err 1>&2; exit 1; }
+-${VALAC} --Xcc=-DGETTEXT_PACKAGE=\"prog\" prog.vala 2>prog.err \
++${VALAC} --Xcc="-I@FINKPREFIX@/include" --Xcc=-DGETTEXT_PACKAGE=\"prog\" prog.vala 2>prog.err \
+   || { cat prog.err 1>&2; exit 1; }
  
- tmpfiles="$tmpfiles l-vala-prog.tmp l-vala-prog.pot"
+ : ${XGETTEXT=xgettext}

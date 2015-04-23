@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.Dd November 2011
+.Dd July 2014
 .Dt FINK.CONF 5
 .Sh NAME
 .Nm fink.conf
@@ -102,9 +102,9 @@ but this is not necessary in most circumstances. The default trees are
 .Pp
 The order of trees is meaningful, as packages from later trees may override
 packages from earlier ones.
-.It Cm Distribution: Ar 10.6, 10.7, 10.8, or 10.9.
+.It Cm Distribution: Ar 10.7, 10.8, 10.9, or 10.10.
 .Nm fink
-needs to know which version of Mac OS X you are running. Mac OS X versions up to 10.5 are no longer supported by this version of
+needs to know which version of Mac OS X you are running. Mac OS X versions up to 10.6 are no longer supported by this version of
 .Nm fink.
 This field is set by running the
 .Cm @PREFIX@/lib/fink/postinstall.pl
