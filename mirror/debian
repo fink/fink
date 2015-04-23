@@ -1,5 +1,5 @@
 # Official mirror list: http://www.debian.org/mirror/list
-Timestamp: 2015-02-06
+Timestamp: 2015-04-22
 
 Primary: ftp://ftp.debian.org/debian
 
@@ -14,7 +14,6 @@ aus-AU: http://ftp.au.debian.org/debian
 aus-NC: http://ftp.nc.debian.org/debian
 aus-NZ: http://ftp.nz.debian.org/debian
 eur-AT: http://ftp.at.debian.org/debian
-eur-BA: http://ftp.ba.debian.org/debian
 eur-BE: http://ftp.be.debian.org/debian
 eur-BG: http://ftp.bg.debian.org/debian
 eur-BY: http://ftp.by.debian.org/debian
