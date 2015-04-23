@@ -52,7 +52,7 @@ use Fink::Status;
 use File::Basename;
 use Fink::FinkVersion;
 
-use constant STATUS_PRESENT => "install ok installed";
+use constant STATUS_PRESENT => "install ok virtual";
 use constant STATUS_ABSENT  => "purge ok not-installed";
 
 use vars qw(
@@ -365,7 +365,7 @@ END
 				 'compress-raw-bzip2',
 				);
 		}
-		$perlprovides .= ', ' . join(', ', map { $_ . '-pm' . $shortver } sort @modules);
+		$perlprovides .= ', ' . join(', ', map { $_ ? $_ . '-pm' . $shortver : () } sort @modules);
 		$hash->{provides} = $perlprovides;
 	} else {
 		$hash->{version} = '0-0';
@@ -511,7 +511,7 @@ that is considered installed, based on the previous tests.
 	if (defined $latest_java) {
 		$hash = {};
 		$hash->{package}     = "system-java";
-		$hash->{status}      = "install ok installed";
+		$hash->{status}      = "install ok virtual";
 		$hash->{version}     = $latest_java . "-1";
 		$hash->{description} = "[virtual package representing Java $latest_java]";
 		$self->{$hash->{package}} = $hash;
@@ -527,7 +527,7 @@ version that is considered installed, based on the previous tests.
 	if (defined $latest_javadev) {
 		$hash = {};
 		$hash->{package}     = "system-java-dev";
-		$hash->{status}      = "install ok installed";
+		$hash->{status}      = "install ok virtual";
 		$hash->{version}     = $latest_javadev . "-1";
 		$hash->{description} = "[virtual package representing Java SDK $latest_java]";
 		$self->{$hash->{package}} = $hash;
@@ -1810,7 +1810,7 @@ sub query_package {
 
 	if (exists $self->{$pkgname} and exists $self->{$pkgname}->{status} and not $config->mixed_arch()) {
 		my ($purge, $ok, $installstat) = split(/\s+/, $self->{$pkgname}->{status});
-		return $self->{$pkgname}->{version} if ($installstat eq "installed" and exists $self->{$pkgname}->{version});
+		return $self->{$pkgname}->{version} if (($installstat eq "installed" or $installstat eq "virtual") and exists $self->{$pkgname}->{version});
 	}
 	return undef;
 }

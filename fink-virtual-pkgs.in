@@ -38,26 +38,36 @@ my %options =
 		"apt" => 0,
 		"debug" => 0,
 		"dpkg" => 0,
+		"outfile" => undef,
    );
 GetOptions(
 	'apt|a' => \$options{apt},
 	'debug' => \$options{debug},
 	'dpkg|d' => \$options{dpkg},
+	'outfile|o=s' => \$options{outfile},
 	'help|h' => \&usage,
 	'version|v' => \&version,
 	) or die "Unknown option\n";
-if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt\n" }
-if ($options{apt}) {
-	sysopen(FH,'/tmp/finkaptstatus', O_WRONLY | O_EXCL | O_CREAT) || die "Can not open file /tmp/finkaptstatus for writing: $!\n";
+if ($options{dpkg} and $options{apt}) {
+	die "Can only specify one option dpkg or apt\n";
+}
+if (defined $options{outfile}) {
+	# "-" as explicit request for stdout
+	undef $options{outfile} if $options{outfile} eq '-';
+} else {
+	# legacy default behavior for apt mode
+	$options{outfile} = '/tmp/finkaptstatus' if $options{apt};
+}
+if (defined $options{outfile}) {
+	sysopen(FH, $options{outfile}, O_WRONLY | O_EXCL | O_CREAT) || die "Can not open file $options{outfile} for writing: $!\n";
 	select FH;
-    }
-if ($standalone == 0)
-{
+}
+if ($standalone == 0) {
 	$dlist = Fink::VirtPackage->list(%options);
 	foreach $pkgname (sort keys %$dlist) {
 		$hash = $dlist->{$pkgname};
 		if ($options{dpkg}) {
-			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
+			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+virtual$/i) {
 				# columns: package, epoch, version, revision
 				printf "%s\t%lu\t%s\t%s\n",$hash->{package},$versions[0],$versions[1],$versions[2];
 				# for provides we tell dpkg about them with the version as zero
@@ -140,17 +150,17 @@ else
 	else
 	{
 		print "Package: ".lc((uname())[0])."\n";
-		print "Status: install ok installed\n";
+		print "Status: install ok virtual\n";
 		print "Version: ".lc((uname())[2])."-1\n", ;
 		print "Provides: kernel\n\n";
 		if ($macosx_version ne 0) {
 			print "Package: macosx\n";
-			print "Status: install ok installed\n";
+			print "Status: install ok virtual\n";
 			print "Version: ".$macosx_version."-1\n", ;
 		}
 	}
 }
-if ($options{apt}) {
+if (defined $options{outfile}) {
 	select STDOUT;
 	close FH;
 }
@@ -169,11 +179,12 @@ sub version {
 
 sub usage {
 	print <<END;
-usage: $0 [--debug] [-a|--apt] [-d|--dpkg] [-h|--help] [-v|--version]
+usage: $0 [--debug] [-a|--apt] [-d|--dpkg] [-o|--outfile <filename>] [-h|--help] [-v|--version]
 
 	--debug       Print debugging info to STDERR
 	-a/--apt      [called by apt, for internal use only]
 	-d/--dpkg     [called by dpkg, for internal use only]
+	-o/--outfile  Send output to given filename ("-" to force stdout)
 	-h/--help     This help
 	-v/--version  Print the version
 
