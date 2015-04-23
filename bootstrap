@@ -748,10 +748,15 @@ if ($distribution eq "10.6") {
 
 $cmd = "/usr/bin/env -i $perlexe $cmd $installto";
 
-if (&execute($cmd, quiet=>1)) {
-	print "\nERROR: Bootstrap phase 2 failed!\n";
-	exit 1;
-}
+# returns 127 when using --force-depends, NO IDEA why it returns 0 on CMDLINE
+&execute($cmd, quiet=>0);
+#if (&execute($cmd, quiet=>0)) {
+#	print "\nERROR: Bootstrap phase 2 failed!\n";
+#	exit 1;
+#}
+
+# populate status-fink
+&execute("mv $installto/var/lib/dpkg/status-fink $installto/var/lib/dpkg/status-fink.old; $installto/bin/fink-virtual-pkgs -o $installto/var/lib/dpkg/status-fink");
 
 Fink::Bootstrap::bootstrap3();
 

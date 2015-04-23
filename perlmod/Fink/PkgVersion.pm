@@ -4883,7 +4883,12 @@ sub phase_activate {
 	}
 
 	my @deb_installable = map { $_->find_debfile() } @installable;
-	if (&execute(dpkg_lockwait() . " -i @deb_installable", ignore_INT=>1)) {
+	my $dpkgcmd = dpkg_lockwait();
+	# we need to force depends during bootstrap2 since f-v-p isn't installed
+	if ($config->has_flag("bootstrap2")) {
+		$dpkgcmd .= " --force-depends";
+	}
+	if (&execute($dpkgcmd . " -i @deb_installable", ignore_INT=>1)) {
 		if (@installable == 1) {
 			my $error = "can't install package ".$installable[0]->get_fullname();
 			$notifier->notify(event => 'finkPackageInstallationFailed', description => $error);
