@@ -1669,7 +1669,7 @@ sub validate_info_component {
 
 	# support for new script templates
 	# TODO: This field is not documented.
-	if (exists $properties->{defaultscript}) {
+	if (exists $properties->{defaultscript} && !$is_splitoff) {
 		$value = lc $properties->{defaultscript};
 		my $ds_min = {
 			'autotools'   => '0.30.0',
