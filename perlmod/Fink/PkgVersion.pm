@@ -1098,6 +1098,12 @@ else implicitly by certain Type: field tokens.
 sub get_defaultscript_type {
 	my $self = shift;
 
+	my $ptype;
+	if ($self->has_parent) {
+		my $parent = $self->get_parent;
+		$ptype = $parent->get_defaultscript_type;
+	}
+
 	if (!exists $self->{_defaultscript_type}) {
 		# Cached because if we did it once, we are probably going to
 		# do it again for for each phase of the build process.
@@ -1118,6 +1124,8 @@ sub get_defaultscript_type {
 			# is data present only in the .info
 
 			$type = lc $type;	# canonical lowercase
+		} elsif ($ptype eq 'debhelper') {
+			$type = $ptype;
 		} else {
 			# otherwise fall back to legacy Type: control
 			if ($self->is_type('perl')) {
@@ -1236,11 +1244,16 @@ sub get_script {
 		} elsif ($type eq 'modulebuild') {
 			$default_script =
 				"./Build install\n";
+		} elsif ($type eq 'debhelper' && $self->has_parent) {
+			$field_value = $self->param_default($field, '%{default_script}');
+			$default_script =
+				"cp -R debian/%n%p/* %i\n" .
+				"cp debian/%n/DEBIAN/* %d/DEBIAN/ 2>/dev/null || :\n";
 		} elsif ($type eq 'debhelper') {
 			$default_script =
 				"debian/rules binary\n" .
 				"cp -R debian/%N%p/* %i\n" .
-				"cp debian/%N/DEBIAN/* %d/DEBIAN/\n";
+				"cp debian/%N/DEBIAN/* %d/DEBIAN/ 2>/dev/null || :\n";
 		} elsif ($self->is_type('bundle')) {
 			$default_script =
 				"/bin/mkdir -p \%i/share/doc/\%n\n".
