@@ -1106,7 +1106,7 @@ sub get_defaultscript_type {
 			# first try explicit DefaultScript: control
 			$type = $self->param('DefaultScript');
 
-			unless ($type =~ /^(autotools|makemaker|ruby|modulebuild)$/i) {
+			unless ($type =~ /^(autotools|makemaker|ruby|modulebuild|debhelper)$/i) {
 				# don't fall through to unintended if typo, etc.
 				die "this version of fink does not know how to handle DefaultScript:$type to build package ".$self->get_fullname()."\n";
 			}
@@ -1160,6 +1160,15 @@ sub get_script {
 			$default_script .= "patch -p1 < \%{PatchFile$suffix}\n";
 		}
 
+		my $type = $self->get_defaultscript_type();
+		if ($type eq 'debhelper') {
+			$default_script =
+				"BASE=\$(echo %p | sed -e 's,/,,'); for i in `find debian -type f`; do perl -pi -e \"s,usr,\${BASE},g\" \$i; perl -pi -e \"s,etc,\${BASE}\\/etc,g\" \$i; perl -pi -e \"s,var\\/lib,\${BASE}\\/var\\/lib,g\" \$i; done; \n" .
+				"perl -pi -e 's,dh_gencontrol,#dh_gencontrol,g' debian/rules\n" .
+				"perl -pi -e 's,dh_md5sums,#dh_md5sums,g' debian/rules\n" .
+				"perl -pi -e 's,dh_builddeb,#dh_builddep,g' debian/rules\n";
+		}
+
 	} elsif ($field eq 'compilescript') {
 		return "" if $self->has_parent;  # shortcut: SplitOffs do not compile
 		return "" if $self->is_type('bundle'); # Type:bundle never compile
@@ -1187,6 +1196,8 @@ sub get_script {
 			$default_script =
 				"$rubycmd extconf.rb\n".
 				"make\n";
+		} elsif ($type eq 'debhelper') {
+			$default_script = "debian/rules build\n";
 		} elsif ($self->is_type('dummy')) {
 			$default_script = "";
 		} else {
@@ -1225,6 +1236,11 @@ sub get_script {
 		} elsif ($type eq 'modulebuild') {
 			$default_script =
 				"./Build install\n";
+		} elsif ($type eq 'debhelper') {
+			$default_script =
+				"debian/rules binary\n" .
+				"cp -R debian/%N%p/* %i\n" .
+				"cp debian/%N/DEBIAN/* %d/DEBIAN/\n";
 		} elsif ($self->is_type('bundle')) {
 			$default_script =
 				"/bin/mkdir -p \%i/share/doc/\%n\n".
@@ -1247,6 +1263,8 @@ sub get_script {
 		} elsif ($type eq 'modulebuild' && !$self->param_boolean('NoPerlTests')) {
 			$default_script =
 				"./Build test || exit 2\n";
+		} elsif ($type eq 'debhelper') {
+			$default_script = "dh_auto_test || exit 2\n";
 		}
 
 	} else {

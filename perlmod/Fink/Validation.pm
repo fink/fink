@@ -1676,12 +1676,17 @@ sub validate_info_component {
 			'makemaker'   => '0.30.0',
 			'ruby'        => '0.30.0',
 			'modulebuild' => '0.30.2',
+			'debhelper'   => '0.38.99.git',
 		}->{$value};
 		if (defined $ds_min) {
 			$looks_good = 0 unless _require_dep($properties, { build => {'fink' => $ds_min} }, "use of DefaultScript:$value", $filename);
 		} else {
 			print "Warning: unknown DefaultScript type \"$value\". ($filename)\n";
 			$looks_good = 0;
+		}
+
+		if ($value eq 'debhelper') {
+			$looks_good = 0 unless _require_dep($properties, { build => {'debhelper' => undef} }, "use of DefaultScript:$value", $filename);
 		}
 	}
 
