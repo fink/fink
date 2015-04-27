@@ -1098,7 +1098,7 @@ else implicitly by certain Type: field tokens.
 sub get_defaultscript_type {
 	my $self = shift;
 
-	my $ptype;
+	my $ptype = '';
 	if ($self->has_parent) {
 		my $parent = $self->get_parent;
 		$ptype = $parent->get_defaultscript_type;
