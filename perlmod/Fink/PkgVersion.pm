@@ -1205,7 +1205,7 @@ sub get_script {
 				"$rubycmd extconf.rb\n".
 				"make\n";
 		} elsif ($type eq 'debhelper') {
-			$default_script = "debian/rules build\n";
+			$default_script = "debian/rules binary\n";
 		} elsif ($self->is_type('dummy')) {
 			$default_script = "";
 		} else {
@@ -1251,7 +1251,6 @@ sub get_script {
 				"cp debian/%n/DEBIAN/* %d/DEBIAN/ 2>/dev/null || :\n";
 		} elsif ($type eq 'debhelper') {
 			$default_script =
-				"debian/rules binary\n" .
 				"cp -R debian/%N%p/* %i\n" .
 				"cp debian/%N/DEBIAN/* %d/DEBIAN/ 2>/dev/null || :\n";
 		} elsif ($self->is_type('bundle')) {
