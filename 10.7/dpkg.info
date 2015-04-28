@@ -67,7 +67,7 @@ patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
 perl -pi -e 's,po4a,notpo4a,g' configure
 
 # Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
-perl -pi -e 's,^(\#\!/usr/bin/perl.*)$,$1\nuse lib "%p/lib/perl5";,' %b/scripts/*.pl %b/scripts/changelog/debian.pl
+perl -pi -e 's,^(\#\!\s?/usr/bin/perl.*)$,$1\nuse lib "%p/lib/perl5";,' %b/scripts/*.pl %b/scripts/changelog/debian.pl
 
 # fix paths
 for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.[13578]; do \
