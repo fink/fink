@@ -280,7 +280,6 @@ END
 		if ($perlver >= 5.008001) {
 			push(@modules,
 				'attribute-handlers',
-				'cgi',
 				'data-dumper',
 				'db',
 				'devel-peek',
@@ -311,6 +310,13 @@ END
 				'time-hires',
 				'unicode-normalize',
 			);
+			if ($perlver < 5.019007) {
+				push(@modules,
+					 # CGI still present until 5.21.0 but will spew
+					 # deprecation diagnostics every time it's used
+					 'cgi',
+				);
+			}
 			if ($perlver < 5.015000) {
 				push(@modules,
 					 'devel-dprof',
