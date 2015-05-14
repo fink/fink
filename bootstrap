@@ -368,7 +368,7 @@ my $xcode_version;
 		# Extrapolate for future releases
 		#
 		$min_xcode="5.0";
-		$max_xcode="99.9";
+		$max_xcode="6.2";
 	} elsif ($vers == 14) {
 		$min_xcode="6.0";
 		$max_xcode="99.9";
@@ -779,10 +779,6 @@ You can add the package descriptions at a later time if you want to
 compile packages yourself.
 You can get them
 EOF
-		if (defined $dbv) {
-			$endmsg .= "by installing the dists-$distribution-$dbv.tar.gz
-tarball, or";
-		}
 		$endmsg .= " by running either of the commands:  
 'fink selfupdate-rsync', to update via rsync (generally preferred); 
 or  

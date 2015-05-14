@@ -5,6 +5,15 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.38.x
 \-------------
 
+0.38.5 "Biscayne" (2015-05-13)
+	* Support OS 10.10.3
+	* Revert supporting /opt/X11 directly on 10.8+ to provide X11 virtuals. 
+	* Remove cgi-pm from Provides.
+	* Reduce flat-namespace linkage validation to give a warning rather 
+	  than a fatal error, since some packages require being built this way.
+	* Fatal validation error for filename/install_name mismatch in Shlibs.
+	* Validate package names in dependency lists.
+
 0.38.4 "Big Bend" (2015-02-09)
 	* Support OS 10.10.2
 	* Issue warning if Xcode and Xcode CLI versions don't match.

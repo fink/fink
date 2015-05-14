@@ -1,12 +1,19 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2015-02-06
+Timestamp: 2015-04-23
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
 afr-ZA: http://gimp.afri.cc/pub/gimp
-eur-DE: ftp://artfiles.org/gimp.org/gimp
-eur-DE: http://artfiles.org/gimp.org/gimp
+asi-CN: ftp://mirrors.go-parts.com/gimp
+asi-CN: http://mirrors.go-parts.com/gimp
 eur-DE: http://de-mirror.gimper.net/pub/gimp
+eur-RU: ftp://mirrors-ru.go-parts.com/gimp
+eur-RU: http://mirrors-ru.go-parts.com/gimp
+eur-UK: ftp://mirrors-uk.go-parts.com/gimp
+eur-UK: http://mirrors-uk.go-parts.com/gimp
 nam-US: ftp://ftp.gimp.org/pub/gimp
+nam-US: ftp://mirrors-usa.go-parts.com/gimp/gimp
+nam-US: http://gimp.mirrors.hoobly.com/pub/gimp
 nam-US: http://gimper.net/downloads/pub/gimp
+nam-US: http://mirrors-usa.go-parts.com/gimp/gimp
 sam-BR: http://mirror.nbtelecom.com.br/gimp

@@ -280,7 +280,6 @@ END
 		if ($perlver >= 5.008001) {
 			push(@modules,
 				'attribute-handlers',
-				'cgi',
 				'data-dumper',
 				'db',
 				'devel-peek',
@@ -311,6 +310,13 @@ END
 				'time-hires',
 				'unicode-normalize',
 			);
+			if ($perlver < 5.019007) {
+				push(@modules,
+					 # CGI still present until 5.21.0 but will spew
+					 # deprecation diagnostics every time it's used
+					 'cgi',
+				);
+			}
 			if ($perlver < 5.015000) {
 				push(@modules,
 					 'devel-dprof',
@@ -1454,8 +1460,10 @@ virtual packages. (See &package_from_pkgconfig).
 
 =cut
 
-	our @x11_dirs=('/usr/X11','/usr/X11R6'); # Put the real directory at the left
-	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later 
+	our @x11_dirs=('/usr/X11R6'); 
+#   uncomment the line below when 10.7 and 10.8 are no longer supported, or 
+#   better yet, just put /opt/X11 above without a conditional.
+#	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later 
 	for my $base_dir (@x11_dirs, '/usr') {
 		my $dir = "$base_dir/lib/pkgconfig";
 		next unless (-d $dir);
