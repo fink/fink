@@ -2245,15 +2245,17 @@ sub _validate_dpkg {
 				if (open (OTOOL, "$otool -hv '$dylib_temp' |")) {
 					<OTOOL>; <OTOOL>; <OTOOL>; # skip first three lines
 					unless ( <OTOOL> =~ /TWOLEVEL/ ) {
-						print "Error: $dylib_temp appears to have been linked using a flat namespace.\n";
+						print "SERIOUS WARNING: $dylib_temp appears to have been linked using a flat namespace.\n";
 						print "       If this package BuildDepends on libtool2, make sure that you use\n";
 						print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
 						print "       and use autoreconf to regenerate the configure script.\n";
 						print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
 						print "       update its build procedure to avoid passing\n";	 
 						print "          -Wl,-flat_namespace\n"; 
-						print "       when linking libraries.\n";
-						$looks_good = 0;
+						print "       when linking libraries.\n\n";
+						print "		  If this package actually requires a flat namespace build,\n";
+						print "		  then ignore this message.\n\n"
+						sleep 60;
 					} 
 					close (OTOOL);
 				}
