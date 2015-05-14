@@ -2254,7 +2254,7 @@ sub _validate_dpkg {
 						print "          -Wl,-flat_namespace\n"; 
 						print "       when linking libraries.\n\n";
 						print "		  If this package actually requires a flat namespace build,\n";
-						print "		  then ignore this message.\n\n"
+						print "		  then ignore this message.\n\n";
 						sleep 60;
 					} 
 					close (OTOOL);
