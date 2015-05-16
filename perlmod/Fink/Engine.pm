@@ -2027,7 +2027,7 @@ sub real_install {
 		my $xcode_app_version = ${${Fink::VirtPackage->list}{'xcode.app'}}{'version'};
 
 		# If there is no Xcode.app we're OK.		
-		unless ( $xcode_app_version eq (0-0) ) {			
+		unless ( $xcode_app_version eq '0-0' ) {			
 
 			# For now, let's assume that the CL tools and the app need to agree to the largest minor version.
 			# Truncate them accordingly.
