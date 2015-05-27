@@ -549,7 +549,6 @@ which will be used to run fink itself, post-bootstrap.
 
 
 sub bootstrap2 {
-	$config->set_flag("bootstrap2");
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
 	$bsbase = &get_bsbase();
@@ -583,7 +582,6 @@ sub bootstrap2 {
 	Fink::Config::set_options( { 'no_buildlock' => 0 } );
 
 	$ENV{PATH} = $save_path;
-	$config->clear_flag("bootstrap2");
 }
 
 
