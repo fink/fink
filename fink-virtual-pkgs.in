@@ -26,6 +26,7 @@ use Fcntl;
 
 my $standalone = 0;
 my $basepath = '@BASEPATH@';
+my $libpath = '@LIBPATH@';
 my $config;
 
 our $VERSION = 1.28;
@@ -195,9 +196,9 @@ END
 sub UseFinkModules {
 	# Be careful about using fink modules
 	eval { 
-        die unless -d "$basepath/lib/perl5";
+        die unless -d "$libpath";
         require lib;
-        import lib "$basepath/lib/perl5";
+        import lib "$libpath";
 
 		require Fink::FinkVersion;
 		require Fink::VirtPackage;
