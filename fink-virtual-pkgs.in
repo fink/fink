@@ -169,7 +169,7 @@ if (defined $options{outfile}) {
 	close FH;
 
 	if ($tmpfile) {
-		rename $tmpfile $options{outfile} || die "Can not rename $tmpfile to $options{outfile}: $!\n";
+		rename $tmpfile, $options{outfile} || die "Can not rename $tmpfile to $options{outfile}: $!\n";
 	}
 }
 
