@@ -69,6 +69,7 @@ if (defined $options{outfile}) {
 if ($standalone == 0) {
 	$dlist = Fink::VirtPackage->list(%options);
 	foreach $pkgname (sort keys %$dlist) {
+		next unless (exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+virtual$/i)
 		$hash = $dlist->{$pkgname};
 		if ($options{dpkg}) {
 			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+virtual$/i) {
