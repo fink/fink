@@ -959,8 +959,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 ++#endif
 diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/patches/extra-statusfile.patch
 --- dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/extra-statusfile.patch	2014-03-25 19:37:00.000000000 -0600
-@@ -0,0 +1,394 @@
++++ dpkg-1.17.6/fink/patches/extra-statusfile.patch	2015-05-30 12:58:44.000000000 -0600
+@@ -0,0 +1,445 @@
 +--- dpkg.orig/config.h.in
 ++++ dpkg/config.h.in
 +@@ -27,6 +27,9 @@
@@ -968,7 +968,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 + #undef DPKG_MAINT_ENV_SCRIPT
 +
 ++/* Define if we are including an alt status file */
-++#undef DPKG_EXTRA_STATUSFILE
+++#undef FINKVIRTUALS
 ++
 + /* Define to 1 if translation of program messages to the user's native
 +    language is requested. */
@@ -979,7 +979,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 + enable_start_stop_daemon
 + enable_update_alternatives
 + with_dpkg_env_script
-++with_dpkg_extra_statusfile
+++with_finkvirtual
 + with_pkgconfdir
 + with_admindir
 + with_logdir
@@ -987,8 +987,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 +   --without-libintl-prefix     don't search for libintl in includedir and libdir
 +   --with-dpkg-env-script=PATH/TO/SCRIPT
 +                           script to include in the maintainer environment
-++  --with-dpkg-extra-statusfile=FILENAME
-++                          filename for the extra status file
+++  --with-finkvirtuals=PATH/TO/SCRIPT
+++                          full path and script name to f-v-p
 +   --with-pkgconfdir=DIR   dpkg configuration directory [SYSCONFDIR/dpkg]
 +   --with-admindir=DIR     dpkg database directory [LOCALSTATEDIR/lib/dpkg]
 +   --with-logdir=DIR       system logging directory [LOCALSTATEDIR/log]
@@ -996,34 +996,34 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 + $as_echo "$with_dpkg_env_script" >&6; }
 +
 +
-++# Check if we want an extra statusfile
+++# Check if we want an fink-virtuals
 ++
-++  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for extra statusfile" >&5
-++$as_echo_n "checking for extra statusfile... " >&6; }
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for f-v-p" >&5
+++$as_echo_n "checking for f-v-p... " >&6; }
 ++
-++# Check whether --with-dpkg-extra-statusfile was given.
-++if test "${with_dpkg_extra_statusfile+set}" = set; then :
-++  withval=$with_dpkg_extra_statusfile; with_dpkg_extra_statusfile=$withval
+++# Check whether --with-finkvirtuals was given.
+++if test "${with_finkvirtuals+set}" = set; then :
+++  withval=$with_finkvirtuals; with_finkvirtuals=$withval
 ++else
-++  with_dpkg_extra_statusfile=no
+++  with_finkvirtuals=no
 ++fi
 ++
-++  if test "x$with_dpkg_extra_statusfile" != "xno"; then :
+++  if test "x$with_finkvirtuals" != "xno"; then :
 ++
 ++
 ++cat >>confdefs.h <<_ACEOF
-++#define DPKG_EXTRA_STATUSFILE "$with_dpkg_extra_statusfile"
+++#define FINKVIRTUALS "$with_finkvirtuals"
 ++_ACEOF
 ++
 ++
 ++else
 ++
-++    $as_echo "#define DPKG_EXTRA_STATUSFILE 0" >>confdefs.h
+++    $as_echo "#define FINKVIRTUALS 0" >>confdefs.h
 ++
 ++
 ++fi
-++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_dpkg_extra_statusfile" >&5
-++$as_echo "$with_dpkg_extra_statusfile" >&6; }
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_finkvirtuals" >&5
+++$as_echo "$with_finkvirtuals" >&6; }
 ++
 ++
 + # Allow alternate directories
@@ -1036,7 +1036,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 + DPKG_ENV_SCRIPT([no])
 +
 ++# Check if we want an alternative statusfile
-++DPKG_EXTRA_STATUSFILE([no])
+++FINKVIRTUALS([no])
 ++
 + # Allow alternate directories
 + DPKG_WITH_DIR([pkgconfdir], [${sysconfdir}/${PACKAGE_NAME}],
@@ -1047,58 +1047,99 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 +   AC_MSG_RESULT([$with_dpkg_env_script])
 + ]) # DPKG_ENV_SCRIPT
 +
-++# DPKG_EXTRA_STATUSFILE(FILE)
+++# FINKVIRTUALS(FILE)
 ++# -------------------
 ++# Second status file to parse and add to the Pkg DB
-++AC_DEFUN([DPKG_EXTRA_STATUSFILE], [
-++  AC_MSG_CHECKING([for extra statusfile])
-++  AC_ARG_WITH([dpkg-extra-statusfile],
-++    [AS_HELP_STRING([--with-dpkg-extra-statusfile=FILENAME],
-++                   [filename for the extra status file])],
-++    [with_dpkg_extra_statusfile=$withval], [with_dpkg_extra_statusfile=$1])
-++  AS_IF([test "x$with_dpkg_extra_statusfile" != "xno"], [
-++    AC_DEFINE_UNQUOTED([DPKG_EXTRA_STATUSFILE], ["$with_dpkg_extra_statusfile"], [Define to value if not no.])
+++AC_DEFUN([FINKVIRTUALS], [
+++  AC_MSG_CHECKING([for f-v-p])
+++  AC_ARG_WITH([finkvirtuals],
+++    [AS_HELP_STRING([--with-finkvirtuals=PATH/TO/SCRIPT],
+++                   [full path and script name to f-v-p])],
+++    [with_finkvirtuals=$withval], [with_finkvirtuals=$1])
+++  AS_IF([test "x$with_finkvirutals" != "xno"], [
+++    AC_DEFINE_UNQUOTED([FINKVIRTUALS], ["$with_finkvirtuals"], [Define to value if not no.])
 ++  ], [
-++    AC_DEFINE([DPKG_EXTRA_STATUSFILE], [0])
+++    AC_DEFINE([FINKVIRTUALS], [0])
 ++  ])
-++  AC_MSG_RESULT([$with_dpkg_extra_statusfile])
-++]) # DPKG_EXTRA_STATUSFILE
+++  AC_MSG_RESULT([$with_finkvirtuals])
+++]) # FINKVIRTUALS
 ++
 + # DPKG_DIST_CHECK(COND, ERROR)
 + # ---------------
 + # Check if the condition is fulfilled when preparing a distribution tarball.
 +--- dpkg.orig/lib/dpkg/dbmodify.c
 ++++ dpkg/lib/dpkg/dbmodify.c
-+@@ -51,6 +51,9 @@
++@@ -44,6 +44,8 @@
++ #include <dpkg/dpkg-db.h>
++ #include <dpkg/file.h>
++ #include <dpkg/dir.h>
+++#include <dpkg/subproc.h>
+++#include <dpkg/command.h>
++ #include <dpkg/triglib.h>
++ 
++ static bool db_initialized;
++@@ -51,6 +53,11 @@
 + static enum modstatdb_rw cstatus=-1, cflags=0;
 + static char *lockfile;
 + static char *statusfile, *availablefile;
-++#ifdef DPKG_EXTRA_STATUSFILE
+++#ifdef FINKVIRTUALS
+++#define FINKSTATUSFILE "status-fink"
+++void run_fvp(void);
 ++static char *extrastatusfile;
 ++#endif
 + static char *importanttmpfile=NULL;
 + static FILE *importanttmp;
 + static int nextupdate;
-+@@ -79,6 +82,9 @@
++@@ -79,6 +86,10 @@
 +   int cdn, i;
 + 
 +   parsedb(statusfile, pdb_parse_status, NULL);
-++#ifdef DPKG_EXTRA_STATUSFILE
+++#ifdef FINKVIRTUALS
+++  run_fvp();
 ++  parsedb(extrastatusfile, pdb_parse_status, NULL);
 ++#endif
 + 
 +   *updatefnrest = '\0';
 +   updateslength= -1;
-+@@ -138,6 +144,9 @@
++@@ -138,6 +149,9 @@
 + } fnis[] = {
 +   {   LOCKFILE,                   &lockfile           },
 +   {   STATUSFILE,                 &statusfile         },
-++#ifdef DPKG_EXTRA_STATUSFILE
-++  {   DPKG_EXTRA_STATUSFILE,      &extrastatusfile    },
+++#ifdef FINKVIRTUALS
+++  {   FINKSTATUSFILE,             &extrastatusfile    },
 ++#endif
 +   {   AVAILFILE,                  &availablefile      },
 +   {   UPDATESDIR,                 &updatesdir         },
 +   {   UPDATESDIR IMPORTANTTMP,    &importanttmpfile   },
++@@ -437,3 +451,28 @@
++     modstatdb_note(pkg);
++ }
++ 
+++#ifdef FINKVIRTUALS
+++void
+++run_fvp(void)
+++{
+++  pid_t pid;
+++
+++  pid = subproc_fork();
+++  if (pid == 0) {
+++    struct command cmd;
+++    const char *fvp;
+++    size_t finkstatusfile_len = strlen(ADMINDIR) + strlen(FINKSTATUSFILE) + 2;
+++    char *finkstatusfile = m_malloc(finkstatusfile_len);
+++
+++    fvp = FINKVIRTUALS;
+++    snprintf(finkstatusfile, finkstatusfile_len, "%s/%s", ADMINDIR, FINKSTATUSFILE);
+++
+++    command_init(&cmd, fvp, _("getting fink virtuals"));
+++    command_add_arg(&cmd, fvp);
+++    command_add_arg(&cmd, "-o");
+++    command_add_arg(&cmd, finkstatusfile);
+++    command_exec(&cmd);
+++  }
+++  subproc_wait(pid, _("getting fink virtuals"));
+++}
+++#endif
 +--- dpkg.orig/lib/dpkg/dpkg-db.h
 ++++ dpkg/lib/dpkg/dpkg-db.h
 +@@ -175,7 +175,8 @@
@@ -1355,6 +1396,16 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 +         possdependee->status == stat_triggerspending) {
 +       debug(dbg_depcondetail,"      is installed, ok and found");
 +       return found_ok;
++--- dpkg.orig/src/t/100_dpkg_divert.t
+++++ dpkg/src/t/100_dpkg_divert.t
++@@ -44,6 +44,7 @@
++     system("rm -rf $tmpdir && mkdir -p $testdir");
++     system("mkdir -p $admindir/updates");
++     system("rm -f $admindir/status && touch $admindir/status");
+++    system("rm -f $admindir/status-fink && touch $admindir/status-fink");
++     system("rm -rf $admindir/info && mkdir -p $admindir/info");
++ }
++ 
 diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/patches/fink-as-vendor.patch
 --- dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/patches/fink-as-vendor.patch	2014-03-25 11:47:45.000000000 -0600
