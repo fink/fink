@@ -478,6 +478,12 @@ sub bootstrap1 {
 	}
 	mkdir_p "$bsbase/bin", "$bsbase/sbin", "$bsbase/lib";
 
+	# copy f-v-p bootstrap
+	my $cmd = "cp fink-virtual-pkgs-bootstrap $bsbase/bin/fink-virtual-pkgs";
+	if (&execute($cmd)) {
+		die "ERROR: Can't install f-v-p.\n";
+	}
+
 	# create empty dpkg database
 	mkdir_p "$basepath/var/lib/dpkg";
 	touch "$basepath/var/lib/dpkg/status",
