@@ -49,7 +49,7 @@ sed -e "s|@BASEPATH@|$basepath|g" -e "s|@PERLEXE@|$perlexe|g" < fink.in > fink
 
 for bin in fink-{virtual-pkgs,instscripts,scanpackages}; do
 	echo "Creating $bin..."
-	sed "s|@BASEPATH@|$basepath|g" -e "s|@LIBPATH@|\$basepath/lib/perl5|g" < "$bin.in" > "$bin"
+	sed -e "s|@BASEPATH@|$basepath|g" -e "s|@LIBPATH@|\$basepath/lib/perl5|g" < "$bin.in" > "$bin"
 done
 
 echo "Creating pathsetup.sh..."
