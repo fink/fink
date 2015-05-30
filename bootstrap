@@ -691,7 +691,7 @@ if (($arch eq "x86_64") and ($distribution eq "10.5")) {
 {
 print "Creating f-v-p bootstrap configuration...\n";
 
-my $cmd = 'sed -e "s|@BASEPATH@|' . $homebase . '|g" -e "s|@LIBPATH@|' . $homebase . '/perlmod|g" < "fink-virtual-pkgs.in" > "fink-virtual-pkgs-bootstrap";';
+my $cmd = 'sed -e "s|@BASEPATH@|' . $installto . '|g" -e "s|@LIBPATH@|' . $homebase . '/perlmod|g" < "fink-virtual-pkgs.in" > "fink-virtual-pkgs-bootstrap";';
    $cmd .= "chmod +x fink-virtual-pkgs-bootstrap;";
 
 if (&execute($cmd, quiet=>0)) {
