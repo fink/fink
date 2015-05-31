@@ -9,7 +9,7 @@ Source-MD5: bdb6d88470c901d35fa19d776a8e8828
 SourceDirectory: dpkg-%v
 
 PatchFile: dpkg.patch
-PatchFile-MD5: a3c0567904a1e65f1c556c91ddc5608f
+PatchFile-MD5: 8475579d554dc641876fde94d5f3afad
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -22,8 +22,6 @@ patch -p1 < fink/patches/gzip-rsyncable-fix.patch
 patch -p1 < fink/patches/location-fixes.patch
 patch -p1 < fink/patches/protect-system-dirs.patch
 patch -p1 < fink/patches/so-to-dylib.patch
-### Tests fail already because of u-a no need to use this till that is fixed
-#patch -p1 < fink/patches/test-fix.patch
 patch -p1 < fink/patches/fink-as-vendor.patch
 patch -p1 < fink/patches/add-install-info.patch
 patch -p1 < fink/patches/extra-env.patch
@@ -31,6 +29,7 @@ patch -p1 < fink/patches/extra-statusfile.patch
 patch -p1 < fink/patches/coreutils.patch
 patch -p1 < fink/patches/bsdutils.patch
 patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
+patch -p1 < fink/patches/test-fix.patch
 
 # Remove po4a and make sure it can't be found if it's installed
 # this is to keep fink policy happy since it has to build the same
@@ -38,7 +37,7 @@ patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
 perl -pi -e 's,po4a,notpo4a,g' configure
 
 # Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
-sed -i '2iBEGIN \{ push\(\@INC, "\%p\/lib\/perl5"\) \};' %b/scripts/*.pl %b/scripts/changelog/debian.pl
+perl -pi -e 's,^(\#\!\s?/usr/bin/perl.*)$,$1\nBEGIN \{ push\(\@INC\, \"\%p\/lib\/perl5\"\) \}\;,' %b/scripts/*.pl %b/scripts/changelog/debian.pl
 
 # fix paths
 for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.[13578]; do \
@@ -82,16 +81,14 @@ perl -pi -e 's,AUTOHEADER=.*$,AUTOHEADER=echo,g' configure
 perl -pi -e 's,ACLOCAL_AMFLAGS =.*$,ACLOCAL_AMFLAGS = ,g' Makefile.in
 <<
 
-#SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -F/System/Library/Frameworks/CoreFoundation.framework -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
 SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
 SetCPPFLAGS: -D_FORTIFY_SOURCE=2
 SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
-#SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie -framework CoreFoundation
 SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie
 
 # Use %P for all state and admindirs for pre fink build
 ConfigureParams: <<
-	--with-finkvirtuals=%P/bin/fink-virtual-pkgs-bootstrap \
+	--with-finkvirtuals=%p/bin/fink-virtual-pkgs \
 	--with-dpkg-env-script=%p/bin/init.sh \
 	--disable-dselect \
 	--disable-start-stop-daemon \
@@ -149,6 +146,11 @@ install -m 0644 fink/dpkg.cron.daily %i/etc/cron.daily/dpkg
 
 # install fink as a vendor
 install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
+
+# Bootstrap ONLY, crate missing directories, and reset status file
+%i/bin/dpkg --configure -a
+rm -rf %i/../var/lib/dpkg/status %i/../var/lib/dpkg/status-old
+touch %i/../var/lib/dpkg/status
 <<
 ConfFiles: <<
 	%p/etc/dpkg/origins/fink
