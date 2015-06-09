@@ -984,37 +984,39 @@ sub validate_info_file {
 	foreach my $pv (@pvs) {
 		# sanity-checks for each in family (including variants and splitoffs)
 
-		my $desc = $pv->{description};
 		my $name = $pv->get_name();
 
-		if (length($desc) > 60 and !$pv->is_obsolete()) {
-			print "Error: Description of \"$name\" exceeds 60 characters. ($filename)\n";
-			$looks_good = 0;
-		} elsif (Fink::Config::get_option("Pedantic")) {
-			# Some pedantic checks
-			if (length($desc) > 45 and !$pv->is_obsolete() ) {
-				print "Warning: Description of \"$name\" exceeds 45 characters. ($filename)\n";
+		# misc rules for the Description field (if there is one)
+		if (defined (my $desc = $pv->{description})) {
+			if (length($desc) > 60 and !$pv->is_obsolete()) {
+				print "Error: Description of \"$name\" exceeds 60 characters. ($filename)\n";
 				$looks_good = 0;
-			}
-			if ($desc =~ m/^[Aa]n? /) {
-				print "Warning: Description of \"$name\" starts with \"A\" or \"An\". ($filename)\n";
-				$looks_good = 0;
-			}
-			if ($desc =~ m/^[a-z]/) {
-				print "Warning: Description of \"$name\" starts with lower case. ($filename)\n";
-				$looks_good = 0;
-			}
-			if ($desc =~ /\b\Q$name\E\b/i and !$pv->is_obsolete() ) {
-				print "Warning: Description of \"$name\" contains package name. ($filename)\n";
-				$looks_good = 0;
-			}
-			if ($desc =~ m/\.$/) {
-				print "Warning: Description of \"$name\" ends with \".\". ($filename)\n";
-				$looks_good = 0;
-			}
-			if ($desc =~ m/^\[/) {
-				print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
-				$looks_good = 0;
+			} elsif (Fink::Config::get_option("Pedantic")) {
+				# Some pedantic checks
+				if (length($desc) > 45 and !$pv->is_obsolete() ) {
+					print "Warning: Description of \"$name\" exceeds 45 characters. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^[Aa]n? /) {
+					print "Warning: Description of \"$name\" starts with \"A\" or \"An\". ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^[a-z]/) {
+					print "Warning: Description of \"$name\" starts with lower case. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ /\b\Q$name\E\b/i and !$pv->is_obsolete() ) {
+					print "Warning: Description of \"$name\" contains package name. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/\.$/) {
+					print "Warning: Description of \"$name\" ends with \".\". ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^\[/) {
+					print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
+					$looks_good = 0;
+				}
 			}
 		}
 
