@@ -899,6 +899,11 @@ as part of the Xcode tools.
 			MacOSX10.9.sdk
 			MacOSX10.10.sdk
 		);
+	} elsif ($osxversion == 15) {
+		@SDKDIRS=qw(
+			MacOSX10.10.sdk
+			MacOSX10.11.sdk
+		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
 	my $sdkpath;

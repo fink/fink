@@ -373,6 +373,10 @@ my $xcode_version;
 		$min_xcode="6.0";
 		$max_xcode="99.9";
 		# Only set the maximum xcode version once it's definite to avoid deadlocks.
+	} elsif ($vers >= 15) {
+		$min_xcode="7.0";
+		$max_xcode="99.9";
+		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 	} else {
 		die "ERROR:\n\tUnsupported OS X version.\n";
 	}
