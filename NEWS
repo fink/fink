@@ -18,7 +18,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Bugfix: Fix Xcode.app version detection in Engine.pm not to warn when
 	  there is no installed Xcode.app .
 	* Validation fix for empty Description field.
-	* Bump max Mountain Lion kernel version to 12.8.6, even though that's still
+	* Bump max Mountain Lion kernel version to 12.6, even though that's still
 	  OS 10.8.5.
 
 0.38.5 "Biscayne" (2015-05-13)
