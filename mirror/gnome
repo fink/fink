@@ -1,5 +1,5 @@
 # Official mirror list: https://download.gnome.org/WELCOME.msg.mirrorlist
-Timestamp: 2015-04-23
+Timestamp: 2015-06-12
 
 Primary: http://ftp.gnome.org/pub/GNOME
 
@@ -7,7 +7,7 @@ afr-ZA: http://ftp.is.co.za/mirror/ftp.gnome.org
 asi-CN: http://mirrors.ustc.edu.cn/gnome
 asi-JP: http://ftp.nara.wide.ad.jp/pub/X11/GNOME
 eur-DE: http://artfiles.org/gnome.org
-eur-DE: http://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.gnome.org
+eur-DE: https://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.gnome.org
 eur-FR: http://fr2.rpmfind.net/linux/gnome.org
 eur-FR: http://ftp.rpmfind.net/linux/gnome.org
 eur-IE: http://ftp.heanet.ie/mirrors/ftp.gnome.org
@@ -17,9 +17,10 @@ eur-SE: http://ftp.acc.umu.se/pub/GNOME
 eur-SE: http://ftp.df.lth.se/pub/gnome
 eur-SE: http://ftp.gnome.org/pub/GNOME
 eur-SE: http://ftp.sunet.se/pub/X11/GNOME
-eur-UK: http://www.mirrorservice.org/sites/ftp.gnome.org/pub/GNOME
+eur-UK: https://www.mirrorservice.org/sites/ftp.gnome.org/pub/GNOME
+nam-CA: https://muug.ca/mirror/gnome
+nam-US: http://ftp-chi.osuosl.org/pub/gnome
 nam-US: http://ftp-nyc.osuosl.org/pub/gnome
 nam-US: http://ftp-osl.osuosl.org/pub/gnome
-nam-US: http://ftp.cse.buffalo.edu/pub/Gnome
-nam-US: http://mirror.umd.edu/gnome
+nam-US: https://mirror.umd.edu/gnome
 sam-BR: http://mirror.nbtelecom.com.br/gnome

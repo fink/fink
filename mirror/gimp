@@ -1,19 +1,23 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2015-04-23
+Timestamp: 2015-06-12
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
 afr-ZA: http://gimp.afri.cc/pub/gimp
-asi-CN: ftp://mirrors.go-parts.com/gimp
-asi-CN: http://mirrors.go-parts.com/gimp
+asi-CN: ftp://mirrors.go-parts.com/gimp/gimp
+asi-CN: http://mirrors.go-parts.com/gimp/gimp
+eur-DE: ftp://ftp.fau.de/gimp/gimp
 eur-DE: http://de-mirror.gimper.net/pub/gimp
-eur-RU: ftp://mirrors-ru.go-parts.com/gimp
-eur-RU: http://mirrors-ru.go-parts.com/gimp
-eur-UK: ftp://mirrors-uk.go-parts.com/gimp
-eur-UK: http://mirrors-uk.go-parts.com/gimp
+eur-DE: https://ftp.fau.de/gimp/gimp
+eur-RU: ftp://mirrors-ru.go-parts.com/gimp/gimp
+eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
+eur-UK: ftp://mirrors-uk.go-parts.com/gimp/gimp
+eur-UK: http://mirrors-uk.go-parts.com/gimp/gimp
+eur-UK: http://www.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
 nam-US: ftp://ftp.gimp.org/pub/gimp
 nam-US: ftp://mirrors-usa.go-parts.com/gimp/gimp
 nam-US: http://gimp.mirrors.hoobly.com/pub/gimp
 nam-US: http://gimper.net/downloads/pub/gimp
-nam-US: http://mirrors-usa.go-parts.com/gimp/gimp
+nam-US: http://go-parts.com/mirrors-ru/gimp/gimp
+nam-US: http://go-parts.com/mirrors-usa/gimp/gimp
 sam-BR: http://mirror.nbtelecom.com.br/gimp

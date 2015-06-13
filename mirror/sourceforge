@@ -1,18 +1,17 @@
 # Official mirror list: http://sourceforge.net/p/forge/documentation/Mirrors/
-Timestamp: 2015-04-23
+Timestamp: 2015-06-12
 
 Primary: http://downloads.sourceforge.net
 
 afr-KE: http://liquidtelecom.dl.sourceforge.net/sourceforge
 afr-ZA: http://tenet.dl.sourceforge.net/sourceforge
 asi-JP: http://jaist.dl.sourceforge.net/sourceforge
+asi-KZ: http://kaz.dl.sourceforge.net/sourceforge
 asi-SG: http://softlayer-sng.dl.sourceforge.net/sourceforge
 asi-TW: http://nchc.dl.sourceforge.net/sourceforge
 asi-TW: http://ncu.dl.sourceforge.net/sourceforge
 aus-AU: http://aarnet.dl.sourceforge.net/sourceforge
 aus-AU: http://internode.dl.sourceforge.net/sourceforge
-aus-AU: http://waia.dl.sourceforge.net/sourceforge
-eur-CH: http://switch.dl.sourceforge.net/sourceforge
 eur-CZ: http://cznic.dl.sourceforge.net/sourceforge
 eur-CZ: http://ignum.dl.sourceforge.net/sourceforge
 eur-DE: http://netcologne.dl.sourceforge.net/sourceforge

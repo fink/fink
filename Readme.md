@@ -22,7 +22,7 @@ Requirements
 You need:
 
  * An installed Mac OS X system, version 10.7 or later. 
-   Earlier versions will not work with fink-0.38.5
+   Earlier versions will not work with fink-0.38.6
 
  * The Xcode Command Line Tools are mandatory. This package can be installed
    either by downloading it directly via developer.apple.com, through the

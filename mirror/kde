@@ -1,5 +1,5 @@
 # Official mirror list: http://files.kde.org/extra/mirrors.html
-Timestamp: 2015-04-23
+Timestamp: 2015-06-12
 
 Primary: http://download.kde.org/
 
@@ -14,7 +14,8 @@ asi-KR: http://ftp.kaist.ac.kr/kde
 asi-KR: http://ftp.neowiz.com/X/KDE
 asi-OM: ftp://mirror.squ.edu.om/kde
 asi-OM: http://mirror.squ.edu.om/kde
-aus-AU: http://kde.mirror.uber.com.au
+asi-TW: ftp://ftp.cs.pu.edu.tw/pub/kde
+asi-TW: http://ftp.cs.pu.edu.tw/pub/kde
 eur-AT: ftp://mirror.easyname.at/kde
 eur-AT: ftp://mirror.klaus-uwe.me/kde/ftp
 eur-AT: http://mirror.easyname.at/kde
@@ -65,6 +66,7 @@ eur-PL: http://ftp.pbone.net/pub/kde
 eur-PL: http://piotrkosoft.net/pub/mirrors/ftp.kde.org
 eur-PT: ftp://mirrors.fe.up.pt/pub/kde
 eur-PT: http://mirrors.fe.up.pt/pub/kde
+eur-SE: http://ftp.acc.umu.se/mirror/kde.org/ftp
 eur-UA: ftp://kde.ip-connect.vn.ua/mirror/kde
 eur-UA: http://kde.ip-connect.vn.ua
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.kde.org/pub/kde
