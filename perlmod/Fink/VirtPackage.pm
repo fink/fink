@@ -987,18 +987,20 @@ I</usr/bin/ld -v> contain a valid cctools-I<XXX> string.
 	print STDERR "- checking for cctools version... " if ($options{debug});
 
 	if (-x "/usr/bin/as" and -x "/usr/bin/what") {
-		my $LD_OUTPUT = '';
 		if (my $tempfile = tmpnam()) {
-			$LD_OUTPUT = `/usr/bin/as -v 2>&1 </dev/null -o $tempfile`;
+			my @ld_output = `/usr/bin/as -v 2>&1 </dev/null -o $tempfile`;
 			unlink $tempfile;
+
+			if ($ld_output[0] =~ /^.*version cctools-(\d+).*?$/) {
+				$cctools_version = $1;
+			} elsif ($ld_output[0] =~ /^.*clang-(\d+).*?$/) {
+				$cctools_version = $1;
+			} elsif (-x "/usr/bin/ld" and `/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
+				$cctools_version = $1;
+			}
 		} else {
 			print STDERR "unable to get temporary file: $!" if ($options{debug});
 		};
-		if ($LD_OUTPUT =~ /^.*version cctools-(\d+).*?$/) {
-			$cctools_version = $1;
-		} elsif (-x "/usr/bin/ld" and `/usr/bin/what /usr/bin/ld` =~ /^.*PROJECT:\s*cctools-(\d+).*?$/) {
-			$cctools_version = $1;
-		}
 	} else {
 		print STDERR "/usr/bin/ld or /usr/bin/what not executable... " if ($options{debug});
 	}
@@ -1463,7 +1465,7 @@ virtual packages. (See &package_from_pkgconfig).
 	our @x11_dirs=('/usr/X11R6'); 
 #   uncomment the line below when 10.7 and 10.8 are no longer supported, or 
 #   better yet, just put /opt/X11 above without a conditional.
-#	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later 
+	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later 
 	for my $base_dir (@x11_dirs, '/usr') {
 		my $dir = "$base_dir/lib/pkgconfig";
 		next unless (-d $dir);
