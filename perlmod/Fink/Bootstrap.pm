@@ -1056,9 +1056,9 @@ sub get_selfupdatetrees {
 		"10.6" => "10.4",
 		"10.7" => "10.7",
 		"10.8" => "10.7",
-		"10.9" => "10.9-libc++",
-		"10.10" => "10.9-libc++",
-		"10.11" => "10.9-libc++",
+		"10.9" => "10.9-libcxx",
+		"10.10" => "10.9-libcxx",
+		"10.11" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};
