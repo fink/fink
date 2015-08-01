@@ -484,8 +484,7 @@ sub spotlight_warning {
 										  "$basepath/src/fink.build");
 	if ( $> == 0
 			&& !$config->has_flag('SpotlightWarning')
-			&& $builddir !~ /\.build$/
-			&& $config->param("distribution") ge "10.4") {
+			&& $builddir !~ /\.build$/) {
 
 		$config->set_flag('SpotlightWarning');
 
