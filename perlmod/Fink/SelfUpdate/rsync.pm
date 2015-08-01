@@ -98,10 +98,6 @@ sub do_direct {
 	{
 		my $temp_dist = $distribution;
 
-		# workaround for people who upgraded to 10.5 without a fresh bootstrap
-		if (not $config->has_param("SelfUpdateTrees")) {
-			$temp_dist = "10.4" if ($temp_dist ge "10.4");
-		}
 		$temp_dist = $config->param_default("SelfUpdateTrees", $temp_dist);
 		@dists = split(/\s+/, $temp_dist);
 	}
