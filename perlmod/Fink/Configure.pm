@@ -35,6 +35,7 @@ use Fink::Services qw(&read_properties &read_properties_multival &filename
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection &print_breaking);
 
 use strict;
+use version 0.77;
 use warnings;
 
 BEGIN {
@@ -189,7 +190,8 @@ sub choose_misc {
 
 	print "\n";
 
-	if ($config->param("Distribution") ge "10.7") {
+	my $v_distribution = version->parse('v'.$config->param("Distribution"));
+	if ($v_distribution >= version->parse("v10.7")) {
 		print_breaking(
 			"Note: As of the OS X 10.7 distribution, fink no longer ".
 			"has a separate \"unstable\" tree. All development and ".
@@ -482,8 +484,7 @@ sub spotlight_warning {
 										  "$basepath/src/fink.build");
 	if ( $> == 0
 			&& !$config->has_flag('SpotlightWarning')
-			&& $builddir !~ /\.build$/
-			&& $config->param("distribution") ge "10.4") {
+			&& $builddir !~ /\.build$/) {
 
 		$config->set_flag('SpotlightWarning');
 
