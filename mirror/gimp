@@ -1,11 +1,11 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2015-06-12
+Timestamp: 2015-08-05
 
 Primary: ftp://ftp.gimp.org/pub/gimp
 
 afr-ZA: http://gimp.afri.cc/pub/gimp
-asi-CN: ftp://mirrors.go-parts.com/gimp/gimp
-asi-CN: http://mirrors.go-parts.com/gimp/gimp
+asi-JP: ftp://mirrors.go-parts.com/gimp/gimp
+asi-JP: http://mirrors.go-parts.com/gimp/gimp
 eur-DE: ftp://ftp.fau.de/gimp/gimp
 eur-DE: http://de-mirror.gimper.net/pub/gimp
 eur-DE: https://ftp.fau.de/gimp/gimp

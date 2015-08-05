@@ -1,5 +1,5 @@
 # Official mirror list: https://download.gnome.org/WELCOME.msg.mirrorlist
-Timestamp: 2015-06-12
+Timestamp: 2015-08-05
 
 Primary: http://ftp.gnome.org/pub/GNOME
 
@@ -22,5 +22,6 @@ nam-CA: https://muug.ca/mirror/gnome
 nam-US: http://ftp-chi.osuosl.org/pub/gnome
 nam-US: http://ftp-nyc.osuosl.org/pub/gnome
 nam-US: http://ftp-osl.osuosl.org/pub/gnome
+nam-US: http://ftp.cse.buffalo.edu/pub/Gnome
 nam-US: https://mirror.umd.edu/gnome
 sam-BR: http://mirror.nbtelecom.com.br/gnome

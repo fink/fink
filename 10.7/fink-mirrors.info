@@ -1,9 +1,10 @@
+Info4: <<
 Package: fink-mirrors
-Version: 0.38.5.1
+Version: 0.38.6.1
 Revision: 1
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: 341a69aebc6479e3303ef864da6840a9
+Source-MD5: 2efdd15d7d5cc54cc80f892f2b0ce847
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
@@ -30,8 +31,6 @@ asi-TW: http://nchc.dl.sourceforge.net/sourceforge
 asi-TW: http://ncu.dl.sourceforge.net/sourceforge
 aus-AU: http://aarnet.dl.sourceforge.net/sourceforge
 aus-AU: http://internode.dl.sourceforge.net/sourceforge
-aus-AU: http://waia.dl.sourceforge.net/sourceforge
-eur-CH: http://switch.dl.sourceforge.net/sourceforge
 eur-CZ: http://cznic.dl.sourceforge.net/sourceforge
 eur-CZ: http://ignum.dl.sourceforge.net/sourceforge
 eur-DE: http://netcologne.dl.sourceforge.net/sourceforge
@@ -47,10 +46,14 @@ eur-UK: http://vorboss.dl.sourceforge.net/sourceforge
 nam-CA: http://iweb.dl.sourceforge.net/sourceforge
 nam-US: http://colocrossing.dl.sourceforge.net/sourceforge
 nam-US: http://downloads.sourceforge.net
+nam-US: http://hivelocity.dl.sourceforge.net/sourceforge
 nam-US: http://softlayer-ams.dl.sourceforge.net/sourceforge
 nam-US: http://softlayer-dal.dl.sourceforge.net/sourceforge
 nam-US: http://superb-dca2.dl.sourceforge.net/sourceforge
+nam-US: http://superb-dca3.dl.sourceforge.net/sourceforge
 nam-US: http://tcpdiag.dl.sourceforge.net/sourceforge
+sam-BR: http://nbtelecom.dl.sourceforge.net/sourceforge
 sam-BR: http://ufpr.dl.sourceforge.net/sourceforge
 <<
 
+<<
