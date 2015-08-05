@@ -1,5 +1,5 @@
 # Official mirror list: http://www.debian.org/mirror/list
-Timestamp: 2015-06-12
+Timestamp: 2015-08-05
 
 Primary: ftp://ftp.debian.org/debian
 
@@ -39,7 +39,6 @@ eur-NL: http://ftp.nl.debian.org/debian
 eur-NO: http://ftp.no.debian.org/debian
 eur-PL: http://ftp.pl.debian.org/debian
 eur-PT: http://ftp.pt.debian.org/debian
-eur-RO: http://ftp.ro.debian.org/debian
 eur-RU: http://ftp.ru.debian.org/debian
 eur-SE: http://ftp.se.debian.org/debian
 eur-SI: http://ftp.si.debian.org/debian
