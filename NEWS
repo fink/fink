@@ -12,6 +12,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.38.x
 \-------------
 
+0.38.7 "Bryce Canyon" (2015-08-15)
+	* Support OS 10.10.4 and 10.10.5
+	* Bugfix: Replace more version strings with version objects  so that 10.10+ do the 
+	  right thing under comparisons.
+	  * Avoids people seeing information about enabling the nonexistent unstable tree
+	  	on 10.7 and later.
+	  * Also prevent creation of %p/fink/dists/stable/crypto
+
 0.38.6 "Black Canyon of the Gunnison" (2015-06-13)
 	* Bugfix: Maximum Xcode version conditional for 10.9 was being applied
 	  to 10.(>=9) .
