@@ -28,6 +28,7 @@ use Fink::Services	qw(&read_properties &get_options $VALIDATE_HELP);
 
 
 use strict;
+use version 0.77;
 use warnings;
 
 require Exporter;
@@ -370,7 +371,8 @@ binary distribution supplied by fink.  Prior to 10.6, the list was
 sub apt_tree_default {
 	my $distribution = shift;
 
-	if ($distribution gt "10.5") {
+	my $v_distribution = version->parse("v$distribution");
+	if ($v_distribution > version->parse("v10.5")) {
 		return "main";
 	} else {
 		return "main crypto";
