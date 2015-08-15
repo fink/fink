@@ -1465,7 +1465,7 @@ virtual packages. (See &package_from_pkgconfig).
 	our @x11_dirs=('/usr/X11R6'); 
 #   uncomment the line below when 10.7 and 10.8 are no longer supported, or 
 #   better yet, just put /opt/X11 above without a conditional.
-	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later 
+#	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later
 	for my $base_dir (@x11_dirs, '/usr') {
 		my $dir = "$base_dir/lib/pkgconfig";
 		next unless (-d $dir);
