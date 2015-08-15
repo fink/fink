@@ -12,6 +12,15 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.38.x
 \-------------
 
+0.38.6 "Black Canyon of the Gunnison" (2015-06-13)
+	* Bugfix: Maximum Xcode version conditional for 10.9 was being applied
+	  to 10.(>=9) .
+	* Bugfix: Fix Xcode.app version detection in Engine.pm not to warn when
+	  there is no installed Xcode.app .
+	* Validation fix for empty Description field.
+	* Bump max Mountain Lion kernel version to 12.6, even though that's still
+	  OS 10.8.5.
+
 0.38.5 "Biscayne" (2015-05-13)
 	* Support OS 10.10.3
 	* Revert supporting /opt/X11 directly on 10.8+ to provide X11 virtuals. 
