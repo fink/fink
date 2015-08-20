@@ -398,7 +398,7 @@ END
 
 =item "system-javaI<XX>"
 
-This package represents an installed version of Apple's and/or Oracle's Java.
+This package represents an installed version of Apple' and/or Oracle's Java.
 It is considered present if the
 /System/Library/Frameworks/JavaVM.framework/Versions/<version>/Commands (for versions<=1.6)
 and/or the /Library/Java/JavaVirtualMachines/jdk<version>_<uversion>.jdk/Contents/Home/bin (for versions>=1.7)
@@ -1023,7 +1023,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
-from the Downloads pane of Xcode 4.3+'s Preferences.
+from the Downloads pane of Xcode 4.3+ Preferences.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -1048,16 +1048,16 @@ if a dummy file can be linked using the -single_module flag.
 	# create dummy object for cctools-single-module, if supported
 	print STDERR "- checking for cctools -single_module support... " if ($options{debug});
 
-if ($cctools_version) {
-	if ($cctools_version >= 446) {
-		$cctools_single_module = $cctools_version;
-		print STDERR "yes, $cctools_version has it\n" if ($options{debug});
+	if ($cctools_version) {
+		if ($cctools_version >= 446) {
+			$cctools_single_module = $cctools_version;
+			print STDERR "yes, $cctools_version has it\n" if ($options{debug});
+		} else {
+			print STDERR "nope. oh well.\n" if ($options{debug});
+		}
 	} else {
-		print STDERR "nope.  oh well.\n" if ($options{debug});
+		print STDERR "nope. oh well.\n" if ($options{debug});
 	}
-} else {
-	print STDERR "nope. oh well.\n" if ($options{debug});
-}
 
 	$hash = {};
 	$hash->{package} = "cctools-single-module";
@@ -1077,7 +1077,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
-from the Downloads pane of Xcode 4.3+'s Preferences.
+from the Downloads pane of Xcode 4.3+ Preferences.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
@@ -1219,7 +1219,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
-from the Downloads pane of Xcode 4.3+'s Preferences.
+from the Downloads pane of Xcode 4.3+ Preferences.
 END
 				$hash->{compilescript} = &gen_compile_script($hash);
 				if ($version) {
@@ -1377,7 +1377,7 @@ If you are on OS X 10.7 or later, you should install the
 Xcode Command Line Tools package if you have Xcode 4.3 or later
 or if you just want the command-line tools. This can be
 installed either as a separate download from the above site, or
-from the Downloads pane of Xcode 4.3+'s Preferences.
+from the Downloads pane of Xcode 4.3+ Preferences.
 END
 	};
 
@@ -1559,10 +1559,10 @@ X11 on your system that is not installed through Fink.
 
 You can either use a Fink-supplied X11, such as the
 xfree86 or xorg sets of packages, or you can use a
-manually-installed (non-Fink) X11, such as Apple's
-X11User and X11SDK packages. You must not mix X11
-suppliers. If you are already using some type of
-manually-installed X11, please make sure you have
+manually-installed (non-Fink) X11, such as the
+X11User and X11SDK packages from Apple. You must not
+mix X11 suppliers. If you are already using some type
+of manually-installed X11, please make sure you have
 installed all components of it.
 
 For more information, please see the FAQ entry on X11
