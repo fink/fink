@@ -77,6 +77,15 @@ my $pkgconfig_virtual_prefix = 'system-pkgconfig-';
 my @xservers                 = ('Xquartz', 'XDarwin', 'XDarwinQuartz');
 my $the_instance             = undef;
 
+# keep the following in sync with "pkgconfig-common" package!
+my @x11_dirs                 = ('/opt/X11', '/usr/X11');
+my @pc_paths;
+for my $prefix_dir (@x11_dirs, '/usr') {
+	for my $arch_dir (qw/ lib share /) {
+		push @pc_paths, "$prefix_dir/$arch_dir/pkgconfig";
+	}
+}
+
 END { }				# module clean-up code here (global destructor)
 
 
@@ -250,7 +259,7 @@ END
 
 This package represents the version of the perl in /usr/bin.  It
 is determined by parsing the $^V variable in a perl script.  It
-also provides the perlI<XXX>-core package that corresponds with it's
+also provides the perlI<XXX>-core package that corresponds with its
 version.
 
 =cut
@@ -398,7 +407,7 @@ END
 
 =item "system-javaI<XX>"
 
-This package represents an installed version of Apple' and/or Oracle's Java.
+This package represents an installed version of Apple's and/or Oracle's Java.
 It is considered present if the
 /System/Library/Frameworks/JavaVM.framework/Versions/<version>/Commands (for versions<=1.6)
 and/or the /Library/Java/JavaVirtualMachines/jdk<version>_<uversion>.jdk/Contents/Home/bin (for versions>=1.7)
@@ -1349,7 +1358,7 @@ END
 =item "dev-tools"
 
 This package represents a developer suite of command-line compilers
-and related programs, for example, Apple's DevTools (OS X <= 10.2) or
+and related programs, for example, Apple DevTools (OS X <= 10.2) or
 Xcode (OS X >= 10.3). This package is considered "installed" iff
 /usr/bin/gcc and /usr/bin/make exist and are executable.
 
@@ -1462,12 +1471,7 @@ virtual packages. (See &package_from_pkgconfig).
 
 =cut
 
-	our @x11_dirs=('/usr/X11R6'); 
-#   uncomment the line below when 10.7 and 10.8 are no longer supported, or 
-#   better yet, just put /opt/X11 above without a conditional.
-#	unshift (@x11_dirs,'/opt/X11') if $osxversion >= 12 ; # Xquartz is supported only for Mountain Lion and later
-	for my $base_dir (@x11_dirs, '/usr') {
-		my $dir = "$base_dir/lib/pkgconfig";
+	for my $dir (@pc_paths) {
 		next unless (-d $dir);
 		if (opendir(PKGCONFIG_DIR, $dir)) {
 			while (my $file = readdir(PKGCONFIG_DIR)) {
@@ -2007,8 +2011,6 @@ Returns true if found, false if not.
 sub has_header {
 	my $headername = shift;
 
-	our @x11_dirs;
-
 	print STDERR "- checking for header $headername... " if ($options{debug});
 	if ($headername =~ /^\// and -f $headername) {
 		print STDERR "found\n" if ($options{debug});
@@ -2036,8 +2038,6 @@ Returns true if found, false if not.
 sub has_lib {
 	my $libname = shift;
 
-	our @x11_dirs;
-
 	print STDERR "- checking for library $libname... " if ($options{debug});
 	if ($libname =~ /^\// and -f $libname) {
 		print STDERR "found\n" if ($options{debug});
@@ -2058,9 +2058,8 @@ sub has_lib {
 
 Creates a virtual package from a pkgconfig file.
 
-If $name is a relative path, searches /usr, /usr/X11,
-and /usr/X11R6 pkgconfig directories and takes the
-first match.
+If $name is a relative path, searches the standard
+pkgconfig directories and takes the first match.
 
 The package name will be the in the form
 "system-pkgconfig-I<name>".
@@ -2077,8 +2076,8 @@ sub package_from_pkgconfig {
 	if ($filename =~ /^\//) {
 		push(@search_files, $filename);
 	} else {
-		for my $dir ('/usr', '/usr/X11', '/usr/X11R6') {
-			push(@search_files, $dir . '/lib/pkgconfig/' . $filename);
+		for my $dir (@pc_paths) {
+			push(@search_files, "$dir/$filename");
 		}
 	}
 
@@ -2149,7 +2148,6 @@ Returns the X11 version if found.
 
 ### Check the installed x11 version
 sub check_x11_version {
-	our @x11_dirs;
 	my (@XF_VERSION_COMPONENTS, $XF_VERSION);
 	for my $checkfile ('xterm.1', 'bdftruncate.1', 'gccmakedep.1') {
 		for my $xdir (@x11_dirs) {
