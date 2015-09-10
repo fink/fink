@@ -1072,9 +1072,6 @@ if a dummy file can be linked using the -single_module flag.
 	} else {
 		print STDERR "nope.  oh well.\n" if ($options{debug});
 	}
-} else {
-	print STDERR "nope. oh well.\n" if ($options{debug});
-}
 
 	$hash = {};
 	$hash->{package} = "cctools-single-module";
