@@ -907,10 +907,10 @@ as part of the Xcode tools.
 		@SDKDIRS=qw(
 			MacOSX10.9.sdk
 			MacOSX10.10.sdk
+			MacOSX10.11.sdk
 		);
 	} elsif ($osxversion == 15) {
 		@SDKDIRS=qw(
-			MacOSX10.10.sdk
 			MacOSX10.11.sdk
 		);
 	}
