@@ -959,8 +959,8 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 ++#endif
 diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/patches/extra-statusfile.patch
 --- dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/extra-statusfile.patch	2015-05-30 17:01:05.000000000 -0600
-@@ -0,0 +1,445 @@
++++ dpkg-1.17.6/fink/patches/extra-statusfile.patch	2015-09-23 15:34:10.000000000 -0600
+@@ -0,0 +1,443 @@
 +--- dpkg.orig/config.h.in
 ++++ dpkg/config.h.in
 +@@ -27,6 +27,9 @@
@@ -1111,7 +1111,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 +   {   AVAILFILE,                  &availablefile      },
 +   {   UPDATESDIR,                 &updatesdir         },
 +   {   UPDATESDIR IMPORTANTTMP,    &importanttmpfile   },
-+@@ -437,3 +451,28 @@
++@@ -437,3 +451,26 @@
 +     modstatdb_note(pkg);
 + }
 + 
@@ -1119,22 +1119,20 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 ++void
 ++run_fvp(void)
 ++{
+++  // If not root, wait till next time to refresh
+++  if (getuid()) return;
 ++  pid_t pid;
 ++
 ++  pid = subproc_fork();
 ++  if (pid == 0) {
 ++    struct command cmd;
-++    const char *fvp;
 ++    size_t finkstatusfile_len = strlen(ADMINDIR) + strlen(FINKSTATUSFILE) + 2;
 ++    char *finkstatusfile = m_malloc(finkstatusfile_len);
 ++
-++    fvp = FINKVIRTUALS;
 ++    snprintf(finkstatusfile, finkstatusfile_len, "%s/%s", ADMINDIR, FINKSTATUSFILE);
 ++
-++    command_init(&cmd, fvp, _("getting fink virtuals"));
-++    command_add_arg(&cmd, fvp);
-++    command_add_arg(&cmd, "-o");
-++    command_add_arg(&cmd, finkstatusfile);
+++    command_init(&cmd, FINKVIRTUALS, _("getting fink virtuals"));
+++    command_add_args(&cmd, FINKVIRTUALS, "-o", finkstatusfile, NULL);
 ++    command_exec(&cmd);
 ++  }
 ++  subproc_wait(pid, _("getting fink virtuals"));
@@ -1996,7 +1994,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/so-to-dylib.patch dpkg-1.17.6/fink/patch
 + 	    # the dep only as a default that can be overriden by a later
 diff -ruN dpkg-1.17.6.orig/fink/patches/test-fix.patch dpkg-1.17.6/fink/patches/test-fix.patch
 --- dpkg-1.17.6.orig/fink/patches/test-fix.patch	1969-12-31 17:00:00.000000000 -0700
-+++ dpkg-1.17.6/fink/patches/test-fix.patch	2015-05-30 14:13:37.000000000 -0600
++++ dpkg-1.17.6/fink/patches/test-fix.patch	2015-05-30 17:31:56.000000000 -0600
 @@ -0,0 +1,31 @@
 +--- dpkg.orig/src/t/100_dpkg_divert.t
 ++++ dpkg/src/t/100_dpkg_divert.t
@@ -2017,7 +2015,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/test-fix.patch dpkg-1.17.6/fink/patches/
 +     cleanup();
 + }
 + 
-+@@ -615,8 +616,9 @@
++@@ -614,8 +615,9 @@
 + 
 +     system("chmod 500 $admindir");
 +     call_divert(["$testdir/foo"], expect_failure => 1, expect_stderr_like => qr/create.*new/);
