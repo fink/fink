@@ -1,0 +1,28 @@
+diff -ruNp gettext-0.19.5.1-orig/gettext-runtime/libasprintf/Makefile.in gettext-0.19.5.1/gettext-runtime/libasprintf/Makefile.in
+--- gettext-0.19.5.1-orig/gettext-runtime/libasprintf/Makefile.in	2015-07-14 20:32:04.000000000 -0500
++++ gettext-0.19.5.1/gettext-runtime/libasprintf/Makefile.in	2015-07-15 22:07:00.000000000 -0500
+@@ -542,7 +542,7 @@ lib_asprintf_EXTRASOURCES = \
+ # How to build libasprintf.
+ # With libtool 1.5.14, on some platforms, like BeOS, "libtool --tag=CXX" fails
+ # to create a shared library, however "libtool --tag=CC" succeeds.
+-libasprintf_la_LDFLAGS = @LTNOUNDEF@
++libasprintf_la_LDFLAGS = @LTNOUNDEF@ -static
+ libgnu_la_SOURCES = size_max.h xsize.h xsize.c
+ libgnu_la_LIBADD = $(gl_LTLIBOBJS) @LTALLOCA@
+ libgnu_la_DEPENDENCIES = $(gl_LTLIBOBJS) @LTALLOCA@
+diff -ruNp gettext-0.19.5.1-orig/gettext-tools/src/Makefile.in gettext-0.19.5.1/gettext-tools/src/Makefile.in
+--- gettext-0.19.5.1-orig/gettext-tools/src/Makefile.in	2015-07-14 20:32:29.000000000 -0500
++++ gettext-0.19.5.1/gettext-tools/src/Makefile.in	2015-07-15 22:07:00.000000000 -0500
+@@ -2968,10 +2968,10 @@ urlget-urlget.obj: urlget.c
+ 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(urlget_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o urlget-urlget.obj `if test -f 'urlget.c'; then $(CYGPATH_W) 'urlget.c'; else $(CYGPATH_W) '$(srcdir)/urlget.c'; fi`
+ 
+ xgettext-xgettext.o: xgettext.c
+-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-xgettext.o `test -f 'xgettext.c' || echo '$(srcdir)/'`xgettext.c
++	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -O0 -c -o xgettext-xgettext.o `test -f 'xgettext.c' || echo '$(srcdir)/'`xgettext.c
+ 
+ xgettext-xgettext.obj: xgettext.c
+-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-xgettext.obj `if test -f 'xgettext.c'; then $(CYGPATH_W) 'xgettext.c'; else $(CYGPATH_W) '$(srcdir)/xgettext.c'; fi`
++	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -O0 -c -o xgettext-xgettext.obj `if test -f 'xgettext.c'; then $(CYGPATH_W) 'xgettext.c'; else $(CYGPATH_W) '$(srcdir)/xgettext.c'; fi`
+ 
+ xgettext-x-c.o: x-c.c
+ 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-x-c.o `test -f 'x-c.c' || echo '$(srcdir)/'`x-c.c

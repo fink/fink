@@ -1,0 +1,38 @@
+diff -ru openssl-1.0.1e.orig/util/perlpath.pl openssl-1.0.1e/util/perlpath.pl
+--- openssl-1.0.1e.orig/util/perlpath.pl	2013-02-11 10:02:48.000000000 -0500
++++ openssl-1.0.1e/util/perlpath.pl	2013-06-26 07:57:20.000000000 -0400
+@@ -4,10 +4,10 @@
+ # line in all scripts that rely on perl.
+ #
+ 
+-require "find.pl";
++use File::Find;
+ 
+ $#ARGV == 0 || print STDERR "usage: perlpath newpath  (eg /usr/bin)\n";
+-&find(".");
++&File::Find::find(\&wanted, ".");
+ 
+ sub wanted
+ 	{
+diff -ru openssl-1.0.1e.orig/util/point.sh openssl-1.0.1e/util/point.sh
+--- openssl-1.0.1e.orig/util/point.sh	2013-02-11 10:26:04.000000000 -0500
++++ openssl-1.0.1e/util/point.sh	2013-06-26 07:55:53.000000000 -0400
+@@ -1,10 +1,17 @@
+ #!/bin/sh
+ 
+-rm -f "$2"
++if [ `echo "$1" | tr '[[:upper:]]' '[[:lower:]]'` = `echo "$2" | tr '[[:upper:]]' '[[:lower:]]'` ]; then
++    echo "$2 => $1 not done ($1 =~ $2)"
++    echo "ln -s \"$1\" \"$2\"" >> @BUILDDIR@/skipped-links
++elif [ -e $2 ]; then	# this part is useless (given linking below with "ln -s"), except for the file "skipped-links" 
++    echo "$2 => $1 not done (-e $2)"
++    echo "ln -s \"$1\" \"$2\"" >> @BUILDDIR@/skipped-links
++else
+ if test "$OSTYPE" = msdosdjgpp || test "x$PLATFORM" = xmingw ; then
+     cp "$1" "$2"
+ else
+     ln -s "$1" "$2"
+ fi
+ echo "$2 => $1"
++fi
+ 
