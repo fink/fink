@@ -5,6 +5,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.38.x
 \-------------
 
+0.38.8 "Canyonlands" (2015-09-30)
+	* Last release to support 10.7 and 10.8.
+	* Updated pkgconfig path handling.
+
 0.38.7 "Bryce Canyon" (2015-08-15)
 	* Support OS 10.10.4 and 10.10.5
 	* Bugfix: Replace more version strings with version objects  so that 10.10+ do the 
