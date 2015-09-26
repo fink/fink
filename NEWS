@@ -9,8 +9,20 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Selfupdate via git and svn.
 
 /-------------
+| fink 0.39.x
+\-------------
+
+0.39.0 "Pike" (2015-09-30)
+	* Support OS 10.11
+	* Switch 10.9, 10.10, and 10.11 to use the 10.9-libcxx tree.
+
+/-------------
 | fink 0.38.x
 \-------------
+
+0.38.8 "Canyonlands" (2015-09-30)
+	* Last release to support 10.7 and 10.8.
+	* Updated pkgconfig path handling.
 
 0.38.7 "Bryce Canyon" (2015-08-15)
 	* Support OS 10.10.4 and 10.10.5
