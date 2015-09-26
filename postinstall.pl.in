@@ -252,6 +252,44 @@ if ($updating) {
 	}
 }
 
+# In this section, handle special cases where we have moved to a new real tree, but
+# have maintained binary compatibility, by copying the .debs over to the new tree.  
+
+# Currently applies to 10.9, 10.10, and pre-release 10.11.
+if ( $distribution eq "10.9" or $distribution eq "10.10" or $distribution eq "10.11") {
+	my @deb_list = glob "$basepath/fink/debs/*.deb";
+	my $copy_debs = 1;
+	foreach my $file ( @deb_list ) {
+		# Assume that we don't need to proceed if a single symlink resolves properly.
+		# Under normal circumstances 
+		if (stat $file) {
+			$copy_debs = 0;
+			last;
+		}
+	}
+	# no need to try to copy .debs if the old 10.7 directory has already been removed.
+	if ( $copy_debs and -d "$basepath/fink/10.7" ) {
+		print "Copying .debs...\n";
+		foreach my $file ( @deb_list ) {
+			my $target_file = readlink $file;
+			my $real_file = $target_file;
+			$real_file =~ s/10\.10/10.7/g;
+			my $dir =  dirname ( $target_file );	
+			# no need to make the directory if it already exists
+			unless ( -d "$basepath/fink/debs/$dir" ) {
+				if ( &execute ("/bin/mkdir -p $basepath/fink/debs/$dir" )) {
+					print "ERROR: couldn't create directory /sw/fink/debs/$dir\n";
+					exit 1;
+				}
+			}
+			if ( &execute ("/bin/cp -f $basepath/fink/debs/$real_file $basepath/fink/debs/$target_file" )) {
+					print "ERROR: couldn't create file /sw/fink/debs/$dir/$file\n";
+					exit 1;
+			}
+		}
+	}
+}
+
 # If a user upgrades to a new fink with AutoScanpackages, we'd rather do the
 # first (uncached, long) scan in postinst than at the end of the user's next
 # build.
