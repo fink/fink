@@ -192,23 +192,13 @@ GCC_MSG
 		&print_breaking("This system no longer supported " .
 			"for current versions of fink.  Please use fink 0.34.10 or earlier.\n");
 		$distribution = "10.6";
-	} elsif ($host =~ /^i386-apple-darwin11\.[0-4]\.[0-2]/) {
-		&print_breaking("This system is supported and tested.");
-		$distribution = "10.7";
 	} elsif ($host =~ /^i386-apple-darwin11\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
-			"guarantees.");
+		&print_breaking("This system no longer supported " .
+			"for current versions of fink.  Please use fink 0.38.8 or earlier.\n");
 		$distribution = "10.7";
-	} elsif ($host =~ /^i386-apple-darwin12\.[0-6]\.[0-1]/) {
-		&print_breaking("This system is supported and tested.");
-		$distribution = "10.8";
 	} elsif ($host =~ /^i386-apple-darwin12\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
-			"guarantees.");
+		&print_breaking("This system no longer supported " .
+			"for current versions of fink.  Please use fink 0.38.8 or earlier.\n");
 		$distribution = "10.8";
 	} elsif ($host =~ /^i386-apple-darwin13\.[0-5]/) {
 		&print_breaking("This system is supported and tested.");
