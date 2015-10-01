@@ -22,6 +22,7 @@ BuildDepends: libiconv-dev (>= 1.14-6)
 #UseMaxBuildJobs: false
 SetCFLAGS: -Os
 ConfigureParams: <<
+	--infodir='%p/share/info' \
 	--mandir='%p/share/man' \
 	--with-included-gettext \
 	--disable-csharp \
@@ -34,6 +35,7 @@ ConfigureParams: <<
 	--with-included-libunistring \
 	--without-git \
 	--without-cvs \
+	--without-xz \
 	ac_cv_prog_AWK=/usr/bin/awk \
 	ac_cv_path_GREP=/usr/bin/grep \
 	ac_cv_path_SED=/usr/bin/sed
@@ -43,6 +45,9 @@ CompileScript: <<
 	cd gettext-runtime
 	env EMACS=no CCACHE_DISABLE=1 JAVA=/usr/bin/java JAVAC=/usr/bin/javac ./configure %c
 	make
+<<
+InfoTest: <<
+	TestScript: cd gettext-runtime; make check || exit 2
 <<
 InstallScript: <<
 	#!/bin/sh -ev
@@ -105,9 +110,6 @@ DescPackaging: <<
 
 Shlibs: <<
   %p/lib/libintl.8.dylib 10.0.0 %n (>= 0.18-1)
-<<
-InfoTest: <<
-	TestScript: cd gettext-runtime; make check || exit 2
 <<
 License: GPL/LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
