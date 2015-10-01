@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # inject.pl - perl script to install a CVS version of one of the
 #             fink packages into an existing Fink tree
