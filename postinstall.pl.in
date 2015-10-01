@@ -264,12 +264,11 @@ if ( $distribution eq "10.9" or $distribution eq "10.10" or $distribution eq "10
 	foreach my $file ( @deb_list ) {
 		# Assume that we don't need to proceed if a single symlink resolves properly.
 		# Under normal circumstances 
-		if (stat $file) {
+		if (-l $file and -e $file) {
 			$copy_debs = 0;
 			last;
 		}
 	}
-	# no need to try to copy .debs if the old 10.7 directory has already been removed.
 	if ( $copy_debs ) {
 		print "Copying .debs...\n";
 		foreach my $file ( @deb_list ) {
