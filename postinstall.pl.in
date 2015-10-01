@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # postinstall.pl - perl script to check and store which OS version we
 #                are running, and to setup the dists directory
