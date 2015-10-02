@@ -290,13 +290,11 @@ if ( $distribution eq "10.9" or $distribution eq "10.10" or $distribution eq "10
 			# no need to make the directory if it already exists
 			unless ( -d "$basepath/fink/debs/$dir" ) {
 				if ( &execute ("/bin/mkdir -p $basepath/fink/debs/$dir" )) {
-					print "ERROR: couldn't create directory $basepath/fink/debs/$dir\n";
-					exit 1;
+					print "WARNING: couldn't create directory $basepath/fink/debs/$dir\n";
 				}
 			}
 			if ( &execute ("/bin/cp -f $basepath/fink/debs/$real_file $basepath/fink/debs/$target_file" )) {
-					print "ERROR: couldn't create file $basepath/fink/debs/$dir/$file\n";
-					exit 1;
+					print "WARNING: couldn't create file $basepath/fink/debs/$dir/$file\n";
 			}
 		}
 	}
