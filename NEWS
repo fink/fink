@@ -5,6 +5,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.39.x
 \-------------
 
+0.39.1 "Pierce" (2015-10-03)
+	* Properly support Apple's JavaForOSX2015-1
+	* Bugfix: Downgrade errors during postinstall .deb migration to nonfatal warnings
+
 0.39.0 "Pike" (2015-10-01)
 	* Support OS 10.11
 	* Switch 10.9, 10.10, and 10.11 to use the 10.9-libcxx tree.
