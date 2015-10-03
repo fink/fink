@@ -435,7 +435,7 @@ directories exist.
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
 		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
 		# Tweak $javadir to point to where stuff actually lives for JDK 1.6 and earlier.
-		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if $javadir =~ /System/;
+		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/ or $ver =~ /1.6.0/) ;
 		if (opendir(DIR, $javadir)) {
 			chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
 			for my $dir (reverse(sort(@dirs))) {
@@ -505,9 +505,9 @@ directories exist.
 						$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
-you must download and install Java for OS X 2014-001 from Apple:
+you must download and install Java for OS X 2015-001 from Apple:
 
-  http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg
+https://support.apple.com/downloads/DL1572/en_US/javaforosx.dmg
 
 END
 					} else {
