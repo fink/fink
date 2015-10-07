@@ -115,7 +115,7 @@ our %allowed_license_values = map {$_, 1}
 	 "GPL", "LGPL", "GPL/LGPL", "BSD", "Artistic", "Artistic/GPL", "GFDL",
 	 "GPL/GFDL", "LGPL/GFDL", "GPL/LGPL/GFDL", "LDP", "GPL/LGPL/LDP",
 	 "OSI-Approved", "Public Domain", "Restrictive/Distributable",
-	 "Restrictive", "Commercial", "DFSG-Approved"
+	 "Restrictive", "Commercial", "DFSG-Approved", "GPL/OpenSSL", "LGPL/OpenSSL"
 	);
 
 # Allowed values of the architecture field
