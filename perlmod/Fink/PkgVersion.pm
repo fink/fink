@@ -1157,7 +1157,7 @@ sub get_script {
 		$field_value = $self->param_default($field, '%{default_script}');
 
 		for my $suffix ($self->get_patchfile_suffixes()) {
-			$default_script .= "patch -p1 < \%{PatchFile$suffix}\n";
+			$default_script .= "/usr/bin/patch -p1 < \%{PatchFile$suffix}\n";
 		}
 
 	} elsif ($field eq 'compilescript') {
@@ -1175,7 +1175,7 @@ sub get_script {
 			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
 			$default_script =
 				"$archflags $perlcmd Makefile.PL \%c\n".
-				"make CC=gcc CXX=g++\n";
+				"/usr/bin/make CC=gcc CXX=g++\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
@@ -1186,13 +1186,13 @@ sub get_script {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$default_script =
 				"$rubycmd extconf.rb\n".
-				"make\n";
+				"/usr/bin/make\n";
 		} elsif ($self->is_type('dummy')) {
 			$default_script = "";
 		} else {
 			$default_script =
 				"./configure \%c\n".
-				"make\n";
+				"/usr/bin/make\n";
 		}
 
 	} elsif ($field eq 'installscript') {
@@ -1221,7 +1221,7 @@ sub get_script {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 			$default_script =
-				"make -j1 install PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin DESTDIR=\%d\n";
+				"/usr/bin/make -j1 install PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin DESTDIR=\%d\n";
 		} elsif ($type eq 'modulebuild') {
 			$default_script =
 				"./Build install\n";
@@ -1230,7 +1230,7 @@ sub get_script {
 				"/bin/mkdir -p \%i/share/doc/\%n\n".
 				"echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
 		} else {
-			$default_script = "make -j1 install prefix=\%i\n";
+			$default_script = "/usr/bin/make -j1 install prefix=\%i\n";
 		}
 
 	} elsif ($field eq 'testscript') {
@@ -1243,7 +1243,7 @@ sub get_script {
 		my $type = $self->get_defaultscript_type();
 		if ($type eq 'makemaker' && !$self->param_boolean('NoPerlTests')) {
 			$default_script =
-				"make test || exit 2\n";
+				"/usr/bin/make test || exit 2\n";
 		} elsif ($type eq 'modulebuild' && !$self->param_boolean('NoPerlTests')) {
 			$default_script =
 				"./Build test || exit 2\n";
@@ -3527,7 +3527,7 @@ GCC_MSG
 
 		# Determine unpack command
 		# print "\n$tar_is_pax\n";
-		$unpack_cmd = "cp $found_archive ."; # non-archive file
+		$unpack_cmd = "/bin/cp $found_archive ."; # non-archive file
 		# check for a tarball
 		if ($archive =~ /[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/ or $archive =~ /[\.\-]t[gbx]z$/) {
 			if (!$tar_is_pax) {  # No TarFilesRename
@@ -3603,15 +3603,15 @@ sub phase_patch {
 
 	if ($self->param_boolean("UpdateConfigGuess")) {
 		$patch_script .=
-			"cp -f $libpath/update/config.guess .\n".
-			"cp -f $libpath/update/config.sub .\n";
+			"/bin/cp -f $libpath/update/config.guess .\n".
+			"/bin/cp -f $libpath/update/config.sub .\n";
 	}
 	if ($self->has_param("UpdateConfigGuessInDirs")) {
 		foreach $subdir (split(/\s+/, $self->param("UpdateConfigGuessInDirs"))) {
 			next unless $subdir;
 			$patch_script .=
-				"cp -f $libpath/update/config.guess $subdir\n".
-				"cp -f $libpath/update/config.sub $subdir\n";
+				"/bin/cp -f $libpath/update/config.guess $subdir\n".
+				"/bin/cp -f $libpath/update/config.sub $subdir\n";
 		}
 	}
 
@@ -3619,15 +3619,15 @@ sub phase_patch {
 
 	if ($self->param_boolean("UpdateLibtool")) {
 		$patch_script .=
-			"cp -f $libpath/update/ltconfig .\n".
-			"cp -f $libpath/update/ltmain.sh .\n";
+			"/bin/cp -f $libpath/update/ltconfig .\n".
+			"/bin/cp -f $libpath/update/ltmain.sh .\n";
 	}
 	if ($self->has_param("UpdateLibtoolInDirs")) {
 		foreach $subdir (split(/\s+/, $self->param("UpdateLibtoolInDirs"))) {
 			next unless $subdir;
 			$patch_script .=
-				"cp -f $libpath/update/ltconfig $subdir\n".
-				"cp -f $libpath/update/ltmain.sh $subdir\n";
+				"/bin/cp -f $libpath/update/ltconfig $subdir\n".
+				"/bin/cp -f $libpath/update/ltmain.sh $subdir\n";
 		}
 	}
 
@@ -3635,7 +3635,7 @@ sub phase_patch {
 
 	if ($self->param_boolean("UpdatePoMakefile")) {
 		$patch_script .=
-			"cp -f $libpath/update/Makefile.in.in po/\n";
+			"/bin/cp -f $libpath/update/Makefile.in.in po/\n";
 	}
 
 	### run what we have so far
@@ -3667,7 +3667,7 @@ sub phase_patch {
 			unless ($dir_checked) {
 				my ($status,$dir) = is_accessible(dirname($file),'01');
 				die "$dir and its contents need to have at least o+x permissions. Run:\n\n".
-					"sudo chmod -R o+x $dir\n\n" if $dir;
+					"sudo /bin/chmod -R o+x $dir\n\n" if $dir;
 				$dir_checked=1;
 			}
 
@@ -3934,10 +3934,10 @@ sub phase_install {
 		$install_script .= "\n/usr/bin/install -d -m 755 %i/Applications";
 		for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
 			$bundle =~ s/\'/\\\'/gsi;
-			$install_script .= "\ncp -pR '$bundle' '%i/Applications/'";
+			$install_script .= "\n/bin/cp -pR '$bundle' '%i/Applications/'";
 		}
 		chomp (my $developer_dir=`xcode-select -print-path 2>/dev/null`);
-		$install_script .= "\nchmod -R o-w '%i/Applications/'" .
+		$install_script .= "\n/bin/chmod -R o-w '%i/Applications/'" .
 			"\nif test -x $developer_dir/Tools/SplitForks; then $developer_dir/Tools/SplitForks '%i/Applications/'; fi";
 	}
 
