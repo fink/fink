@@ -5,6 +5,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.39.x
 \-------------
 
+0.39.2 "Sheridan" (2015-10-31)
+	* Use system versions of tools (make, cp, chmod) in %{default_script}
+	* Add Restrictive/GPL and related License forms for OpenSSL-linked packages.
+
 0.39.1 "Pierce" (2015-10-03)
 	* Properly support Apple's JavaForOSX2015-1
 	* Bugfix: Downgrade errors during postinstall .deb migration to nonfatal warnings
