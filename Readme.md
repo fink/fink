@@ -21,22 +21,22 @@ Requirements
 
 You need:
 
- * An installed Mac OS X system, version 10.7 or later. 
-   Earlier versions will not work with fink-0.38.7
+ * An installed Mac OS X system, version 10.9 or later. 
+   Earlier versions will not work with fink-0.39.2
 
  * The Xcode Command Line Tools are mandatory. This package can be installed
-   either by downloading it directly via developer.apple.com, through the
-   Xcode application, on via the Components page of the Downloads tab of the
-   Preferences on 10.7 and 10.8, or on 10.9 and 10.10 by running the `xcode-select --install` 
-   command and choosing the Install button in the window that pops up, or
-   you can install the full Xcode if you prefer. You may also need to use
-   this command to update the tools, especially if you're having build
-   problems.
+   either by downloading it directly via developer.apple.com, or by running 
+   the `xcode-select --install` command and choosing the Install button 
+   in the window that pops up.
+   You may also need to use this command to update the tools, especially if 
+   you're having build problems.
 
    If you're doing a manual download, make sure that the tools you install
    match your Mac OS X version.
 
-* On 10.7-10.9 you will need to install Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you, (10.7, 10.9) or open up a browser window from which you can downloadthe latest Java JDK (10.8).
+   Some packages require the full Xcode.
+
+* Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you, (10.7, 10.9) or open up a browser window from which you can downloadthe latest Java JDK (10.8).
 
 * Many other things that come with Mac OS X and the Developer Tools. 
 This includes `perl` and `curl`.
