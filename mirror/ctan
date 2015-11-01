@@ -1,5 +1,5 @@
 # Official mirror list: ftp://tug.ctan.org/tex-archive/README.mirrors
-Timestamp: 2015-08-05
+Timestamp: 2015-10-31
 
 Primary: ftp://tug.ctan.org/tex-archive
 
@@ -29,13 +29,13 @@ asi-KR: http://ftp.ktug.org/tex-archive
 asi-KR: http://ftp.neowiz.com/CTAN
 asi-MY: http://ossm.utm.my/tex-archive
 asi-MY: http://wbc.upm.edu.my/tex-archive
+asi-PH: ftp://mirror.pregi.net/tex-archive
+asi-PH: http://mirror.pregi.net/tex-archive
 asi-SG: http://download.nus.edu.sg/mirror/ctan
 asi-TH: http://ctan.megagod.net/tex-archive
 asi-TW: ftp://ftp.ccu.edu.tw/pub/tex
 asi-TW: ftp://ftp.yzu.edu.tw/CTAN
-asi-TW: ftp://shadow.ind.ntou.edu.tw/ctan
 asi-TW: http://ftp.yzu.edu.tw/CTAN
-asi-TW: http://shadow.ind.ntou.edu.tw/ctan
 aus-AU: ftp://ftp.kddilabs.jp/CTAN
 aus-AU: http://ctan.unsw.edu.au
 aus-NZ: ftp://mirror.aut.ac.nz/CTAN
@@ -57,15 +57,12 @@ eur-DE: ftp://ftp.rrze.uni-erlangen.de/ctan
 eur-DE: ftp://ftp.rrzn.uni-hannover.de/pub/mirror/tex-archive
 eur-DE: ftp://ftp.tu-chemnitz.de/pub/tex
 eur-DE: ftp://mirror.physik-pool.tu-berlin.de/tex-archive
-eur-DE: ftp://mirror.selfnet.de/tex-archive
 eur-DE: ftp://sunsite.informatik.rwth-aachen.de/pub/mirror/ctan
-eur-DE: http://ctan.sciserv.eu
 eur-DE: http://ctan.space-pro.be/tex-archive
 eur-DE: http://ftp.fau.de/ctan
 eur-DE: http://ftp.fernuni-hagen.de/ftp-dir/pub/mirrors/www.ctan.org
 eur-DE: http://ftp.rrze.uni-erlangen.de/ctan
 eur-DE: http://mirror.physik-pool.tu-berlin.de/tex-archive
-eur-DE: http://mirror.selfnet.de/tex-archive
 eur-DE: http://mirror.unicorncloud.org/CTAN
 eur-DE: http://sunsite.informatik.rwth-aachen.de/ftp/pub/mirror/ctan
 eur-DK: ftp://mirrors.dotsrc.org/ctan
@@ -85,7 +82,9 @@ eur-GR: ftp://ftp.ntua.gr/mirror/ctan
 eur-GR: http://ftp.cc.uoc.gr/mirrors/CTAN
 eur-IE: http://ftp.heanet.ie/mirrors/ctan.org/tex
 eur-IT: http://ctan.mirror.garr.it/mirrors/CTAN
+eur-NL: ftp://archive.cs.uu.nl/mirror/CTAN
 eur-NL: ftp://ftp.snt.utwente.nl/pub/software/tex
+eur-NL: http://ctan.cs.uu.nl
 eur-NL: http://ftp.snt.utwente.nl/pub/software/tex
 eur-NO: ftp://ctan.uib.no/pub/CTAN
 eur-NO: http://ctan.uib.no

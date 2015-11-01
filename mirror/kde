@@ -1,5 +1,5 @@
 # Official mirror list: http://files.kde.org/extra/mirrors.html
-Timestamp: 2015-08-05
+Timestamp: 2015-10-31
 
 Primary: http://download.kde.org/
 
@@ -17,12 +17,9 @@ asi-TW: http://ftp.cs.pu.edu.tw/pub/kde
 aus-AU: ftp://ftp.kddlabs.co.jp/pub/X11/kde
 aus-AU: http://ftp.kddlabs.co.jp/pub/X11/kde
 eur-AT: ftp://mirror.easyname.at/kde
-eur-AT: ftp://mirror.klaus-uwe.me/kde/ftp
 eur-AT: http://mirror.easyname.at/kde
-eur-AT: http://mirror.klaus-uwe.me/kde/ftp
 eur-BE: http://kde.cu.be
 eur-CZ: ftp://ftp.fi.muni.cz/pub/kde
-eur-CZ: ftp://mirror.karneval.cz/pub/kde
 eur-CZ: http://ftp.fi.muni.cz/pub/kde
 eur-CZ: http://mirror.karneval.cz/pub/kde
 eur-DE: ftp://ftp-stud.fht-esslingen.de/pub/Mirrors/ftp.kde.org/pub/kde
@@ -74,6 +71,7 @@ nam-CA: http://mirror.csclub.uwaterloo.ca/kde
 nam-CA: http://mirror.its.dal.ca/kde
 nam-US: ftp://ftp.ussg.iu.edu/pub/kde
 nam-US: ftp://kde.mirrorcatalogs.com/kde
+nam-US: ftp://kde.mirrors.tds.net/pub/kde
 nam-US: ftp://mirror.cc.columbia.edu/pub/software/kde
 nam-US: ftp://mirrors-usa.go-parts.com/kde
 nam-US: ftp://mirrors.mit.edu/kde

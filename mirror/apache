@@ -1,11 +1,10 @@
 # Official mirror list: http://www.apache.org/mirrors/
-Timestamp: 2015-08-05
+Timestamp: 2015-10-31
 
 Primary: http://www.apache.org/dist
 
 afr-ZA: http://apache.is.co.za
 afr-ZA: http://apache.saix.net
-asi-BD: http://mirrors.ispros.com.bd/apache
 asi-CN: http://apache.dataguru.cn
 asi-CN: http://apache.fayea.com
 asi-CN: http://mirror.bit.edu.cn/apache
@@ -31,8 +30,8 @@ asi-TW: ftp://ftp.stu.edu.tw/Unix/Web/apache
 asi-TW: ftp://ftp.twaren.net/Unix/Web/apache
 asi-TW: http://apache.stu.edu.tw
 asi-TW: http://ftp.mirror.tw/pub/apache
-asi-TW: http://ftp.twaren.net/Unix/Web/apache
-asi-VN: http://mirrors.maychuviet.vn/apache
+asi-TW: http://ftp.tc.edu.tw/pub/Apache
+asi-VN: http://mirrors.viethosting.vn/apache
 aus-AU: ftp://ftp.kddilabs.jp/infosystems/apache
 aus-AU: http://apache.mirror.digitalpacific.com.au
 aus-AU: http://apache.mirror.serversaustralia.com.au
@@ -40,11 +39,9 @@ aus-AU: http://apache.uberglobalmirror.com
 aus-AU: http://ftp.kddilabs.jp/infosystems/apache
 aus-AU: http://mirror.ventraip.net.au/apache
 aus-NC: http://mirror.lagoon.nc/pub/apache
-aus-NZ: http://mirror.rackcentral.com.au/apache
 eur-AT: ftp://gd.tuwien.ac.at/pub/infosys/servers/http/apache/dist
-eur-AT: ftp://mirror2.klaus-uwe.me/apache
-eur-AT: http://mirror2.klaus-uwe.me/apache
 eur-BE: ftp://apache.belnet.be/mirrors/ftp.apache.org
+eur-BE: http://apache.belnet.be
 eur-BE: http://apache.cu.be
 eur-BG: http://apache.cbox.biz
 eur-BY: http://ftp.byfly.by/pub/apache.org
@@ -57,6 +54,7 @@ eur-DE: ftp://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist
 eur-DE: ftp://ftp.fau.de/apache
 eur-DE: ftp://ftp.fu-berlin.de/unix/www/apache
 eur-DE: ftp://ftp.halifax.rwth-aachen.de/apache
+eur-DE: ftp://mirror.netcologne.de/apache.org
 eur-DE: http://apache.cp.if.ua
 eur-DE: http://apache.lauf-forum.at
 eur-DE: http://apache.mirror.digionline.de
@@ -79,6 +77,7 @@ eur-DE: http://www.eu.apache.org/dist
 eur-DK: http://ftp.download-by.net/apache
 eur-DK: http://mirrors.dotsrc.org/apache
 eur-DK: http://mirrors.rackhosting.com/apache
+eur-ES: http://apache.rediris.es
 eur-ES: http://ftp.cixug.es/apache
 eur-FI: ftp://ftp.funet.fi/pub/mirrors/apache.org
 eur-FI: http://mirror.netinch.com/pub/apache
@@ -91,6 +90,7 @@ eur-FR: http://mirrors.ircam.fr/pub/apache
 eur-FR: http://wwwftp.ciril.fr/pub/apache
 eur-GR: ftp://ftp.cc.uoc.gr/mirrors/apache
 eur-GR: ftp://ftp.forthnet.gr/pub/www/apache
+eur-GR: http://apache.cc.uoc.gr
 eur-GR: http://apache.forthnet.gr
 eur-GR: http://apache.otenet.gr/dist
 eur-GR: http://apache.tsl.gr
@@ -134,6 +134,7 @@ eur-PL: ftp://ftp.task.gda.pl/pub/www/apache/dist
 eur-PL: http://ftp.piotrkosoft.net/pub/mirrors/ftp.apache.org
 eur-PL: http://ftp.ps.pl/pub/apache
 eur-PT: http://mirrors.fe.up.pt/pub/apache
+eur-RO: http://apache.javapipe.com
 eur-RO: http://mirrors.hostingromania.ro/apache.org
 eur-RU: http://apache-mirror.rbc.ru/pub/apache
 eur-SE: http://apache.mirrors.spacedump.net
@@ -165,8 +166,8 @@ nam-CA: http://apachemirror.ovidiudan.com
 nam-CA: http://mirror.csclub.uwaterloo.ca/apache
 nam-CA: http://mirror.its.dal.ca/apache
 nam-CA: http://mirror.olnevhost.net/pub/apache
-nam-MX: http://apache.webxcreen.org
 nam-US: ftp://apache.cs.utah.edu/apache.org
+nam-US: ftp://apache.mirrorcatalogs.com/apache
 nam-US: ftp://apache.mirrors.pair.com
 nam-US: ftp://apache.mirrors.tds.net/pub/apache.org
 nam-US: ftp://ftp.osuosl.org/pub/apache
@@ -175,6 +176,7 @@ nam-US: http://apache.arvixe.com
 nam-US: http://apache.claz.org
 nam-US: http://apache.cs.utah.edu
 nam-US: http://apache.go-parts.com
+nam-US: http://apache.mirrorcatalogs.com
 nam-US: http://apache.mirrors.hoobly.com
 nam-US: http://apache.mirrors.ionfish.org
 nam-US: http://apache.mirrors.lucidnetworks.net
@@ -197,7 +199,6 @@ nam-US: http://mirrors.gigenet.com/apache
 nam-US: http://mirrors.ibiblio.org/apache
 nam-US: http://mirrors.koehn.com/apache
 nam-US: http://mirrors.sonic.net/apache
-nam-US: http://psg.mtu.edu/pub/apache
 nam-US: http://supergsego.com/apache
 nam-US: http://www.carfab.com/apachesoftware
 nam-US: http://www.gtlib.gatech.edu/pub/apache
@@ -208,7 +209,7 @@ nam-US: http://www.trieuvan.com/apache
 nam-US: http://www.us.apache.org/dist
 nam-US: http://www.webhostingjams.com/mirror/apache
 sam-AR: http://apache.dattatec.com
-sam-AR: http://apache.xfree.com.ar
+sam-AR: http://mirrors.dcarsat.com.ar/apache
 sam-AR: http://mirrors.nxnethosting.com/apache
 sam-BR: http://ftp.unicamp.br/pub/apache
 sam-BR: http://mirror.nbtelecom.com.br/apache
