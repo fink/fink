@@ -523,7 +523,8 @@ sub do_real_list {
 			[ 'newer|N'			=>
 				sub {$sel_opts{installedstate} |= $ISTATE_TOONEW   ;},
 				'Only list packages whose installed version is newer than '
-				. 'anything fink knows about.' ],
+				. 'anything fink knows about, including packages which '
+                . 'have been removed from the distribution.' ],
 			[ 'buildonly|b'		=> \$sel_opts{'buildonly'},
 				'Only list packages which are Build Depends Only' ],
 			[ 'section|s=s'		=> \$sel_opts{'section'},

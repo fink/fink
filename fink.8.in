@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.Dd April 2012
+.Dd November 2015
 .Dt FINK 8
 .Sh NAME
 .Nm fink
@@ -337,7 +337,8 @@ latest version is installed
 .It (i)
 some version is installed, but a newer version is available
 .It *i*
-the version which is installed is more recent than the newest version currently available
+the version which is installed is more recent than the newest version currently available,
+which may mean there is no current version.
 .It \ p
 a virtual package provided by a package that is installed
 .El
@@ -442,7 +443,8 @@ Show packages which are not currently installed.
 .It Cm -N,--newer
 Show packages whose installed version is newer than anything
 .Nm
-knows about.
+knows about, including packages which have been removed from
+the distribution.
 .It Cm -s expr,--section=expr
 Show only packages in the sections matching expr.
 .It Cm -m expr,--maintainer=expr
