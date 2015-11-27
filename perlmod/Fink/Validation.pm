@@ -1337,7 +1337,7 @@ sub validate_info_component {
 		# check dpkg Depends-style field syntax
 		# Architecture is a special case of this same syntax
 		if ($pkglist_fields{$field}) {
-			(my $pkglist = $value) =~ tr/\n//d; # convert to single line
+			(my $pkglist = $value) =~ tr/\n/ /s; # convert to single line (NB: don't concat strings that were separated by lines)
 			if ($info_level >= 3) {
 				$pkglist =~ s/#.*$//mg;
 				$pkglist =~ s/,\s*$//;
