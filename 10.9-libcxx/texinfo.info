@@ -1,0 +1,372 @@
+Package: texinfo
+Version: 5.2
+Revision: 1.1
+Source: gnu
+Source-MD5: 1b8f98b80a8e6c50422125e07522e8db
+SourceDirectory: %n-%v
+BuildDepends: <<
+	fink (>= 0.39.99.git),
+	libiconv-dev,
+	libncurses5 (>= 5.4-20041023-1006),
+	libgettext8-dev,
+	gettext-tools
+<<
+Depends: <<
+	ncurses (>= 5.4-20041023-1006),
+	libncurses5-shlibs (>= 5.4-20041023-1006),
+	libgettext8-shlibs,
+	libiconv
+<<
+RuntimeDepends: <<
+	text-unidecode-pm
+<<
+Replaces: <<
+	tetex-base (<< 3.0-1)
+<<
+PatchFile: %n.patch
+PatchFile-MD5: 86da36f82b92097944964490772282ba
+PatchScript: <<
+chmod a+x build-aux/install-sh
+
+sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+
+patch -p1 < fink/patches/fix-broken-po-files
+patch -p1 < fink/patches/warn_missing_tex
+patch -p1 < fink/patches/numerical-signal-names
+patch -p1 < fink/patches/info_universal_argument
+patch -p1 < fink/patches/dont_build_info
+
+# help2man isn't present in bootstrap so patch it out
+perl -pi -e 's,help2man,true,g' configure
+<<
+ConfigureParams: <<
+	--mandir=%p/share/man \
+	--infodir=%p/share/info \
+	--with-external-Text-Unidecode=yes \
+	--with-external-libintl-perl=yes \
+	--disable-tp-tests
+<<
+CompileScript: <<
+./configure %c
+echo '#define DEFAULT_INFOPATH "%p/share/info:%p/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:."' >>config.h
+make
+<<
+InfoTest: <<
+	TestConflicts: <<
+		pod-simple-pm
+	<<
+	TestScript: <<
+		make check ALL_TESTS=yes || exit 2
+	<<
+<<
+InstallScript: <<
+AM_UPDATE_INFO_DIR=no make install prefix=%i mandir=%i/share/man infodir=%i/share/info
+TEXMF=%i/share/texmf make install-tex prefix=%i mandir=%i/share/man infodir=%i/share/info
+find %i -type f -name dir | xargs rm -f
+
+# epsf.tex is in texlive
+rm -rf %i/share/texmf/tex/generic
+
+# install additional files that are not installed by default
+install -m 0755 util/txixml2texi %i/bin/txixml2texi
+
+# work on fink install-info
+mv %i/bin/install-info %i/bin/ginstall-info
+sed -e "s/install-info/g&/g" \
+	< %i/share/man/man1/install-info.1 \
+	> %i/share/man/man1/ginstall-info.1
+rm -f %i/share/man/man1/install-info.1
+install -m 0755 fink/install-info.sh %i/bin/install-info
+install -m 0644 fink/install-info.1 %i/share/man/man1/install-info.1
+install -d -m 0755 %i/sbin
+install -m 0755 fink/update-info-dir %i/sbin/update-info-dir
+install -d -m 0755 %i/share/man/man8
+install -m 0644 fink/update-info-dir.8 %i/share/man/man8/update-info-dir.8
+install -d -m 0755 %i/etc/texmf/fmt.d
+install -m 0644 fink/conf/50cyrtexinfo.cnf %i/etc/texmf/fmt.d
+install -d -m 0755 %i/var/lib/tex-common/fmtutil-cnf
+echo "50cyrtexinfo" > %i/var/lib/tex-common/fmtutil-cnf/texinfo.list
+
+install -d -m 0755 %i/share/menu
+install -m 0644 fink/info.menu %i/share/menu/info
+
+# charset.alias supplied from gettext
+rm -rf %i/lib
+
+install -d -m 0755 %i/lib/mime/packages
+install -m 0644 fink/info.mime %i/lib/mime/packages/info
+<<
+DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
+#
+Description: GNU documentation system
+DescDetail: <<
+Texinfo is a documentation system that uses a single source file to
+produce both on-line information and printed output.
+.
+Using Texinfo, you can create a printed document with the normal features
+of a book, including chapters, sections, cross references, and indices.
+From the same Texinfo source file, you can create a menu-driven, on-line
+Info file with nodes, menus, cross references, and indices.
+<<
+DescPackaging: <<
+The TeX files (texinfo.tex, txi-??.tex and epsf.tex) are not installed
+right now. The teTeX package already has them.
+
+As of dpkg > 1.15.x dpkg no longer has install-info, Justin F. Hallett added
+splits to make an install-info file with triggers to solve this issue.
+
+Triggers now make the need for InfoFiles completely redundant and should be
+deprecated.
+<<
+PostInstScript: <<
+build_format_if_format_exists ()
+{
+    v=`kpsewhich -var-value TEXMFSYSVAR` || return 0
+    c=`kpsewhich -var-value TEXMFSYSCONFIG` || return 0
+    TEXMFVAR="$v"
+    TEXMFCONFIG="$c"
+    export TEXMFVAR TEXMFCONFIG
+    if kpsewhich --format='web2c files' fmtutil.cnf > /dev/null 2>&1 ; then
+    	fmtcnffile=`kpsewhich --format='web2c files' fmtutil.cnf`
+    else
+    	return 0
+    fi
+    X=`cat $fmtcnffile | grep "^$2[[:space:]]" || true`
+    if [ ! "X$X" = "X" ] ; then
+        if [ "X$1" = "X--byhyphen" ] ; then
+	    build_format --byhyphen $3
+	else
+            build_format $1 $2
+	fi
+    fi
+}
+
+build_format ()
+{
+    tempfile=`mktemp -t fmtutil.XXXXXXXX`
+    /bin/echo -n "Building format(s) $1 `basename "$2"`. This may take some time. ..."
+    if fmtutil-sys $1 $2 > $tempfile 2>&1 ; then
+        rm -f $tempfile
+	echo " done."
+    else
+        echo
+	echo "fmtutil-sys failed. Output has been stored in"
+	echo "$tempfile"
+	echo "Please include this file if you report a bug."
+	echo
+	exit 1
+    fi
+}
+
+update_lsr_files ()
+{
+    tempfile=`mktemp -t mktexlsr.XXXXXXXX`
+    /bin/echo -n "Running mktexlsr. This may take some time. ..."
+    if mktexlsr %p/share/texmf %p/var/lib/texmf > $tempfile 2>&1 ; then
+         rm -f $tempfile
+	 echo " done."
+    else
+          echo
+	  echo "mktexlsr failed. Output has been stored in"
+	  echo "$tempfile"
+	  echo "Please include this file if you report a bug."
+	  echo
+	  exit 1
+    fi
+}
+
+# common.functions end
+case "$1" in
+    configure|abort-upgrade|abort-remove|abort-deconfigure)
+	#
+	# update-fmtutil checks for %p/etc/texmf/fmt.d/00tex.cnf which
+	# may not be present, also the update-fmtutil is already
+	# present (config files are installed at config time!)
+	# So we have to check for the existence of this file
+	# before we can call update-fmtutil
+	if [ -r %p/etc/texmf/fmt.d/00tex.cnf ] ; then
+	    if which update-fmtutil > /dev/null ; then update-fmtutil ; fi
+	fi
+	if which mktexlsr >/dev/null; then update_lsr_files; fi
+	# tetex might be unpacked but not configured, we have to check
+	# whether %p/etc/texmf/texmf.cnf already exists. The following check
+	# does two things: 1) check whether libkpathsea is configured, and
+	# 2) whether tex-common is configured.
+	if kpsewhich texmf.cnf > /dev/null 2>&1 ; then 
+	    build_format_if_format_exists --byfmt texinfo
+	    build_format_if_format_exists --byfmt cyrtexinfo
+	fi
+	;;
+    *)
+    	/bin/echo "postinst called with unknown argument \`$1'" >&2
+	exit 1
+    ;;
+esac
+<<
+PostRmScript: <<
+check_run_without_errors ()
+{
+    tempfile=`mktemp -t checkrun.XXXXXXXX`
+    if which $1  >/dev/null; then
+        /bin/echo -n "Running $1. This may take some time. ..."
+	set +e
+        $* > $tempfile 2>&1
+	if [ $? = 0 ] ; then
+	  rm -f $tempfile
+	  echo " done."
+	else
+	  echo
+	  echo "$* failed. Output has been stored in"
+	  echo "$tempfile"
+	  echo "If tex-common is not configured you can ignore this error message!"
+	  echo "Otherwise please include this file if you report a bug."
+	  echo
+	fi
+	set -e
+    else
+        rm -f $tempfile
+    fi
+    return 0
+}
+
+update_lsr_files ()
+{
+    tempfile=`mktemp -t mktexlsr.XXXXXXXX`
+    /bin/echo -n "Running mktexlsr. This may take some time. ..."
+    if mktexlsr %p/share/texmf %p/var/lib/texmf > $tempfile 2>&1 ; then
+         rm -f $tempfile
+	 echo " done."
+    else
+          echo
+	  echo "mktexlsr failed. Output has been stored in"
+	  echo "$tempfile"
+	  echo "Please include this file if you report a bug."
+	  echo
+	  exit 1
+    fi
+}
+
+case "$1" in
+    remove|disappear)
+        rm -f %p/var/lib/texmf/web2c/texinfo.*
+        rm -f %p/var/lib/texmf/web2c/cyrtexinfo.*
+        check_run_without_errors update-fmtutil
+	check_run_without_errors mktexlsr %p/share/texmf %p/var/lib/texmf
+    ;;
+    purge|upgrade|failed-upgrade|abort-upgrade|abort-install)
+    ;;
+    *)
+    	echo "postrm called with unknown argument \`$1'" >&2
+	exit 1
+    ;;
+esac
+<<
+License: GPL/GFDL
+Maintainer:  Dave Morrison <drm@finkproject.org>
+Homepage: http://www.gnu.org/software/texinfo/
+
+SplitOff: <<
+	Package: info
+	Depends: <<
+		install-info,
+		libncurses5-shlibs
+	<<
+	Provides: info-browser
+	Replaces: <<
+		texinfo (<< 4.13-1002),
+		dpkg (<< 1.15)
+	<<
+	Files: <<
+		bin/info*
+		lib/mime
+		share/man/man1/info*
+		share/menu
+	<<
+	DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
+	Description: Standalone GNU Info documentation browser
+	DescDetail: <<
+The Info file format is an easily-parsable representation for online
+documents. This program allows you to view Info documents, like the
+ones stored in %p/share/info and $p/info.
+.
+Much of the software in Debian comes with its online documentation in
+the form of Info files, so it is most likely you will want to install it.
+	<<
+	PostInstScript: <<
+if [ "$1" = "configure" ] || [ "$1" = "upgrade" ]; then
+  update-alternatives --install %p/bin/infobrowser infobrowser \
+                                %p/bin/info 60 \
+                      --slave %p/share/man/man1/infobrowser.1 infobrowser.1 \
+                              %p/share/man/man1/info.1
+fi
+	<<
+	PreRmScript: <<
+if [ "$1" != "upgrade" ]; then
+  update-alternatives --remove infobrowser %p/bin/info
+fi
+	<<
+<<
+SplitOff2: <<
+	Package: install-info
+	# Comment out for bootstrap version
+	# Depends: dpkg (>= 1.15)
+	Replaces: texinfo (<< 4.13-1002)
+	Essential: true
+	Files: <<
+		bin/ginstall-info
+		bin/install-info
+		sbin
+		share/man/man1/ginstall-info.1
+		share/man/man1/install-info.1
+		share/man/man8
+	<<
+	DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
+	Triggers: <<
+		Interest-noawait: <<
+			%p/share/info
+			%p/info
+		<<
+	<<
+	Description: Manage installed documentation in info format
+	DescDetail: <<
+The install-info utility creates the index of all installed documentation
+in info format and makes it available to info readers.
+	<<
+	PostInstScript: <<
+# 
+# postinst maintainer script for the Debian install-info package
+#
+# Copyright (C) 2009 Norbert Preining <preining@logic.at>.
+#
+# This file is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to: The Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# On Debian GNU/Linux System you can find a copy of the GNU General Public
+# License in "%p/share/common-licenses/GPL".
+#
+
+umask 022
+
+# we only have to call update-info-dir for configure, reconfigure, and
+# triggered transitions. All others are simply ignored.
+
+case $1 in
+    configure|reconfigure|triggered)
+        update-info-dir
+        ;;
+    *)
+        ;;
+esac
+	<<
+<<
