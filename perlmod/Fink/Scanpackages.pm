@@ -506,7 +506,9 @@ sub _output {
 	return if !$self->{restrictive} && (
 		!exists $control->{'Fink-License'}
 		|| lc $control->{'Fink-License'} eq 'restrictive'
-		|| lc $control->{'Fink-License'} eq 'commercial');
+		|| lc $control->{'Fink-License'} eq 'commercial'
+		|| lc $control->{'Fink-License'} eq 'gpl/openssl'
+		|| lc $control->{'Fink-License'} eq 'lgpl/openssl');
 
 	# Order to output fields, from apt-pkg/tagfile.cc
 	my @fieldorder = qw(Package Essential Status Priority Section

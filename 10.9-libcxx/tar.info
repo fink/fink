@@ -23,7 +23,7 @@ ConfigureParams: <<
 <<
 CompileScript: <<
 	%p/bin/fink -y install libgettext8-dev libiconv-dev
-	./configure %c
+	./configure %c gl_cv_func_getcwd_abort_bug=no
 	make
 <<
 InfoTest: <<
@@ -63,6 +63,9 @@ DescPackaging: <<
 
  One of the ./configure checks doesn't work when done as root;
  FORCE_UNSAFE_CONFIGURE ignores that test-result.
+
+ Setting gl_cv_func_getcwd_abort_bug=no avoids infinite subdirectory recursion
+ on 10.11+, and is harmless for other OS X.
 
  Previous versions by Christoph Pfisterer.
 <<

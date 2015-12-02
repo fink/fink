@@ -117,7 +117,7 @@ our %allowed_license_values = map {$_, 1}
 	 "GPL", "LGPL", "GPL/LGPL", "BSD", "Artistic", "Artistic/GPL", "GFDL",
 	 "GPL/GFDL", "LGPL/GFDL", "GPL/LGPL/GFDL", "LDP", "GPL/LGPL/LDP",
 	 "OSI-Approved", "Public Domain", "Restrictive/Distributable",
-	 "Restrictive", "Commercial", "DFSG-Approved"
+	 "Restrictive", "Commercial", "DFSG-Approved", "GPL/OpenSSL", "LGPL/OpenSSL"
 	);
 
 # Allowed values of the architecture field
@@ -1049,37 +1049,39 @@ sub validate_info_file {
 	foreach my $pv (@pvs) {
 		# sanity-checks for each in family (including variants and splitoffs)
 
-		my $desc = $pv->{description};
 		my $name = $pv->get_name();
 
-		if (length($desc) > 60 and !$pv->is_obsolete()) {
-			print "Error: Description of \"$name\" exceeds 60 characters. ($filename)\n";
-			$looks_good = 0;
-		} elsif (Fink::Config::get_option("Pedantic")) {
-			# Some pedantic checks
-			if (length($desc) > 45 and !$pv->is_obsolete() ) {
-				print "Warning: Description of \"$name\" exceeds 45 characters. ($filename)\n";
+		# misc rules for the Description field (if there is one)
+		if (defined (my $desc = $pv->{description})) {
+			if (length($desc) > 60 and !$pv->is_obsolete()) {
+				print "Error: Description of \"$name\" exceeds 60 characters. ($filename)\n";
 				$looks_good = 0;
-			}
-			if ($desc =~ m/^[Aa]n? /) {
-				print "Warning: Description of \"$name\" starts with \"A\" or \"An\". ($filename)\n";
-				$looks_good = 0;
-			}
-			if ($desc =~ m/^[a-z]/) {
-				print "Warning: Description of \"$name\" starts with lower case. ($filename)\n";
-				$looks_good = 0;
-			}
-			if ($desc =~ /\b\Q$name\E\b/i and !$pv->is_obsolete() ) {
-				print "Warning: Description of \"$name\" contains package name. ($filename)\n";
-				$looks_good = 0;
-			}
-			if ($desc =~ m/\.$/) {
-				print "Warning: Description of \"$name\" ends with \".\". ($filename)\n";
-				$looks_good = 0;
-			}
-			if ($desc =~ m/^\[/) {
-				print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
-				$looks_good = 0;
+			} elsif (Fink::Config::get_option("Pedantic")) {
+				# Some pedantic checks
+				if (length($desc) > 45 and !$pv->is_obsolete() ) {
+					print "Warning: Description of \"$name\" exceeds 45 characters. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^[Aa]n? /) {
+					print "Warning: Description of \"$name\" starts with \"A\" or \"An\". ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^[a-z]/) {
+					print "Warning: Description of \"$name\" starts with lower case. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ /\b\Q$name\E\b/i and !$pv->is_obsolete() ) {
+					print "Warning: Description of \"$name\" contains package name. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/\.$/) {
+					print "Warning: Description of \"$name\" ends with \".\". ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^\[/) {
+					print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
+					$looks_good = 0;
+				}
 			}
 		}
 
@@ -1428,7 +1430,7 @@ sub validate_info_component {
 		# check dpkg Depends-style field syntax
 		# Architecture is a special case of this same syntax
 		if ($pkglist_fields{$field}) {
-			(my $pkglist = $value) =~ tr/\n//d; # convert to single line
+			(my $pkglist = $value) =~ tr/\n/ /s; # convert to single line (NB: don't concat strings that were separated by lines)
 			if ($info_level >= 3) {
 				$pkglist =~ s/#.*$//mg;
 				$pkglist =~ s/,\s*$//;
@@ -2401,15 +2403,17 @@ sub _validate_dpkg {
 				if (open (OTOOL, "$otool -hv '$dylib_temp' |")) {
 					<OTOOL>; <OTOOL>; <OTOOL>; # skip first three lines
 					unless ( <OTOOL> =~ /TWOLEVEL/ ) {
-						print "Error: $dylib_temp appears to have been linked using a flat namespace.\n";
+						print "SERIOUS WARNING: $dylib_temp appears to have been linked using a flat namespace.\n";
 						print "       If this package BuildDepends on libtool2, make sure that you use\n";
 						print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
 						print "       and use autoreconf to regenerate the configure script.\n";
 						print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
 						print "       update its build procedure to avoid passing\n";	 
 						print "          -Wl,-flat_namespace\n"; 
-						print "       when linking libraries.\n";
-						$looks_good = 0;
+						print "       when linking libraries.\n\n";
+						print "		  If this package actually requires a flat namespace build,\n";
+						print "		  then ignore this message.\n\n";
+						sleep 60;
 					} 
 					close (OTOOL);
 				}

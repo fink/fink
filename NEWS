@@ -2,15 +2,54 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
-| TBD
+| fink 0.39.x
 \-------------
-	
-	* Update Debian toolset.
-	* Selfupdate via git and svn.
+
+0.39.2 "Sheridan" (2015-10-31)
+	* Use system versions of tools (make, cp, chmod) in %{default_script}
+	* Add Restrictive/GPL and related License forms for OpenSSL-linked packages.
+
+0.39.1 "Pierce" (2015-10-03)
+	* Properly support Apple's JavaForOSX2015-1
+	* Bugfix: Downgrade errors during postinstall .deb migration to nonfatal warnings
+
+0.39.0 "Pike" (2015-10-01)
+	* Support OS 10.11
+	* Switch 10.9, 10.10, and 10.11 to use the 10.9-libcxx tree.
 
 /-------------
 | fink 0.38.x
 \-------------
+
+0.38.8 "Canyonlands" (2015-10-01)
+	* Last release to support 10.7 and 10.8.
+	* Updated pkgconfig path handling.
+
+0.38.7 "Bryce Canyon" (2015-08-15)
+	* Support OS 10.10.4 and 10.10.5
+	* Bugfix: Replace more version strings with version objects  so that 10.10+ do the 
+	  right thing under comparisons.
+	  * Avoids people seeing information about enabling the nonexistent unstable tree
+	  	on 10.7 and later.
+	  * Also prevent creation of %p/fink/dists/stable/crypto
+
+0.38.6 "Black Canyon of the Gunnison" (2015-06-13)
+	* Bugfix: Maximum Xcode version conditional for 10.9 was being applied
+	  to 10.(>=9) .
+	* Bugfix: Fix Xcode.app version detection in Engine.pm not to warn when
+	  there is no installed Xcode.app .
+	* Validation fix for empty Description field.
+	* Bump max Mountain Lion kernel version to 12.6, even though that's still
+	  OS 10.8.5.
+
+0.38.5 "Biscayne" (2015-05-13)
+	* Support OS 10.10.3
+	* Revert supporting /opt/X11 directly on 10.8+ to provide X11 virtuals. 
+	* Remove cgi-pm from Provides.
+	* Reduce flat-namespace linkage validation to give a warning rather 
+	  than a fatal error, since some packages require being built this way.
+	* Fatal validation error for filename/install_name mismatch in Shlibs.
+	* Validate package names in dependency lists.
 
 0.38.4 "Big Bend" (2015-02-09)
 	* Support OS 10.10.2

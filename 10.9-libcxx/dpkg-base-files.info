@@ -1,26 +1,54 @@
-Package: fink-mirrors
-Version: 0.38.3.1
+Info4: <<
+Package: dpkg-base-files
+Version: 0.4
 Revision: 1
-Essential: yes
+Depends: dpkg (>= 1.10.21-1229)
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: 8bcc5fa205db9658e266a58ef0f9fa5f
-Depends: fink (>= 0.17.3-1)
-Replaces: fink (<< 0.17.2-1)
-CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
+Essential: yes
+Source-MD5: 7937b673519919e33e065421e6f1bf63
+CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
-PostInstScript: %p/lib/fink/mirror/postinstall.pl
 #
-Description: Mirror infrastructure
+PostInstScript: <<
+	if [ "$1" = "configure" ]; then
+		echo "Cleaning up all installed .la files (this may take a moment)"
+		for libdir in "%p/lib" "%p/opt" "%p/Applications" "%p/Library"; do
+			if [ -d "$libdir" ]; then
+				echo '  find "'$libdir'" -name '"'"'*.la'"'"' -and -type f -print0 | xargs -0 perl -pi -e "s/^(dependency_libs)=.*/\1='"''"'/" || true'
+				find "$libdir" -name '*.la' -and -type f -print0 | xargs -0 perl -pi -e "s/^(dependency_libs)=.*/\1=''/" || true
+			else
+				echo '  skipping "'$libdir'" (nothing installed there)'
+			fi
+		done
+	fi
+<<
+#
+Description: Support scripts for dpkg
 DescDetail: <<
-The fink-mirrors package keeps a current list of the mirrors which are used 
-by fink to download sourcefiles.
+The dpkg-base-files package contains files that dpkg uses:
+
+ * global-deb-scripts
+
+   * During package installation, clear the dependency_libs entry in
+     all .la files being installed
+     
+   * On package upgrade, remove files known to be problematic on Yosemite
+     (and later) in advance to avoid errors of the form:
+     
+ unable to make backup link of `.%p/Applications/FOO.app/Contents/PkgInfo' 
+ before installing new version: Operation not permitted
+
+<<
+DescPackaging: <<
+	Dependency on "dpkg that runs these scripts" needed so that
+	other packages can Depends on %N and know that the scripts
+	will be run.
 <<
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Homepage: http://www.finkproject.org
-
 CustomMirror: <<
 Primary: http://downloads.sourceforge.net
+afr-KE: http://liquidtelecom.dl.sourceforge.net/sourceforge
 afr-ZA: http://tenet.dl.sourceforge.net/sourceforge
 asi-JP: http://jaist.dl.sourceforge.net/sourceforge
 asi-KZ: http://kaz.dl.sourceforge.net/sourceforge
@@ -29,8 +57,6 @@ asi-TW: http://nchc.dl.sourceforge.net/sourceforge
 asi-TW: http://ncu.dl.sourceforge.net/sourceforge
 aus-AU: http://aarnet.dl.sourceforge.net/sourceforge
 aus-AU: http://internode.dl.sourceforge.net/sourceforge
-aus-AU: http://waia.dl.sourceforge.net/sourceforge
-eur-CH: http://switch.dl.sourceforge.net/sourceforge
 eur-CZ: http://cznic.dl.sourceforge.net/sourceforge
 eur-CZ: http://ignum.dl.sourceforge.net/sourceforge
 eur-DE: http://netcologne.dl.sourceforge.net/sourceforge
@@ -52,6 +78,8 @@ nam-US: http://softlayer-dal.dl.sourceforge.net/sourceforge
 nam-US: http://superb-dca2.dl.sourceforge.net/sourceforge
 nam-US: http://superb-dca3.dl.sourceforge.net/sourceforge
 nam-US: http://tcpdiag.dl.sourceforge.net/sourceforge
+sam-BR: http://nbtelecom.dl.sourceforge.net/sourceforge
 sam-BR: http://ufpr.dl.sourceforge.net/sourceforge
 <<
 
+<<

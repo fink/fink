@@ -523,7 +523,8 @@ sub do_real_list {
 			[ 'newer|N'			=>
 				sub {$sel_opts{installedstate} |= $ISTATE_TOONEW   ;},
 				'Only list packages whose installed version is newer than '
-				. 'anything fink knows about.' ],
+				. 'anything fink knows about, including packages which '
+                . 'have been removed from the distribution.' ],
 			[ 'buildonly|b'		=> \$sel_opts{'buildonly'},
 				'Only list packages which are Build Depends Only' ],
 			[ 'section|s=s'		=> \$sel_opts{'section'},
@@ -2027,7 +2028,7 @@ sub real_install {
 		my $xcode_app_version = ${${Fink::VirtPackage->list}{'xcode.app'}}{'version'};
 
 		# If there is no Xcode.app we're OK.		
-		unless ( $xcode_app_version eq (0-0) ) {			
+		unless ( $xcode_app_version eq '0-0' ) {			
 
 			# For now, let's assume that the CL tools and the app need to agree to the largest minor version.
 			# Truncate them accordingly.

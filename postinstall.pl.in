@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# -*- mode: Perl; tab-width: 4; -*-
 #
 # postinstall.pl - perl script to check and store which OS version we
 #                are running, and to setup the dists directory
@@ -249,6 +250,53 @@ if ($updating) {
 	if (&execute("cp -f $basepath/lib/fink/update-packages/* $basepath/fink/dists/local/injected/finkinfo/update-packages")) {
 		print "ERROR: couldn't copy package desriptions to $basepath/fink/dists/local/injected/finkinfo/update-packages\n";
 		exit 1;
+	}
+}
+
+# In this section, handle special cases where we have moved to a new real tree, but
+# have maintained binary compatibility, by copying the .debs over to the new tree.  
+
+# Currently applies to 10.9, 10.10, and 10.11 platforms coming from a
+# dist that used the "10.7" subdir (regardless of actual platform)
+if ( $distribution eq "10.9" or $distribution eq "10.10" or $distribution eq "10.11"
+     and -d "$basepath/fink/10.7" ) {
+	my @deb_list = glob "$basepath/fink/debs/*.deb";
+	my $copy_debs = 1;
+	foreach my $file ( @deb_list ) {
+		# Assume that we don't need to proceed if a single symlink resolves properly.
+		# Under normal circumstances 
+		if (-l $file and -e $file) {
+			$copy_debs = 0;
+			last;
+		}
+	}
+	if ( $copy_debs ) {
+		print "Copying .debs...\n";
+		foreach my $file ( @deb_list ) {
+			# In %p/fink we have:
+			#  "dists"->$distribution
+			#  $distribution->REALDIR
+			# During upgrade, that second symlink is changed to point
+			# to REALDIR_NEW, which breaks symlinks to $distribution
+			# that had intended to reach files in REALDIR. The
+			# currently supported upgrade is from REALDIR=10.7, so we
+			# take the broken symlink, swap in that (old) REALDIR to
+			# find the file itself, and then copy it via the symlink
+			# (which now points to wherever REALDIR_NEW is).
+			my $target_file = readlink $file;
+			my $real_file = $target_file;
+			$real_file =~ s/$distribution/10.7/g; # assumes platform version has not changed (?)
+			my $dir =  dirname ( $target_file );
+			# no need to make the directory if it already exists
+			unless ( -d "$basepath/fink/debs/$dir" ) {
+				if ( &execute ("/bin/mkdir -p $basepath/fink/debs/$dir" )) {
+					print "WARNING: couldn't create directory $basepath/fink/debs/$dir\n";
+				}
+			}
+			if ( &execute ("/bin/cp -f $basepath/fink/debs/$real_file $basepath/fink/debs/$target_file" )) {
+					print "WARNING: couldn't create file $basepath/fink/debs/$dir/$file\n";
+			}
+		}
 	}
 }
 

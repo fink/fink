@@ -1,21 +1,22 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!--
-Generated from $Fink: install.xml,v 1.47 2014/06/05 03:39:13 alexkhansen Exp $
+Generated from $Fink: install.xml,v 1.49 2015/10/04 00:00:05 alexkhansen Exp $
 -->
-<title>Fink Documentation - Fink 0.38.4 Installation</title></head><body><h1 style="text-align: center;">Fink 0.38.1 Installation</h1>
+<title>Fink Documentation - Fink 0.39.2 Installation</title></head><body><h1 style="text-align: center;">Fink 0.39.2 Installation</h1>
 <p>
 These are the installation instructions for the "source" distribution
-based on <tt style="white-space: nowrap;">fink-0.38.4</tt>, intended for use with OS X v.10.7 and later.</p>
+based on <tt style="white-space: nowrap;">fink-0.39.2</tt>, intended for use with OS X v.10.9 and later.</p>
 <p>
-This document does not apply to the "<a href="http://fink.sourceforge.net/download/index.php">binary</a>" distribution.
+This document does not apply to the "<a href="/download/index.php">binary</a>" distribution.
 </p>
 <p>
 There are instructions for both first time installation and upgrading
 from a previous version.
 Fast track instructions for the impatient are at the top.
 </p>
-<h2>Contents</h2><ul><li><a href="#install-fast"><b>1 The Fast Track</b></a><ul><li><a href="#install-fast.req">1.1 Requirements</a></li><li><a href="#install-fast.install">1.2 First Time Installation Fast
+<h2>Contents</h2><ul><li><a href="#install-fast"><b>1 The Fast Track</b></a><ul><li><a href="#install-fast.req">1.1 Requirements</a></li><li><a href="#install-fast.scripted-install">1.2 First Time Installation Very Fast
+Track</a></li><li><a href="#install-fast.install">1.3 First Time Installation Fast
 Track</a></li></ul></li><li><a href="#install-first"><b>2 First Time Installation</b></a><ul><li><a href="#install-first.req">2.1 Requirements</a></li><li><a href="#install-first.directory">2.2 Choosing A Directory</a></li><li><a href="#install-first.install">2.3 Installation</a></li><li><a href="#install-first.x11">2.4 Getting X11 Sorted Out</a></li></ul></li><li><a href="#install-up03"><b>3 Upgrading Fink</b></a><ul><li><a href="#install-up03.packman">3.1 Updating The Package Manager</a></li><li><a href="#install-up03.update-all">3.2 Updating Packages</a></li></ul></li><li><a href="#install-up02"><b>4 Clean Upgrade</b></a><ul><li><a href="#install-up02.cleaninst">4.1 Situations Calling for a Clean Reinstall</a></li><li><a href="#install-up02.backup">4.2 Backing up to save time</a></li><li><a href="#install-up02.removing">4.3 Removing Your Old Fink</a></li><li><a href="#install-up02.reinstalling">4.4 Installing Fink Again</a></li></ul></li></ul><h2><a name="install-fast">1 The Fast Track</a></h2>
 
 
@@ -38,21 +39,24 @@ You need:
 </p>
 <ul>
 <li><p>
-An installed Mac OS X system, version 10.7 or later.
+An installed Mac OS X system, version 10.9 or later.
 </p></li>
 <li><p>
 The Xcode Command Line Tools are mandatory. This package can be installed either by 
-downloading it directly via developer.apple.com, through the Xcode application, on
-via the Components page of the Downloads tab of the Preferences on 10.7 and 10.8, 
-or on 10.9 and 10.10 by running the</p>
+downloading it directly via developer.apple.com, or by running the</p>
 <pre>xcode-select --install</pre>
 <p>command and choosing the   
-<b>Install</b> button in the window that pops up, or you can install the full
-Xcode if you prefer.  You may also need to use this command to update the tools,
+<b>Install</b> button in the window that pops up.
+You may also need to use this command to update the tools,
 especially if you're having build problems.</p>
 <p>If you're doing a manual download, make sure that the tools you install match your
- Mac OS X version as well as your Xcode app version (if that is present).
-</p></li>
+OS X version as well as your Xcode app version (if that is present).</p>
+<p>You will need to accept the Xcode license as root.  To do that, run</p>
+<pre>sudo xcodebuild -license</pre>
+<p>then scroll to the bottom of the text and type</p>
+<pre>agree</pre>
+<p>Some packages require the full Xcode.</p>
+</li>
 <li><p>Java.  Entering</p>
 <pre>javac</pre>
 <p>from a Terminal.app window should suffice to make the system download it for you.</p></li>
@@ -72,11 +76,22 @@ I'm talking hours or even days here.
 </ul>
 
 
-<h3><a name="install-fast.install">1.2 First Time Installation Fast
+<h3><a name="install-fast.scripted-install">1.2 First Time Installation Very Fast
 Track</a></h3>
 <p>
-Start out by copying the <tt style="white-space: nowrap;">fink-0.38.4.tar.gz</tt>
-file to your home folder (it might also show up as <tt style="white-space: nowrap;">fink-0.38.4.tar</tt> if you
+Download the <a href="https://raw.githubusercontent.com/fink/scripts/master/srcinstaller/Install%20Fink.tool">
+Install Fink.tool</a> script and double-click on it.  This will automate the downloads
+in the steps below.
+</p>
+<p>
+The script may have to stop for you to do something.  If so, run it again.
+</p>
+
+<h3><a name="install-fast.install">1.3 First Time Installation Fast
+Track</a></h3>
+<p>
+Start out by copying the <tt style="white-space: nowrap;">fink-0.39.2.tar.gz</tt>
+file to your home folder (it might also show up as <tt style="white-space: nowrap;">fink-0.39.2.tar</tt> if you
 used Safari to download it).
 Then, open Terminal.app and follow the session below.
 Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your input is in
@@ -84,19 +99,19 @@ Computer output is in <tt style="white-space: nowrap;">normal face</tt>, your in
 The actual input prompts from the shell may vary, and some chunks of
 the output have been omitted (<tt style="white-space: nowrap;">...</tt>).
 </p>
-<p>Note:  on 10.8, 10.9, and 10.10, after you start the install process you may see
+<p>Note:  after you start the install process you may see
 dialog windows asking whether you want to install XQuartz.
 If you want to do so, go ahead.  You won't have to stop the Fink install
 to do that.</p>
-<pre>[frodo:~] testuser% <b>tar xf fink-0.38.4.tar.gz</b>
-[frodo:~] testuser% <b>cd fink-0.38.4</b>
-[frodo:~/fink-0.38.4] testuser% <b>./bootstrap</b>
+<pre>[frodo:~] testuser% <b>tar xf fink-0.39.2.tar.gz</b>
+[frodo:~] testuser% <b>cd fink-0.39.2</b>
+[frodo:~/fink-0.39.2] testuser% <b>./bootstrap</b>
 
 Fink must be installed and run with superuser (root) privileges
 ...
 Choose a method: [1] <b>1</b>
 
-sudo /Users/testuser/fink-0.38.4/bootstrap .sudo '/sw'
+sudo /Users/testuser/fink-0.39.2/bootstrap .sudo '/sw'
 Password: <b>(your normal password here)</b>
 ...
 OK, I'll ask you some questions and update the configuration file in
@@ -142,8 +157,8 @@ Bootstrapping a base system via /sw/bootstrap.
 ...
 
 You should now have a working Fink installation in '/sw'.
-[frodo:~/fink-0.38.4] testuser% <b>cd</b>
-[frodo:~] testuser% <b>rm -r fink-0.38.4</b>
+[frodo:~/fink-0.39.2] testuser% <b>cd</b>
+[frodo:~] testuser% <b>rm -r fink-0.39.2</b>
 [frodo:~] testuser% <b>/sw/bin/pathsetup.sh</b></pre>
 <p>
 The last command runs a little script to help set up your Unix paths
@@ -206,15 +221,6 @@ Logging in to :pserver:anonymous@fink.cvs.sourceforge.net:2401/cvsroot/fink
 <b>(wait for the downloads to finish)</b></pre>
 <p>
 especially if you are using a proxy.    
-</p>
-<p>
-If you are using Xcode 4.3 or later, you should also run
-</p>
-<pre>
-sudo xcodebuild -license
-</pre>
-<p>
-and enter <b>agree</b> so that Fink's unprivileged user can build packages that need more than just the basic tools.
 </p>
 <p>
 You can now install packages with the <tt style="white-space: nowrap;">fink</tt>
@@ -299,8 +305,8 @@ Do you want to continue? [Y/n]
 ...</pre>
 <p>
 If these instructions don't work for you, well, you'll have to take
-the time to read through the rest of this document and the <a href="http://fink.sourceforge.net/faq/">online FAQ</a>.
-You can also ask on the <a href="http://fink.sourceforge.net/lists/fink-users.php">fink-users
+the time to read through the rest of this document and the <a href="/faq/">online FAQ</a>.
+You can also ask on the <a href="/lists/fink-users.php">fink-users
 mailing list</a>, but expect to be pointed back at the
 documentation when your problem actually is well-documented.
 </p>
@@ -316,21 +322,24 @@ You need:
 </p>
 <ul>
 <li><p>
-An installed Mac OS X system, version 10.7 or later.
+An installed Mac OS X system, version 10.9 or later.
 </p></li>
 <li><p>
 The Xcode Command Line Tools are mandatory. This package can be installed either by 
-downloading it directly via developer.apple.com, through the Xcode application, on
-via the Components page of the Downloads tab of the Preferences on 10.7 and 10.8, 
-or on 10.9 and 10.10 by running the</p>
+downloading it directly via developer.apple.com, or by running the</p>
 <pre>xcode-select --install</pre>
 <p>command and choosing the   
 <b>Install</b> button in the window that pops up, or you can install the full
 Xcode if you prefer.  You may also need to use this command to update the tools,
 especially if you're having build problems.</p>
 <p>If you're doing a manual download, make sure that the tools you install match your
- Mac OS X version as well as your Xcode app version (if that is present).
-</p></li>
+OS X version as well as your Xcode app version (if that is present).</p>
+<p>You will need to accept the Xcode license as root.  To do that, run</p>
+<pre>sudo xcodebuild -license</pre>
+<p>then scroll to the bottom of the text and type</p>
+<pre>agree</pre>q
+<p>Some packages require the full Xcode.</p>
+</li>
 <li><p>Java.  Entering</p>
 <pre>javac</pre>
 <p>from a Terminal.app window should suffice to make the system download it for you.</p></li>
@@ -368,19 +377,19 @@ Using symlinks to trick the bootstrap script simply won't work.
 
 <h3><a name="install-first.install">2.3 Installation</a></h3>
 <p>
-First, you need to unpack the fink-0.38.4.tar.gz tarball (it might also show up as <tt style="white-space: nowrap;">fink-0.38.1.tar</tt> if you
+First, you need to unpack the fink-0.39.2.tar.gz tarball (it might also show up as <tt style="white-space: nowrap;">fink-0.39.2.tar</tt> if you
 used Safari to download it).  So, in a terminal window, go to the directory where you put the tarball, and run this
 command:
 </p>
-<pre>tar xf fink-0.38.4.tar.gz</pre>
+<pre>tar xf fink-0.39.2.tar.gz</pre>
 <p>
-You now have a directory named fink-0.38.4.
-Change to it with <tt style="white-space: nowrap;">cd fink-0.38.4</tt>.
+You now have a directory named fink-0.39.2.
+Change to it with <tt style="white-space: nowrap;">cd fink-0.39.2</tt>.
 </p>
 <p>
 The actual installation is performed by the perl script
 bootstrap.
-So, to start installation, go to the fink-0.38.4 directory and run
+So, to start installation, go to the fink-0.39.2 directory and run
 this command:
 </p>
 <pre>./bootstrap</pre>
@@ -463,15 +472,6 @@ will pass its information along to cvs.  Note: you can only use anonymous cvs (p
 through a proxy.
 </p>
 <p>
-If you are using Xcode 4.3 or later, you should also run
-</p>
-<pre>
-sudo xcodebuild -license
-</pre>
-<p>
-and enter <b>agree</b> so that Fink's unprivileged user can build packages that need more than just the basic tools.
-</p>
-<p>
 You can now use <tt style="white-space: nowrap;">fink</tt> commands to install packages.
 </p>
 <pre>fink --help</pre>
@@ -486,14 +486,12 @@ Fink uses virtual packages to declare dependencies on X11.  As of
 OS 10.6, we don't provide any packages of our own.  The supported options are:
 </p>
 <ul>
-<li><p>10.7:  Only Apple's standard X11.</p></li>
-<li><p>10.8:  Only XQuartz 2.7.2 and later.</p></li>
 <li><p>10.9:  Only XQuartz 2.7.4 and later.</p></li>
-<li><p>10.9:  Only XQuartz 2.7.7 and later.</p></li>
+<li><p>10.10-11:  Only XQuartz 2.7.7 and later.</p></li>
 </ul>
 <p>
 For more information on installing and running X11, refer to the
-online <a href="http://fink.sourceforge.net/doc/x11/">X11 on Darwin
+online <a href="/doc/x11/">X11 on Darwin
 and Mac OS X document</a>.
 </p>
 
@@ -635,9 +633,9 @@ First, follow the <a href="#install-first">first-time install instructions</a>.
 
 
 <hr><h2>Copyright Notice</h2><p>Copyright (c) 2001 Christoph Pfisterer,
-Copyright (c) 2001-2013 The Fink Project.
+Copyright (c) 2001-2015 The Fink Project.
 You may distribute this document in print for private purposes,
 provided the document and this copyright notice remain complete and
 unmodified. Any commercial reproduction and any online publication
 requires the explicit consent of the author.</p><hr>
-<p>Generated from <i>$Fink: install.xml,v 1.47 2014/06/05 03:39:13 alexkhansen Exp $</i></p></body></html>
+<p>Generated from <i>$Fink: install.xml,v 1.49 2015/10/04 00:00:05 alexkhansen Exp $</i></p></body></html>

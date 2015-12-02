@@ -1,13 +1,13 @@
 Package: libgettext8-shlibs
-Version: 0.19.3
+Version: 0.19.5.1
 Revision: 1
 Source: mirror:gnu:gettext/gettext-%v.tar.gz
 #Source: mirror:sourceforge:fink/gettext-%v.tar.gz
-Source-MD5: c365029ffc866fc4e485d9e5ca60b260
+Source-MD5: 2b2ab90f6405a414bbe30cf6655f3e28
 # libgettext8-shlibs.patch must be regenerated for every update since
 # dpkg uses it and needs the correct full file headers for patch -p0 
 PatchFile: %n.patch
-PatchFile-MD5: 90358af050ecfcb2c6f0059cb621ade5 
+PatchFile-MD5: 0b1fdceb6480aa5a13d17df4327fbae0 
 PatchScript: <<
  patch -p1 < %{PatchFile}
  cd build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
@@ -15,13 +15,14 @@ PatchScript: <<
 Essential: yes
 Depends: <<
 	base-files,
-	libiconv (>= 1.14-5),
-	libiconv-bin (>= 1.14-5)
+	libiconv (>= 1.14-6),
+	libiconv-bin (>= 1.14-6)
 <<
-BuildDepends: libiconv-dev (>= 1.14-5)
+BuildDepends: libiconv-dev (>= 1.14-6)
 #UseMaxBuildJobs: false
 SetCFLAGS: -Os
 ConfigureParams: <<
+	--infodir='%p/share/info' \
 	--mandir='%p/share/man' \
 	--with-included-gettext \
 	--disable-csharp \
@@ -34,6 +35,7 @@ ConfigureParams: <<
 	--with-included-libunistring \
 	--without-git \
 	--without-cvs \
+	--without-xz \
 	ac_cv_prog_AWK=/usr/bin/awk \
 	ac_cv_path_GREP=/usr/bin/grep \
 	ac_cv_path_SED=/usr/bin/sed
@@ -43,6 +45,9 @@ CompileScript: <<
 	cd gettext-runtime
 	env EMACS=no CCACHE_DISABLE=1 JAVA=/usr/bin/java JAVAC=/usr/bin/javac ./configure %c
 	make
+<<
+InfoTest: <<
+	TestScript: cd gettext-runtime; make check || exit 2
 <<
 InstallScript: <<
 	#!/bin/sh -ev
@@ -105,9 +110,6 @@ DescPackaging: <<
 
 Shlibs: <<
   %p/lib/libintl.8.dylib 10.0.0 %n (>= 0.18-1)
-<<
-InfoTest: <<
-	TestScript: cd gettext-runtime; make check || exit 2
 <<
 License: GPL/LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
