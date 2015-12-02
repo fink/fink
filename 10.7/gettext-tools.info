@@ -56,8 +56,10 @@ ConfigureParams: <<
 <<
 CompileScript: <<
 	#!/bin/sh -ev
+	mkdir bin
+	ln -s /usr/bin/javac bin/gcj 
 	cd gettext-tools
-	env EMACS=no JAVA=/usr/bin/java GCJ=/usr/bin/javac ./configure %c
+	env EMACS=no JAVA=/usr/bin/java PATH=../bin:$PATH ./configure %c
 	make -w
 <<
 InfoTest: <<
@@ -184,9 +186,13 @@ DescPackaging: <<
 	clang). See:
 	http://lists.gnu.org/archive/html/bug-autoconf/2010-08/msg00116.html
 
-	--disable-java --disable-native-java don't stop configure-time checking,
-	and gcj cause hangups on powerpc.  Setting JAVA=/usr/bin/java and 
-	GCJ=/usr/bin/javac avoids that. 
+	--disable-java --disable-native-java doesn't stop configure-time checking,
+	and gcj causes hangups.  Setting JAVA=/usr/bin/java and creating a temporary
+	%b/bin/gcj -> /usr/bin/javac symlink and prepending %b/bin on the PATH avoids
+	the necessity of BuildConflicting against gcc*.  (The GCC environment variable
+	is not properly honored by the configure script in this version of the package,
+	and there are numerous hardcoded 'gcj').
+	
 <<
 
 
