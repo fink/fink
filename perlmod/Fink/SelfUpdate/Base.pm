@@ -3,7 +3,7 @@
 # Fink::SelfUpdate::Base class
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2007-2015 The Fink Package Manager Team
+# Copyright (c) 2007-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
