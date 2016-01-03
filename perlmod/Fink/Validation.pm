@@ -2215,6 +2215,8 @@ sub _validate_dpkg {
 		}
 	}
 
+	{
+		my @flat_dylibs; # collect these then give a unified report later
 	for my $dylib (@installed_dylibs) {
 		next if (-l $destdir . $dylib);
 		if (defined $otool) {
@@ -2247,21 +2249,30 @@ sub _validate_dpkg {
 				if (open (OTOOL, "$otool -hv '$dylib_temp' |")) {
 					<OTOOL>; <OTOOL>; <OTOOL>; # skip first three lines
 					unless ( <OTOOL> =~ /TWOLEVEL/ ) {
-						print "SERIOUS WARNING: $dylib_temp appears to have been linked using a flat namespace.\n";
-						print "       If this package BuildDepends on libtool2, make sure that you use\n";
-						print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
-						print "       and use autoreconf to regenerate the configure script.\n";
-						print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
-						print "       update its build procedure to avoid passing\n";	 
-						print "          -Wl,-flat_namespace\n"; 
-						print "       when linking libraries.\n\n";
-						print "		  If this package actually requires a flat namespace build,\n";
-						print "		  then ignore this message.\n\n";
-						sleep 60;
+						push @flat_dylibs, $dylib_temp;
 					} 
 					close (OTOOL);
 				}
 			}
+		}
+	}
+
+		# msg has 1-minute sleep to view; only do it once per pkg
+		# (with all relevant files listed, not once per file)
+		if (@flat_dylibs) {
+			foreach (@flat_dylibs) {
+				print "SERIOUS WARNING: $_ appears to have been linked using a flat namespace.\n";
+			}
+			print "       If this package BuildDepends on libtool2, make sure that you use\n";
+			print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
+			print "       and use autoreconf to regenerate the configure script.\n";
+			print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
+			print "       update its build procedure to avoid passing\n";	 
+			print "          -Wl,-flat_namespace\n"; 
+			print "       when linking libraries.\n\n";
+			print "		  If this package actually requires a flat namespace build,\n";
+			print "		  then ignore this message.\n\n";
+			sleep 60;
 		}
 	}
 
