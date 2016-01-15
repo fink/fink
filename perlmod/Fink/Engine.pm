@@ -2020,7 +2020,7 @@ sub real_install {
 	    	die	"\nThe Xcode Command Line Tools need to be (re)installed. \n" .
 	   		 	"$install_source" .
 	   		 	"Or you can get them via direct download from developer.apple.com\n" .
-	   		 	"(free registration required) if you don't want to install Xcode.app.";
+	   		 	"(free registration required) if you don't want to install Xcode.app.\n";
       	}
 	
 		# check whether the command-line tools and Xcode.app are compatible.
