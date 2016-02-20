@@ -1,5 +1,5 @@
 # Official mirror list: https://download.gnome.org/WELCOME.msg.mirrorlist
-Timestamp: 2015-10-31
+Timestamp: 2016-02-12
 
 Primary: http://ftp.gnome.org/pub/GNOME
 
@@ -8,15 +8,14 @@ asi-CN: http://mirrors.ustc.edu.cn/gnome
 asi-JP: http://ftp.nara.wide.ad.jp/pub/X11/GNOME
 eur-DE: http://artfiles.org/gnome.org
 eur-DE: https://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.gnome.org
+eur-DE: https://ftp.fau.de/gnome
 eur-FR: http://fr2.rpmfind.net/linux/gnome.org
 eur-FR: http://ftp.rpmfind.net/linux/gnome.org
 eur-IE: http://ftp.heanet.ie/mirrors/ftp.gnome.org
 eur-NL: http://ftp1.nluug.nl/windowing/gnome
 eur-NL: http://ftp2.nluug.nl/windowing/gnome
 eur-SE: http://ftp.acc.umu.se/pub/GNOME
-eur-SE: http://ftp.df.lth.se/pub/gnome
 eur-SE: http://ftp.gnome.org/pub/GNOME
-eur-SE: http://ftp.sunet.se/pub/X11/GNOME
 eur-UK: https://www.mirrorservice.org/sites/ftp.gnome.org/pub/GNOME
 nam-CA: https://muug.ca/mirror/gnome
 nam-US: http://ftp-chi.osuosl.org/pub/gnome

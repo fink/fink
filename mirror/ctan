@@ -1,8 +1,10 @@
 # Official mirror list: ftp://tug.ctan.org/tex-archive/README.mirrors
-Timestamp: 2015-10-31
+Timestamp: 2016-02-12
 
 Primary: ftp://tug.ctan.org/tex-archive
 
+afr-DZ: ftp://ctan.epst-tlemcen.dz/pub/tex-archive
+afr-DZ: http://ctan.epst-tlemcen.dz/tex-archive
 afr-ZA: ftp://ctan.mirror.ac.za
 afr-ZA: ftp://ftp.leg.uct.ac.za/pub/packages/ctan
 afr-ZA: ftp://ftp.sun.ac.za/CTAN
@@ -16,8 +18,6 @@ asi-CN: http://mirrors.hust.edu.cn/CTAN
 asi-CN: http://mirrors.tuna.tsinghua.edu.cn/CTAN
 asi-CN: http://mirrors.ustc.edu.cn/CTAN
 asi-IN: http://ctan.imsc.res.in
-asi-IR: http://ctan.asis.io
-asi-IR: http://ctan.um.ac.ir
 asi-IR: http://ctan.yazd.ac.ir
 asi-JP: ftp://ftp.jaist.ac.jp/pub/CTAN
 asi-JP: ftp://ftp.u-aizu.ac.jp/pub/tex/CTAN
@@ -58,6 +58,7 @@ eur-DE: ftp://ftp.rrzn.uni-hannover.de/pub/mirror/tex-archive
 eur-DE: ftp://ftp.tu-chemnitz.de/pub/tex
 eur-DE: ftp://mirror.physik-pool.tu-berlin.de/tex-archive
 eur-DE: ftp://sunsite.informatik.rwth-aachen.de/pub/mirror/ctan
+eur-DE: http://ctan.127001.ovh
 eur-DE: http://ctan.space-pro.be/tex-archive
 eur-DE: http://ftp.fau.de/ctan
 eur-DE: http://ftp.fernuni-hagen.de/ftp-dir/pub/mirrors/www.ctan.org
@@ -112,7 +113,6 @@ nam-CA: http://ctan.math.ca/tex-archive
 nam-CA: http://ctan.mirror.rafal.ca
 nam-CA: http://mirror.its.dal.ca/ctan
 nam-US: ftp://ctan.math.utah.edu/tex-archive
-nam-US: ftp://ctan.mirrorcatalogs.com/ctan
 nam-US: ftp://get-software.net/ctan
 nam-US: ftp://mirror.jmu.edu/pub/CTAN
 nam-US: ftp://mirror.utexas.edu/pub/ctan
@@ -122,7 +122,6 @@ nam-US: ftp://tug.ctan.org/tex-archive
 nam-US: http://ctan.mackichan.com
 nam-US: http://ctan.math.utah.edu/ctan/tex-archive
 nam-US: http://ctan.math.washington.edu/tex-archive
-nam-US: http://ctan.mirrorcatalogs.com
 nam-US: http://ctan.mirrors.hoobly.com
 nam-US: http://ctan.sharelatex.com/tex-archive
 nam-US: http://ftp.math.purdue.edu/mirrors/ctan.org
@@ -137,9 +136,11 @@ nam-US: http://mirrors.ibiblio.org/pub/mirrors/CTAN
 nam-US: http://mirrors.rit.edu/CTAN
 nam-US: http://tug.ctan.org/tex-archive
 nam-US: http://www.pirbot.com/mirrors/ctan
+sam-BR: ftp://ftp.lasca.ic.unicamp.br/pub/ctan
 sam-BR: ftp://linorg.usp.br/CTAN
 sam-BR: http://linorg.usp.br/CTAN
 sam-BR: http://repositorios.cpai.unb.br/ctan
+sam-BR: http://www.lasca.ic.unicamp.br/pub/ctan
 sam-CL: ftp://ctan.dcc.uchile.cl/pub/lang/ctan/tex-archive
 sam-CL: ftp://ftp.inf.utfsm.cl/pub/tex-archive
 sam-CL: http://ftp.inf.utfsm.cl/pub/tex-archive
