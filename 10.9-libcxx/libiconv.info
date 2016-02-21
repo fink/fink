@@ -1,6 +1,6 @@
 Package: libiconv
 Version: 1.14
-Revision: 6
+Revision: 7
 Description: Character set conversion library
 License: LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
@@ -10,9 +10,9 @@ Essential: yes
 #Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: e34509b1623cec449dfeb73d7ce9c6c6
-Source2: mirror:gnu:gettext/gettext-0.19.5.1.tar.gz
-#Source2: mirror:sourceforge:fink/gettext-0.19.5.1.tar.gz
-Source2-MD5: 2b2ab90f6405a414bbe30cf6655f3e28
+Source2: mirror:gnu:gettext/gettext-0.19.7.tar.gz
+#Source2: mirror:sourceforge:fink/gettext-0.19.7.tar.gz
+Source2-MD5: 87c4ab267c4dce8a75db5d057bb3c92f
 Source3: mirror:gnu:gperf/gperf-3.0.4.tar.gz
 Source3-MD5: c1f1db32fb6598d6a93e6e88796a8632
 PatchFile: %n.patch
@@ -36,7 +36,7 @@ make -j1 check || exit 2
 ### If gettext gets updated, make sure these ./configure parameters 
 ### match the new package parameters (except build static only here).
 ### Not necessary, but will avoid unforeseen consequences.
-cd %b/../gettext-0.19.5.1/gettext-runtime
+cd %b/../gettext-0.19.7/gettext-runtime
 EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" am_cv_func_iconv=no ./configure \
 	--prefix=%p \
 	--infodir='${prefix}/share/info' \
