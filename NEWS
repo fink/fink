@@ -5,6 +5,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.39.x
 \-------------
 
+0.39.3 "Antilles" (1016-02-28)
+	* Support 10.11.0-3
+	* Output cleanup in various places (see commits)
+
 0.39.2 "Sheridan" (2015-10-31)
 	* Use system versions of tools (make, cp, chmod) in %{default_script}
 	* Add Restrictive/GPL and related License forms for OpenSSL-linked packages.

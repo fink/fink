@@ -1,7 +1,7 @@
- Fink 0.39.2 Installation
+ Fink 0.39.3 Installation
 =========================
 
-These are the installation instructions for the "source" distribution based on "fink-0.39.2" , intended for use with OS X v.10.9 and later.
+These are the installation instructions for the "source" distribution based on "fink-0.39.3" , intended for use with OS X v.10.9 and later.
 
 This document does not apply to the "[binary](http://www.finkproject.org/download/index.php)" distribution.
 
@@ -64,14 +64,14 @@ The script may have to stop for you to do something. If so, run it again.
 
 First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.39.2.tar.gz" file to your home folder (it might also show up as "fink-0.39.2.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
+Start out by copying the "fink-0.39.3.tar.gz" file to your home folder (it might also show up as "fink-0.39.3.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
 
 Note: You may see dialog windows asking whether you want to install Xquartz. 
 If you want to do so, go ahead. You won't have to stop the Fink install to do that.
 
-    [frodo:~] testuser% tar xf fink-0.39.2.tar.gz
-    [frodo:~] testuser% cd fink-0.39.2
-    [frodo:~/fink-0.39.2] testuser% ./bootstrap
+    [frodo:~] testuser% tar xf fink-0.39.3.tar.gz
+    [frodo:~] testuser% cd fink-0.39.3
+    [frodo:~/fink-0.39.3] testuser% ./bootstrap
 
     Fink must be installed and run with superuser (root) privileges
 
@@ -79,7 +79,7 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
     Choose a method: [1] 
    **1**
 
-    sudo /Users/testuser/fink-0.39.2/bootstrap .sudo '/sw'
+    sudo /Users/testuser/fink-0.39.3/bootstrap .sudo '/sw'
     Password:
    **(your normal password here)**
 
@@ -137,8 +137,8 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
    
    You should now have a working Fink installation in '/sw'.
    
-    [frodo:~/fink-0.39.2] testuser% cd
-    [frodo:~] testuser% rm -r fink-0.39.2
+    [frodo:~/fink-0.39.3] testuser% cd
+    [frodo:~] testuser% rm -r fink-0.39.3
     [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and other things) for use with Fink. In most cases, it will run automatically, and prompt you for permission to make changes. If the script fails, you'll have to do things by hand.
@@ -338,13 +338,13 @@ A special note about /usr/local: While it is possible to install Fink in /usr/lo
 
 Installation
 --------------
-First, you need to unpack the fink-0.39.2.tar.gz tarball (it might also show up as "fink-0.39.2.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
+First, you need to unpack the fink-0.39.3.tar.gz tarball (it might also show up as "fink-0.39.3.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
 
-    tar xf fink-0.39.2.tar.gz
+    tar xf fink-0.39.3.tar.gz
 
-You now have a directory named fink-0.39.2. Change to it with "`cd fink-0.39.2`".
+You now have a directory named fink-0.39.3. Change to it with "`cd fink-0.39.3`".
 
-The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.39.2 directory and run this command:
+The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.39.3 directory and run this command:
 
     ./bootstrap
 

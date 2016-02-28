@@ -1,11 +1,10 @@
 # Official mirror list: http://www.debian.org/mirror/list
-Timestamp: 2015-10-31
+Timestamp: 2016-02-12
 
 Primary: ftp://ftp.debian.org/debian
 
 asi-CN: http://ftp.cn.debian.org/debian
 asi-HK: http://ftp.hk.debian.org/debian
-asi-IR: http://ftp.ir.debian.org/debian
 asi-JP: http://ftp.jp.debian.org/debian
 asi-KR: http://ftp.kr.debian.org/debian
 asi-TH: http://ftp.th.debian.org/debian
@@ -34,11 +33,13 @@ eur-IE: http://ftp.ie.debian.org/debian
 eur-IS: http://ftp.is.debian.org/debian
 eur-IT: http://ftp.it.debian.org/debian
 eur-LT: http://ftp.lt.debian.org/debian
+eur-MD: http://ftp.md.debian.org/debian
 eur-NL: ftp://ftp.debian.org/debian
 eur-NL: http://ftp.nl.debian.org/debian
 eur-NO: http://ftp.no.debian.org/debian
 eur-PL: http://ftp.pl.debian.org/debian
 eur-PT: http://ftp.pt.debian.org/debian
+eur-RO: http://ftp.ro.debian.org/debian
 eur-RU: http://ftp.ru.debian.org/debian
 eur-SE: http://ftp.se.debian.org/debian
 eur-SI: http://ftp.si.debian.org/debian
@@ -50,5 +51,4 @@ nam-CA: http://ftp.ca.debian.org/debian
 nam-MX: http://ftp.mx.debian.org/debian
 nam-US: http://ftp.us.debian.org/debian
 sam-BR: http://ftp.br.debian.org/debian
-sam-CL: http://ftp.cl.debian.org/debian
 sam-SV: http://ftp.sv.debian.org/debian

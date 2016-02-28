@@ -1,11 +1,11 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1242
+Revision: 1243
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
 Depends: <<
 	gzip,
-	libgettext8-shlibs (>= 0.19.5.1-1),
+	libgettext8-shlibs (>= 0.19.7-1),
 	libiconv (>= 1.14-6),
 	libncurses5-shlibs (>= 5.4-20041023-1006),
 	tar
@@ -17,17 +17,17 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-Source2: mirror:gnu:gettext/gettext-0.19.5.1.tar.gz
-#Source2: mirror:sourceforge:fink/gettext-0.19.5.1.tar.gz
-Source2-MD5: 2b2ab90f6405a414bbe30cf6655f3e28
+Source2: mirror:gnu:gettext/gettext-0.19.7.tar.gz
+#Source2: mirror:sourceforge:fink/gettext-0.19.7.tar.gz
+Source2-MD5: 87c4ab267c4dce8a75db5d057bb3c92f
 PatchFile: %n.patch
 PatchFile-MD5: 229a815eac6e113cf099bf2ad42489d9
 PatchFile2: libgettext8-shlibs.patch
-PatchFile2-MD5: 0b1fdceb6480aa5a13d17df4327fbae0
+PatchFile2-MD5: 16977225f4157db5f475a1f8067d4aaa
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p0
- cd %b/../gettext-0.19.5.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+ cd %b/../gettext-0.19.7/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
  cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
  echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
 <<
@@ -41,7 +41,7 @@ CompileScript: <<
 	### match the new package parameters (except build static only here).
 	### Not necessary, but will avoid unforeseen consequences.
 	%p/bin/fink -y install gettext-bin libgettext8-dev libiconv-dev libncurses5
-	cd %b/../gettext-0.19.5.1/gettext-tools
+	cd %b/../gettext-0.19.7/gettext-tools
 	env EMACS=no JAVA=/usr/bin/java GCJ=/usr/bin/javac ./configure \
 	--prefix="%b/../_inst%p" \
 	--infodir='${prefix}/share/info' \
