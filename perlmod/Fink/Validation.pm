@@ -1880,9 +1880,8 @@ sub _validate_dpkg {
 			if (defined $otool) {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
-					$file =~ s/\'/\\\'/gs;
-					if (open(OTOOL, "$otool -hv '$file' |")) {
-						while (my $line = <OTOOL>) {
+					if (open my $otool_fh, '-|', $otool, '-hv', $file) {
+						while (my $line = <$otool_fh>) {
 							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB(\s+|_STUB\s+)/) {
 								if ($filename !~ /\.(dylib|jnilib)$/) {
 									print "Warning: $filename is a DYLIB but it does not end in .dylib or .jnilib.\n";
@@ -1894,7 +1893,7 @@ sub _validate_dpkg {
 								}
 							}
 						}
-						close (OTOOL);
+						close $otool_fh;
 					}
 				}
 			} elsif ($filename =~/\.(dylib|jnilib)$/) {
@@ -2179,19 +2178,18 @@ sub _validate_dpkg {
 		} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
 			# don't validate private shlibs entries
 		} else {
-			$file =~ s/\'/\\\'/gs;
 			if (defined $otool) {
-				if (open (OTOOL, "$otool -L '$file' |")) {
-					<OTOOL>; # skip the first line
-					my ($libname, undef, $compat_version) = <OTOOL> =~ /^\s*((\/|@[a-z,_]*path\/).+?)\s*\(compatibility version ([\d\.]+)/;
-					close (OTOOL);
+				if (open my $otool_fh, '-|', $otool, '-L', $file) {
+					<$otool_fh>; # skip the first line
+					my ($libname, undef, $compat_version) = <$otool_fh> =~ /^\s*((\/|@[a-z,_]*path\/).+?)\s*\(compatibility version ([\d\.]+)/;
+					close $otool_fh;
 
 					if (!defined $libname or !defined $compat_version) {
 						if (defined $otool64) {
-							if (open (OTOOL, "$otool64 -L '$file' |")) {
-								<OTOOL>; # skip the first line
-								($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
-								close (OTOOL);
+							if (open my $otool_fh, '-|', $otool64, '-L', $file) {
+								<$otool_fh>; # skip the first line
+								($libname, $compat_version) = <$otool_fh> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+								close $otool_fh;
 							}
 						}
 					}
@@ -2224,11 +2222,10 @@ sub _validate_dpkg {
 			if (not defined $dylib_temp) {
 				print "Warning: unable to resolve symlink for $dylib.\n";
 			} else {
-				$dylib_temp =~ s/\'/\\\'/gs;
-				if (open (OTOOL, "$otool -L '$dylib_temp' |")) {
-					<OTOOL>; # skip first line
-					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
-					close (OTOOL);
+				if (open my $otool_fh, '-|', $otool, '-L', $dylib_temp) {
+					<$otool_fh>; # skip first line
+					my ($libname, $compat_version) = <$otool_fh> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
+					close $otool_fh;
 					if (($libname !~ /^\//) and ($libname !~ /^\@[a-z,_]*path\//)) {
 						print "Error: package contains the shared library\n";
 						print "          $dylib\n";
@@ -2246,12 +2243,12 @@ sub _validate_dpkg {
 						$looks_good = 0;
 					}
 				}
-				if (open (OTOOL, "$otool -hv '$dylib_temp' |")) {
-					<OTOOL>; <OTOOL>; <OTOOL>; # skip first three lines
-					unless ( <OTOOL> =~ /TWOLEVEL/ ) {
+				if (open my $otool_fh, '-|', $otool, '-hv', $dylib_temp) {
+					<$otool_fh>; <$otool_fh>; <$otool_fh>; # skip first three lines
+					unless ( <$otool_fh> =~ /TWOLEVEL/ ) {
 						push @flat_dylibs, $dylib_temp;
 					} 
-					close (OTOOL);
+					close $otool_fh;
 				}
 			}
 		}
