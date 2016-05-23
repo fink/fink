@@ -1426,15 +1426,16 @@ sub validate_info_component {
 
 			if (/^\!\s*(.*)/) {
 				$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.28'} }, 'private-library entry in Shlibs', $filename);
-				if ($1 =~ /\s/) {
+				if ($1 =~ /(?<!\\)\s/) {
 					print "Warning: Malformed line in field \"shlibs\"$splitoff_field.\n  $_\n";
 					$looks_good = 0;
 				}
+				# no further testing of private-shlibs entries
 				next;
 			}
 
-			my @shlibs_parts;
-			if (scalar(@shlibs_parts = split ' ', $_, 3) != 3) {
+			my @shlibs_parts = split /(?<!\\)\s+/, $_, 3;
+			if (@shlibs_parts != 3) {
 				print "Warning: Malformed line in field \"shlibs\"$splitoff_field. ($filename)\n  $_\n";
 				$looks_good = 0;
 				next;
@@ -1717,7 +1718,7 @@ sub _validate_dpkg {
 		}
 	}
 
-	# read the shlibs database file
+	# read the shlibs database files
 	my $deb_shlibs = {};
 	{
 		foreach my $debfile ('shlibs', 'private-shlibs') {
@@ -1726,16 +1727,17 @@ sub _validate_dpkg {
 				if (open my $script, '<', $filename) {
 					chomp( my @deb_shlibs_raw = <$script> );  # slurp the data file
 					close $script;
-					my ($entry_filename, $entry_compat, $entry_deps);
 					foreach my $entry (@deb_shlibs_raw) {
-						if (($entry_filename) = $entry =~ /^\s*\!\s*(\S+)\s*$/) {
-							$deb_shlibs->{$entry_filename} = {
+						$entry =~ s/^\s*(.*?)\s*$/$1/;  # strip off leading/trailing whitespace
+						if ($entry =~ s/^\!\s*//) {
+							$deb_shlibs->{$entry} = {
 								is_private => 1,
 							};
-						} elsif (($entry_filename, $entry_compat, $entry_deps) = $entry =~ /^\s*(.+?)\s+(.+?)\s+(.*?)\s*$/) {
-							$deb_shlibs->{$entry_filename} = {
-								compatibility_version => $entry_compat,
-								dependencies          => $entry_deps,
+						} else {
+							my @entry_parts = split /(?<!\\)\s+/, $entry, 3;
+							$deb_shlibs->{$entry_parts[0]} = {
+								compatibility_version => $entry_parts[1],
+								dependencies          => $entry_parts[2],
 								is_private            => 0,
 							};
 						}
@@ -2152,7 +2154,10 @@ sub _validate_dpkg {
 	if (%$deb_shlibs and not defined $otool) {
 		print "Warning: Package has shlibs data but otool is not in the path; skipping parts of shlibs validation.\n";
 	}
-	foreach my $shlibs_file (sort keys %$deb_shlibs) {
+	foreach my $shlibs_entry (sort keys %$deb_shlibs) {
+		my $shlibs_file = $shlibs_entry;
+		$shlibs_file =~ s/(?<!\\)\\((\\\\)*\s)/$1/g; # resolve backslashed whitespace (avoid backslashed backslashes)
+		$shlibs_file =~ s/\\\\/\\/g;  # resolve backslashed backslashes
 		my ($file, $named_file);
 		#discard runtime path portion of the install_name
 		($named_file) = $shlibs_file =~ /^\@[a-z,_]*path\/(.*)/ ; 
@@ -2164,7 +2169,7 @@ sub _validate_dpkg {
 		if (not defined $file) {
 			if ($deb_control->{'package'} eq 'fink') {
 				# fink is a special case, it has a shlibs field that provides system-shlibs
-			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
+			} elsif ($deb_shlibs->{$shlibs_entry}->{'is_private'}) {
 				# AKH: it appears that we've been allowing @rpath and friends for private libraries?
 				if ($shlibs_file !~ /^\@/) {
 					print "Warning: Shlibs field specifies private install_name '$shlibs_file', but it does not exist!\n";
@@ -2175,7 +2180,7 @@ sub _validate_dpkg {
 			}
 		} elsif (not -f $file) {
 			# shouldn't happen, resolve_rooted_symlink returns a file, or undef
-		} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
+		} elsif ($deb_shlibs->{$shlibs_entry}->{'is_private'}) {
 			# don't validate private shlibs entries
 		} else {
 			if (defined $otool) {
@@ -2201,8 +2206,8 @@ sub _validate_dpkg {
 							print "Error: Name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
 							$looks_good = 0;
 						}
-						if ($deb_shlibs->{$shlibs_file}->{'compatibility_version'} ne $compat_version) {
-							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_file}->{'compatibility_version'}.", but it is actually $compat_version.\n";
+						if ($deb_shlibs->{$shlibs_entry}->{'compatibility_version'} ne $compat_version) {
+							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_entry}->{'compatibility_version'}.", but it is actually $compat_version.\n";
 							$looks_good = 0;
 						}
 					}
@@ -2224,8 +2229,9 @@ sub _validate_dpkg {
 			} else {
 				if (open my $otool_fh, '-|', $otool, '-L', $dylib_temp) {
 					<$otool_fh>; # skip first line
-					my ($libname, $compat_version) = <$otool_fh> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
+					my ($libname, $compat_version) = <$otool_fh> =~ /^\s*(.+?)\s*\(compatibility version ([\d\.]+)/;
 					close $otool_fh;
+					my $shlibs_entry = ($libname =~ s/(\s)/\\$1/g); # $deb_shlibs has backslash-protected whitespace
 					if (($libname !~ /^\//) and ($libname !~ /^\@[a-z,_]*path\//)) {
 						print "Error: package contains the shared library\n";
 						print "          $dylib\n";
