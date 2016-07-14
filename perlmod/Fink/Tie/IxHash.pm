@@ -1,7 +1,8 @@
 # This file is based on Tie::IxHash v1.23 from CPAN.
+# It was converted to Fink::Tie::IxHash and further modified
+# for use by Fink. You can read about these changes by browsing
+# the fink git repository.
 
-#
-# Tie/IxHash.pm
 #
 # Indexed hash implementation for Perl
 #
@@ -10,7 +11,7 @@
 
 require 5.005;
 
-package Tie::IxHash;
+package Fink::Tie::IxHash;
 use strict;
 use integer;
 require Tie::Hash;
@@ -441,18 +442,18 @@ __END__
 
 =head1 NAME
 
-Tie::IxHash - ordered associative arrays for Perl
+Fink::Tie::IxHash - ordered associative arrays for Perl
 
 
 =head1 SYNOPSIS
 
     # simple usage
-    use Tie::IxHash;
-    tie HASHVARIABLE, 'Tie::IxHash' [, LIST];
+    use Fink::Tie::IxHash;
+    tie HASHVARIABLE, 'Fink::Tie::IxHash' [, LIST];
 
     # OO interface with more powerful features
-    use Tie::IxHash;
-    TIEOBJECT = Tie::IxHash->new( [LIST] );
+    use Fink::Tie::IxHash;
+    TIEOBJECT = Fink::Tie::IxHash->new( [LIST] );
     TIEOBJECT->Splice( OFFSET [, LENGTH [, LIST]] );
     TIEOBJECT->Push( LIST );
     TIEOBJECT->Pop;
@@ -578,10 +579,10 @@ Resets the IxHash to its pristine state: with no elements at all.
 
 =head1 EXAMPLE
 
-    use Tie::IxHash;
+    use Fink::Tie::IxHash;
 
     # simple interface
-    $t = tie(%myhash, 'Tie::IxHash', 'a' => 1, 'b' => 2);
+    $t = tie(%myhash, 'Fink::Tie::IxHash', 'a' => 1, 'b' => 2);
     %myhash = (first => 1, second => 2, third => 3);
     $myhash{fourth} = 4;
     @keys = keys %myhash;
@@ -589,7 +590,7 @@ Resets the IxHash to its pristine state: with no elements at all.
     print("y") if exists $myhash{third};
 
     # OO interface
-    $t = Tie::IxHash->new(first => 1, second => 2, third => 3);
+    $t = Fink::Tie::IxHash->new(first => 1, second => 2, third => 3);
     $t->Push(fourth => 4); # same as $myhash{'fourth'} = 4;
     ($k, $v) = $t->Pop;    # $k is 'fourth', $v is 4
     $t->Unshift(neg => -1, zeroth => 0); 

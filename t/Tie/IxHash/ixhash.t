@@ -1,14 +1,14 @@
-#!../perl -w
 # this file taken from Tie-IxHash-1.23/t/ixhash.t on CPAN.
-use Tie::IxHash;
+
+use Fink::Tie::IxHash;
 
 my $TNUM = 0;
 print "1..26\n";
 
 sub T { print $_[0] ? "ok " : "not ok ", ++$TNUM, "\n" }
 my %bar;
-my $ixh = tie (%bar, 'Tie::IxHash', 'a' => 1, 'q' => 2, 'm' => 'X', 'n' => 'Y');
-#$ixh = Tie::IxHash->new('a' => 1, 'q' => 2, 'm' => 'X', n => 'Y');
+my $ixh = tie (%bar, 'Fink::Tie::IxHash', 'a' => 1, 'q' => 2, 'm' => 'X', 'n' => 'Y');
+#$ixh = Fink::Tie::IxHash->new('a' => 1, 'q' => 2, 'm' => 'X', n => 'Y');
 $ixh->Push(e => 5, f => 6);
 T 'a|1|q|2|m|X|n|Y|e|5|f|6' eq join('|', %bar);
 $ixh->Delete('e', 'a');
