@@ -2,9 +2,9 @@
 
 use strict;
 use Test::More tests=>2;
-use Tie::IxHash;
+use Fink::Tie::IxHash;
 
-my $o = tie my %h, 'Tie::IxHash';
+my $o = tie my %h, 'Fink::Tie::IxHash';
 
 $h{a} = 1; $h{b} = 2; $h{c} = 3; $h{d} = 4; $h{e} = 5;
 
