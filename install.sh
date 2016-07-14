@@ -41,7 +41,7 @@ chmod 755 "$basepath"
 
 for dir in bin sbin \
 	lib lib/perl5 lib/perl5/Fink \
-	lib/perl5/Fink/{Text,Notify,Checksum,Finally,SelfUpdate} \
+	lib/perl5/Fink/{Text,Tie,Notify,Checksum,Finally,SelfUpdate} \
 	lib/fink lib/fink/update lib/fink/update-packages \
 	etc etc/dpkg \
 	share share/doc share/doc/fink \
@@ -82,7 +82,7 @@ done
 install -c -m 755 fink-dpkg-status-cleanup "$basepath/sbin/"
 
 # copy all perl modules
-for subdir in . Fink Fink/{Text,Notify,Checksum,Finally,SelfUpdate} ; do
+for subdir in . Fink Fink/{Text,Tie,Notify,Checksum,Finally,SelfUpdate} ; do
   for file in perlmod/${subdir}/*.pm ; do
     if [ -f $file ]; then
       install -c -p -m 644 $file "$basepath/lib/perl5/$subdir"
@@ -183,6 +183,7 @@ for p in \
 		Fink::SysState		\
 		Fink::Text::DelimMatch			\
 		Fink::Text::ParseWords			\
+		Fink::Tie::IxHash	\
 		Fink::VirtPackage	\
 		; do
 	manify_pm $p

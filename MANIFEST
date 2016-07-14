@@ -75,6 +75,7 @@ perlmod/Fink/Status.pm
 perlmod/Fink/SysState.pm
 perlmod/Fink/Text/DelimMatch.pm
 perlmod/Fink/Text/ParseWords.pm
+perlmod/Fink/Tie/IxHash.pm
 perlmod/Fink/Validation.pm
 perlmod/Fink/VirtPackage.pm
 perlmod/Fink.pm.in
@@ -154,6 +155,8 @@ t/testmore.pl
 t/Text/DelimMatch/DelimMatch.t
 t/Text/ParseWords/ParseWords.t
 t/Text/ParseWords/taint.t
+t/Tie/IxHash/each-delete.t
+t/Tie/IxHash/ixhash.t
 t/Validation/exports.t
 t/Validation/_filename_versioning_cmp.t
 fink-virtual-pkgs.in
