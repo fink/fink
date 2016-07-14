@@ -1,3 +1,5 @@
+# This file is based on Tie::IxHash v1.23 from CPAN.
+
 #
 # Tie/IxHash.pm
 #
