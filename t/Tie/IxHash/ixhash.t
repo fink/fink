@@ -1,4 +1,5 @@
 #!../perl -w
+# this file taken from Tie-IxHash-1.23/t/ixhash.t on CPAN.
 use Tie::IxHash;
 
 my $TNUM = 0;
