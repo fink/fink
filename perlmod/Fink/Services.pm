@@ -237,6 +237,15 @@ false.
 
 This option also B<DOES NOT> allow RFC-822 multi-line syntax.
 
+=item preserve_order
+
+If true, an ordered hash (tied to Fink::Tie::IxHash) is used. The keys
+retain the order of appearance in @lines rather than the usual
+apparently-random order of a perl hash. There is a performance penalty
+and the result is possibly non-portable/non-Storable, so this should
+not be used if not necessary (for example, where sorting the keys
+would not suffice).
+
 =back
 
 =cut
@@ -259,19 +268,26 @@ sub read_properties_lines {
 	my %opts = (
 		case_sensitive	=> 0,
 		remove_space	=> 0,
+		preserve_order  => 0,
 		ref($_[0]) ? %{shift @_} : (),
 	);
 	# do we make the keys all lowercase
 	my ($notLC) = $opts{case_sensitive};
 	my (@lines) = @_;
-	my ($hash, $lastkey, $heredoc, $linenum);
 	my $cvs_conflicts;
 
-	$hash = {};
-	$lastkey = "";
-	$heredoc = 0;
-	$linenum = 0;
+	my $hash = {};
+	if ($opts{preserve_order}) {
+		require Fink::Tie::IxHash;
+		tie my %hash, 'Fink::Tie::IxHash';
+		$hash = \%hash;
+	}
+
+	my $lastkey = "";    # remember what multiline field we're reading
+	my $heredoc = 0;     # tracks depth of multiline "here-doc" format
 	my $hdoc_spacecount; # number of spaces to remove in heredoc
+
+	my $linenum = 0;     # location in @lines (used in error messages)
 
 	foreach (@lines) {
 		$linenum++;
