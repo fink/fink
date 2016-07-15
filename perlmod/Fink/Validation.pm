@@ -26,6 +26,7 @@ package Fink::Validation;
 use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &file_MD5_checksum &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
 use Fink::PkgVersion;
+use Fink::Tie::IxHash;
 use Cwd qw(getcwd);
 use File::Find qw(find);
 use File::Path qw(rmtree);
@@ -1800,7 +1801,16 @@ sub _validate_dpkg {
 		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}};
 
 	# during File::Find loop, we stack all error msgs
-	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
+	my $msgs;
+	# hashref:
+	#   key: $message
+	#   val: [ $loc0, $loc1, ...]
+	#
+	#   $locN: [] or [$filename] or [$filename, $linenumber]
+	{
+		tie my %msgs, 'Fink::Tie::IxHash';
+		$msgs = \%msgs;
+	}
 
 	my $dpkg_file_count = 0;
 	my %case_insensitive_filename = (); # keys are lc($fullpathname) for all items in .deb
@@ -2093,14 +2103,12 @@ sub _validate_dpkg {
 
 	# handle messages generated during the File::Find loop
 	{
-		# when we switch to Tie::IxHash, we won't need to know the internal details of $msgs
-		my @msgs_ordered = @{$msgs->[0]};
-		my %msgs_details = %{$msgs->[1]};
+		my @msgs_ordered = keys %$msgs;
 		if (@msgs_ordered) {
 			$looks_good = 0;  # we have errors in the stack!
 			foreach my $msg (@msgs_ordered) {
 				print "Error: $msg\n";
-				foreach (@{$msgs_details{$msg}}) {
+				foreach (@{$msgs->{$msg}}) {
 					print "\tOffending file: ", $_->[0], "\n" if defined $_->[0];
 					print "\tOffending line: ", $_->[1], "\n" if defined $_->[1];
 				}
@@ -2314,8 +2322,7 @@ sub stack_msg {
 	my $message = shift;   # the message to store
 	my @details = @_;      # additional details about this instance of the msg
 
-	push @{$queue->[0]}, $message unless exists $queue->[1]->{$message};
-	push @{$queue->[1]->{$message}}, \@details;
+	push @{$queue->{$message}}, \@details;
 }
 
 # given two filenames $file1 and $file2, check whether one is a more
