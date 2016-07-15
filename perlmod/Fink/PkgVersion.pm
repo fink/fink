@@ -3908,9 +3908,9 @@ sub phase_install {
 		# Read the set of variables (but don't change the keys to lowercase)
 		$properties = &read_properties_var(
 			'runtimevars of "'.$self->{_filename}.'"', $vars,
-			{ case_sensitive => 1});
+			{ case_sensitive => 1, preserve_order => 1 });
 
-		if (scalar keys %$properties > 0){
+		if (keys %$properties > 0) {
 			$install_script .= "\n/usr/bin/install -d -m 755 %i/etc/profile.d";
 			while (($var, $value) = each %$properties) {
 				$install_script .= "\necho \"setenv $var '$value'\" >> %i/etc/profile.d/%n.csh.env";
