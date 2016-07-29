@@ -5,9 +5,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.39.x
 \-------------
 
-0.39.4 "Morgan" (2016-06-TBD)
+0.39.4 "Morgan" (2016-07-29)
 	* Support 10.11.0-5
-	* Update validator to allow for Shlibs entries with whitespace
+	* Forbid the use of shell variables as RuntimeVars
+	* Additional tweaks (see commits)
 
 0.39.3 "Antilles" (2016-02-28)
 	* Support 10.11.0-3
