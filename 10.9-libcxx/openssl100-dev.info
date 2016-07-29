@@ -1,6 +1,6 @@
 # -*- coding: ascii; tab-width: 4; x-counterpart: openssl100-dev.patch -*-
 Package: openssl100-dev
-Version: 1.0.2d
+Version: 1.0.2h
 Revision: 1
 Description: Secure Sockets Layer and Crypto Library
 License: OSI-Approved
@@ -38,7 +38,7 @@ CustomMirror: <<
   Primary:   http://www.openssl.org/
   Secondary: ftp://ftp.openssl.org/
 <<
-Source-MD5: 38dd619b2e77cbac69b99f52a053d25a
+Source-MD5: 9392e65072ce4b614c1392eefc1f23d0
 
 PatchFile: %{ni}.patch
 PatchFile-MD5: 8d86d626da439dd15dfb515193d4d573 
@@ -48,12 +48,12 @@ PatchScript: <<
   perl util/perlpath.pl /usr/bin
   perl -pi -e 's,LIBDEPS,SHARED_LDFLAGS=-bundle $&,' engines/Makefile engines/ccgost/Makefile
   perl -pi -e 's,/engines,/engines100,g' Configure Makefile Makefile.org engines/Makefile engines/ccgost/Makefile
+  cd test && ln -s . openssl-1.0.2e
 <<
 
 BuildDepends: fink (>= 0.24.12)
 Depends: openssl100-shlibs (= %v-%r)
-NoSetMAKEFLAGS: true
-SetMAKEFLAGS: -j1
+UseMaxBuildJobs: false
 CompileScript: <<
   #!/bin/sh -ev
 

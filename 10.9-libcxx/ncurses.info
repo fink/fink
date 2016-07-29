@@ -47,8 +47,7 @@ ConfigureParams: <<
 NoSetCFLAGS: true
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
-NoSetMAKEFLAGS: true
-SetMAKEFLAGS: -j1
+UseMaxBuildJobs: false
 InstallScript: <<
 #!/bin/sh -ev
   make install DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib:`pwd`/lib/ncurses
