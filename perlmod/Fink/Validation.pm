@@ -1412,6 +1412,15 @@ sub validate_info_component {
 		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.32'} }, 'use of RuntimeDepends', $filename);
 	}
 
+	# A bug related to RuntimeVars ordering was fixed; it could
+	# trigger runtime errors in a certain situation. Test here is a
+	# heuristic for that situation.
+	$value = $properties->{runtimevars};
+	if (defined $value and $value =~ /$/) {
+		warn "  heuristic match\n";
+		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.39.4'} }, 'use of shell variables in RuntimeVars variable values', $filename);
+	}
+
 	# check syntax of each line of Shlibs field
 	$value = $properties->{shlibs};
 	if (defined $value) {
