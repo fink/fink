@@ -218,7 +218,7 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			 "guarantees.");
 		$distribution = "10.10";
-	} elsif ($host =~ /^i386-apple-darwin15\.[0-5]/) {
+	} elsif ($host =~ /^i386-apple-darwin15\.[0-6]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.11";
 	} elsif ($host =~ /^i386-apple-darwin15\./) {
