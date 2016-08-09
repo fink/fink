@@ -1654,7 +1654,9 @@ sub _validate_dpkg {
 	my $destdir = shift;  # %d, or its moral equivalent
 	my $val_prefix = shift;
 
-	chomp(my $otool = `which otool 2>/dev/null`);
+	my $otool = '/Library/Developer/CommandLineTools/usr/bin/otool-classic'; # Xcode 8 CL Tools
+	undef $otool unless -x $otool;
+	chomp($otool = `which otool 2>/dev/null`) unless defined $otool;
 	undef $otool unless -x $otool;
 	chomp(my $otool64 = `which otool64 2>/dev/null`); # older OSX has separate tool for 64-bit
 	undef $otool64 unless -x $otool64;				  # binaries (otool itself cannot handle them)
