@@ -752,13 +752,14 @@ This package represents your Xcode.app version.
 	$hash->{descdetail} = <<END;
 This package represents Xcode.app and 'xcodebuild',
 provided by Apple.  If it does not show as installed,
-you can download it from Apple at:
+you can download it from Apple via the App Store or
+directly from:
 
   http://developer.apple.com/
 
 (free registration required).
-If you are on OS X 10.7 or later and have in fact installed
-Xcode 4.3 or later, then you may need to run
+If you have in fact installed Xcode, but this virtual package
+isn't showing up, then you may need to run
 
   sudo xcode-select -switch /path/to/Xcode.app
 
@@ -810,9 +811,11 @@ This package represents your Xcode CLI tools version.
 	$hash->{descdetail} = <<END;
 This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,
-you can download Xcode (for OS X 10.5 - 10.10)
-or the Command Line Tools For Xcode (OS X 10.7 or later)
-from Apple at:
+download the Command Line Tools For Xcode by running 
+  
+  sudo xcode-select --install
+
+or get them via the App Store or directly from Apple at:
 
   http://developer.apple.com/
 
