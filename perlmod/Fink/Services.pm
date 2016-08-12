@@ -1332,7 +1332,7 @@ sub enforce_gcc {
 		'10.8' => '4.2',
 		'10.9' => '4.2',
 		'10.10' => '4.2',
-		'10.11' => '4.2'
+		'10.11' => '4.2',
 		'10.12' => '4.2'
 	);
 	my %gcc_abi_default = (
@@ -1503,7 +1503,7 @@ is used. This is an all-perl routine that emulates 'which' in csh.
 =cut
 
 sub get_path {
-	use File::Spec;
+    use File::Spec;
 
 	my $file = shift;
 	my $path = $file;
