@@ -5,6 +5,11 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.39.x
 \-------------
 
+0.39.5 "Koloth" (2016-08-13)
+	* Support 10.11.0-6
+	* Bugfix in detecting variable marker ($) in RuntimeVars
+	* Use otool-classic under Xcode 8 CL tools
+
 0.39.4 "Morgan" (2016-07-29)
 	* Support 10.11.0-5
 	* Forbid the use of shell variables as RuntimeVars
