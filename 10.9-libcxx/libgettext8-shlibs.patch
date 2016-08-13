@@ -1,6 +1,6 @@
-diff -ruNp gettext-0.19.7-orig/gettext-runtime/libasprintf/Makefile.in gettext-0.19.7/gettext-runtime/libasprintf/Makefile.in
---- gettext-0.19.7-orig/gettext-runtime/libasprintf/Makefile.in	2015-12-27 17:09:18.000000000 -0600
-+++ gettext-0.19.7/gettext-runtime/libasprintf/Makefile.in	2015-12-29 13:37:25.000000000 -0600
+diff -ruNp gettext-0.19.8.1-orig/gettext-runtime/libasprintf/Makefile.in gettext-0.19.8.1/gettext-runtime/libasprintf/Makefile.in
+--- gettext-0.19.8.1-orig/gettext-runtime/libasprintf/Makefile.in	2016-06-11 08:00:49.000000000 -0500
++++ gettext-0.19.8.1/gettext-runtime/libasprintf/Makefile.in	2016-06-12 14:57:08.000000000 -0500
 @@ -545,7 +545,7 @@ lib_asprintf_EXTRASOURCES = \
  # How to build libasprintf.
  # With libtool 1.5.14, on some platforms, like BeOS, "libtool --tag=CXX" fails
@@ -10,10 +10,10 @@ diff -ruNp gettext-0.19.7-orig/gettext-runtime/libasprintf/Makefile.in gettext-0
  libgnu_la_SOURCES = size_max.h xsize.h xsize.c
  libgnu_la_LIBADD = $(gl_LTLIBOBJS) @LTALLOCA@
  libgnu_la_DEPENDENCIES = $(gl_LTLIBOBJS) @LTALLOCA@
-diff -ruNp gettext-0.19.7-orig/gettext-tools/src/Makefile.in gettext-0.19.7/gettext-tools/src/Makefile.in
---- gettext-0.19.7-orig/gettext-tools/src/Makefile.in	2015-12-27 17:09:42.000000000 -0600
-+++ gettext-0.19.7/gettext-tools/src/Makefile.in	2015-12-29 13:37:25.000000000 -0600
-@@ -3282,10 +3282,10 @@ urlget-urlget.obj: urlget.c
+diff -ruNp gettext-0.19.8.1-orig/gettext-tools/src/Makefile.in gettext-0.19.8.1/gettext-tools/src/Makefile.in
+--- gettext-0.19.8.1-orig/gettext-tools/src/Makefile.in	2016-06-11 08:01:14.000000000 -0500
++++ gettext-0.19.8.1/gettext-tools/src/Makefile.in	2016-06-12 14:57:08.000000000 -0500
+@@ -3291,10 +3291,10 @@ urlget-urlget.obj: urlget.c
  	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(urlget_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o urlget-urlget.obj `if test -f 'urlget.c'; then $(CYGPATH_W) 'urlget.c'; else $(CYGPATH_W) '$(srcdir)/urlget.c'; fi`
  
  xgettext-xgettext.o: xgettext.c
