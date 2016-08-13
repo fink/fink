@@ -1,5 +1,5 @@
 # Official mirror list: http://www.gnu.org/prep/ftp.html
-Timestamp: 2016-07-29
+Timestamp: 2016-08-13
 
 Primary: http://ftpmirror.gnu.org
 
@@ -22,8 +22,6 @@ asi-TW: ftp://ftp.yzu.edu.tw/gnu
 asi-TW: http://ftp.yzu.edu.tw/gnu
 aus-AU: http://gnu.uberglobalmirror.com
 aus-AU: http://mirror.aarnet.edu.au/pub/gnu
-aus-NC: ftp://mirror.lagoon.nc/pub/gnu
-aus-NC: http://mirror.lagoon.nc/pub/gnu
 eur-AT: ftp://gd.tuwien.ac.at/gnu/gnusrc
 eur-AT: ftp://mirror.easyname.at/gnu
 eur-AT: ftp://mirror.inode.at/gnu
@@ -52,9 +50,9 @@ eur-DE: http://mirror.reismil.ch/gnu
 eur-DE: http://mirror2.klaus-uwe.me/gnu
 eur-DE: http://www.artfiles.org/gnu.org
 eur-DE: http://www.gutscheinrausch.de/mirror/gnu
-eur-DK: http://ftp.download-by.net/gnu/gnu
 eur-ES: ftp://ftp.rediris.es/mirror/GNU/gnu
 eur-ES: http://ftp.rediris.es/mirror/GNU/gnu
+eur-FI: ftp://ftp.funet.fi/pub/gnu/prep
 eur-FI: http://www.nic.funet.fi/pub/gnu/ftp.gnu.org/pub/gnu
 eur-FR: ftp://fr.mirror.babylon.network/gnu
 eur-FR: ftp://ftp.igh.cnrs.fr/pub/gnu
@@ -102,14 +100,11 @@ eur-UA: http://ftp.gnu.org.ua/gnu
 eur-UK: ftp://www.mirrorservice.org/sites/ftp.gnu.org/gnu
 eur-UK: http://www.mirrorservice.org/sites/ftp.gnu.org/gnu
 nam-CA: ftp://gnu.mirror.iweb.com
-nam-CA: ftp://mirror.vexxhost.com/gnu
 nam-CA: http://gnu.mirror.iweb.com
-nam-CA: http://gnu.mirror.vexxhost.com
 nam-US: ftp://mirror.keystealth.org/gnu
 nam-US: ftp://mirror.team-cymru.org/gnu
 nam-US: ftp://mirrors.kernel.org/gnu
 nam-US: ftp://mirrors.ocf.berkeley.edu/gnu
-nam-US: ftp://mirrors.syringanetworks.net/gnu
 nam-US: ftp://open-source-box.org/gnu
 nam-US: ftp://reflection.oss.ou.edu/gnu/gnu
 nam-US: ftp://spinellicreations.com/gnu
@@ -128,7 +123,6 @@ nam-US: http://mirror.thecodefactory.org/gnu
 nam-US: http://mirrors.ibiblio.org/pub/mirrors/gnu/ftp/gnu
 nam-US: http://mirrors.kernel.org/gnu
 nam-US: http://mirrors.ocf.berkeley.edu/gnu
-nam-US: http://mirrors.syringanetworks.net/gnu
 nam-US: http://open-source-box.org
 nam-US: http://reflection.oss.ou.edu/gnu/gnu
 nam-US: http://www.dvlnx.com/software/gnu

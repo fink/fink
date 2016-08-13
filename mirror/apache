@@ -1,5 +1,5 @@
 # Official mirror list: http://www.apache.org/mirrors/
-Timestamp: 2016-07-29
+Timestamp: 2016-08-13
 
 Primary: http://www.apache.org/dist
 
@@ -36,7 +36,7 @@ asi-TW: ftp://ftp.twaren.net/Unix/Web/apache
 asi-TW: http://apache.stu.edu.tw
 asi-TW: http://ftp.mirror.tw/pub/apache
 asi-TW: http://ftp.tc.edu.tw/pub/Apache
-asi-TW: http://ftp.twaren.net/Unix/Web/apache
+asi-VN: http://mirrors.viethosting.vn/apache
 aus-AU: ftp://ftp.kddilabs.jp/infosystems/apache
 aus-AU: http://apache.mirror.amaze.com.au
 aus-AU: http://apache.mirror.digitalpacific.com.au
@@ -44,7 +44,6 @@ aus-AU: http://apache.mirror.serversaustralia.com.au
 aus-AU: http://apache.uberglobalmirror.com
 aus-AU: http://ftp.kddilabs.jp/infosystems/apache
 aus-AU: http://mirror.ventraip.net.au/apache
-aus-NC: http://mirror.lagoon.nc/pub/apache
 eur-AT: ftp://gd.tuwien.ac.at/pub/infosys/servers/http/apache/dist
 eur-BA: http://apache.mirror.ba
 eur-BE: ftp://apache.belnet.be/mirrors/ftp.apache.org
@@ -82,11 +81,10 @@ eur-DE: http://mirror.synyx.de/apache
 eur-DE: http://mirror2.shellbot.com/apache
 eur-DE: http://mirrors.ae-online.de/apache
 eur-DE: http://www-eu.apache.org/dist
-eur-DK: http://ftp.download-by.net/apache
+eur-DK: http://mirrors.dotsrc.org/apache
 eur-DK: http://mirrors.rackhosting.com/apache
 eur-ES: http://apache.rediris.es
 eur-ES: http://ftp.cixug.es/apache
-eur-FI: ftp://ftp.funet.fi/pub/mirrors/apache.org
 eur-FI: http://mirror.netinch.com/pub/apache
 eur-FI: http://www.nic.funet.fi/pub/mirrors/apache.org
 eur-FR: ftp://mirrors.ircam.fr/pub/apache
@@ -105,6 +103,7 @@ eur-GR: http://apache.otenet.gr/dist
 eur-GR: http://apache.tsl.gr
 eur-GR: http://mirrors.myaegean.gr/apache
 eur-HR: http://ftp.carnet.hr/misc/apache
+eur-HU: ftp://crysys.hit.bme.hu/pub/apache
 eur-HU: ftp://xenia.sote.hu/pub/mirrors/www.apache.org
 eur-HU: http://xenia.sote.hu/ftp/mirrors/www.apache.org
 eur-IE: http://ftp.heanet.ie/mirrors/www.apache.org/dist
@@ -123,7 +122,9 @@ eur-LT: http://apache.mirror.serveriai.lt
 eur-LT: http://apache.mirror.vu.lt/apache
 eur-NL: ftp://apache.proserve.nl/apache
 eur-NL: ftp://mirror.nl.webzilla.com/apache
+eur-NL: ftp://mirror.yannic-bonenberger.com/apache
 eur-NL: ftp://mirror1.spango.com/apache
+eur-NL: http://apache.40b.nl
 eur-NL: http://apache.cs.uu.nl
 eur-NL: http://apache.hippo.nl
 eur-NL: http://apache.mirror.triple-it.nl
@@ -133,6 +134,7 @@ eur-NL: http://apache.xl-mirror.nl
 eur-NL: http://ftp.nluug.nl/internet/apache
 eur-NL: http://ftp.tudelft.nl/apache
 eur-NL: http://mirror.nl.webzilla.com/apache
+eur-NL: http://mirror.yannic-bonenberger.com/apache
 eur-NL: http://mirrors.supportex.net/apache
 eur-NO: ftp://apache.uib.no/pub/apache
 eur-NO: http://apache.uib.no
@@ -151,6 +153,7 @@ eur-SK: http://tux.rainside.sk/apache
 eur-TR: ftp://ftp.itu.edu.tr/Mirror/Apache
 eur-TR: http://ftp.itu.edu.tr/Mirror/Apache
 eur-TR: http://mirror.idealhosting.net.tr/Apache
+eur-UA: http://apache.cp.if.ua
 eur-UA: http://apache.ip-connect.vn.ua
 eur-UA: http://apache.volia.net
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.apache.org
@@ -167,7 +170,6 @@ nam-CA: ftp://mirror.csclub.uwaterloo.ca/apache
 nam-CA: http://apache.mirror.gtcomm.net
 nam-CA: http://apache.mirror.iweb.ca
 nam-CA: http://apache.mirror.rafal.ca
-nam-CA: http://apache.mirror.vexxhost.com
 nam-CA: http://apache.parentingamerica.com
 nam-CA: http://apachemirror.ovidiudan.com
 nam-CA: http://mirror.csclub.uwaterloo.ca/apache
@@ -195,7 +197,6 @@ nam-US: http://mirror.nexcess.net/apache
 nam-US: http://mirror.reverse.net/pub/apache
 nam-US: http://mirror.stjschools.org/public/apache
 nam-US: http://mirror.symnds.com/software/Apache
-nam-US: http://mirror.yannic-bonenberger.com/apache
 nam-US: http://mirrors.advancedhosters.com/apache
 nam-US: http://mirrors.gigenet.com/apache
 nam-US: http://mirrors.ibiblio.org/apache
