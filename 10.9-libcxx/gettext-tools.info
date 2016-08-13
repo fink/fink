@@ -1,13 +1,13 @@
 Package: gettext-tools
-Version: 0.19.7
+Version: 0.19.8.1
 Revision: 1
 Source: mirror:gnu:gettext/gettext-%v.tar.gz
 #Source: mirror:sourceforge:fink/gettext-%v.tar.gz
-Source-MD5: 87c4ab267c4dce8a75db5d057bb3c92f
+Source-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 PatchFile: libgettext8-shlibs.patch
-PatchFile-MD5: 16977225f4157db5f475a1f8067d4aaa
+PatchFile-MD5: d4667d68ebe55562d5b443550c60c6f8
 PatchFile2: gettext-tools-tests.patch
-PatchFile2-MD5: a76225300acaab94caaa67ee6566381d
+PatchFile2-MD5: 6051a92acfc5ba9bf2274c258dbd6c7e
 PatchScript: <<
  patch -p1 < %{PatchFile}
  sed 's|@FINKPREFIX@|%p|g' < %{PatchFile2} | patch -p1
@@ -83,8 +83,8 @@ InstallScript: <<
 DocFiles: README* AUTHORS COPYING* NEWS THANKS ChangeLog* 
 InfoDocs: gettext.info
 Shlibs: <<
-  !%p/lib/libgettextlib-0.19.7.dylib
-  !%p/lib/libgettextsrc-0.19.7.dylib
+  !%p/lib/libgettextlib-0.19.8.1.dylib
+  !%p/lib/libgettextsrc-0.19.8.1.dylib
 <<
 Description: GNU Internationalization utils
 

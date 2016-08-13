@@ -10,15 +10,15 @@ diff -ruNp gettext-0.19.3-orig/gettext-tools/tests/lang-bash gettext-0.19.3/gett
  cat <<\EOF > prog.bash
  #! /bin/bash
  
-diff -ruNp gettext-0.19.3-orig/gettext-tools/tests/lang-vala gettext-0.19.3/gettext-tools/tests/lang-vala
---- gettext-0.19.3-orig/gettext-tools/tests/lang-vala	2014-10-01 02:29:54.000000000 -0500
-+++ gettext-0.19.3/gettext-tools/tests/lang-vala	2014-10-26 12:15:16.000000000 -0500
+diff -ruNp gettext-0.19.8.1-orig/gettext-tools/tests/lang-vala gettext-0.19.8.1/gettext-tools/tests/lang-vala
+--- gettext-0.19.8.1-orig/gettext-tools/tests/lang-vala	2016-06-09 17:56:00.000000000 -0500
++++ gettext-0.19.8.1/gettext-tools/tests/lang-vala	2016-06-12 15:35:03.000000000 -0500
 @@ -22,7 +22,7 @@ test $? -le 1 \
-   || { echo "Skipping test: valac not found"; exit 77; }
+   || { echo "Skipping test: valac not found"; Exit 77; }
  
  : ${VALAC=valac}
 -${VALAC} --Xcc=-DGETTEXT_PACKAGE=\"prog\" prog.vala 2>prog.err \
 +${VALAC} --Xcc="-I@FINKPREFIX@/include" --Xcc=-DGETTEXT_PACKAGE=\"prog\" prog.vala 2>prog.err \
-   || { cat prog.err 1>&2; exit 1; }
+   || { cat prog.err 1>&2; Exit 1; }
  
  : ${XGETTEXT=xgettext}
