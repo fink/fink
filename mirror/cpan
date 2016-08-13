@@ -1,5 +1,5 @@
 # Official mirror list: http://www.cpan.org/SITES.html
-Timestamp: 2016-07-29
+Timestamp: 2016-08-13
 
 Primary: ftp://ftp.cpan.org/pub/CPAN
 
@@ -300,12 +300,11 @@ nam-MX: http://www.msg.com.mx/CPAN
 nam-US: ftp://cpan.cs.utah.edu/CPAN
 nam-US: ftp://cpan.cse.msu.edu
 nam-US: ftp://cpan.erlbaum.net/CPAN
+nam-US: ftp://cpan.hoovism.com/CPAN
 nam-US: ftp://cpan.llarian.net/pub/CPAN
 nam-US: ftp://cpan.mirrors.tds.net/pub/CPAN
-nam-US: ftp://cpan.netnitco.net/pub/mirrors/CPAN
 nam-US: ftp://cpan.pair.com/pub/CPAN
 nam-US: ftp://ftp.cpan.org/pub/CPAN
-nam-US: ftp://ftp.hoovism.com/CPAN
 nam-US: ftp://ftp.osuosl.org/pub/CPAN
 nam-US: ftp://ftp.uwsg.iu.edu/pub/perl/CPAN
 nam-US: ftp://ftp.wayne.edu/CPAN
@@ -327,6 +326,7 @@ nam-US: http://cpan.cs.utah.edu
 nam-US: http://cpan.cse.msu.edu
 nam-US: http://cpan.develooper.com
 nam-US: http://cpan.erlbaum.net
+nam-US: http://cpan.hoovism-http.com
 nam-US: http://cpan.llarian.net
 nam-US: http://cpan.metacpan.org
 nam-US: http://cpan.metacpan.org
@@ -346,7 +346,6 @@ nam-US: http://cpan.mirrors.hoobly.com
 nam-US: http://cpan.mirrors.ionfish.org
 nam-US: http://cpan.mirrors.tds.net
 nam-US: http://cpan.mmgdesigns.com.ar
-nam-US: http://cpan.netnitco.net
 nam-US: http://cpan.pair.com
 nam-US: http://cpan.yimg.com
 nam-US: http://ftp.osuosl.org/pub/CPAN
@@ -362,6 +361,7 @@ nam-US: http://mirror.jmu.edu/pub/CPAN
 nam-US: http://mirror.metrocast.net/cpan
 nam-US: http://mirror.n5tech.com/CPAN
 nam-US: http://mirror.nyi.net/CPAN
+nam-US: http://mirror.os6.org/CPAN
 nam-US: http://mirror.team-cymru.org/CPAN
 nam-US: http://mirror.teklinks.com/CPAN
 nam-US: http://mirror.uic.edu/CPAN
@@ -376,7 +376,6 @@ nam-US: http://mirrors.rit.edu/CPAN
 nam-US: http://mirrors.sonic.net/cpan
 nam-US: http://mirrors.syringanetworks.net/CPAN
 nam-US: http://noodle.portalus.net/CPAN
-nam-US: http://www.hoovism.com/CPAN
 nam-US: http://www.perl.com/CPAN
 nam-US: http://www.pirbot.com/mirrors/cpan
 sam-BR: http://cpan.kinghost.net
