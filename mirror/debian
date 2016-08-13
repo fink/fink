@@ -1,5 +1,5 @@
 # Official mirror list: http://www.debian.org/mirror/list
-Timestamp: 2016-07-29
+Timestamp: 2016-08-13
 
 Primary: ftp://ftp.debian.org/debian
 
@@ -7,6 +7,7 @@ asi-CN: http://ftp.cn.debian.org/debian
 asi-CN: http://ftp2.cn.debian.org/debian
 asi-JP: http://ftp.jp.debian.org/debian
 asi-KR: http://ftp.kr.debian.org/debian
+asi-SG: http://ftp.sg.debian.org/debian
 asi-TH: http://ftp.th.debian.org/debian
 asi-TW: http://ftp.tw.debian.org/debian
 aus-AU: http://ftp.au.debian.org/debian

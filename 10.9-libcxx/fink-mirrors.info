@@ -1,10 +1,10 @@
 Info4: <<
 Package: fink-mirrors
-Version: 0.39.3.1
+Version: 0.39.4.1
 Revision: 1
 Essential: yes
 Source: mirror:custom:fink/%n-%v.tar.gz
-Source-MD5: 282cdab9e7ea19fda184af812392924e
+Source-MD5: 6e57866e4743b76685710a24cefc6c26
 Depends: fink (>= 0.17.3-1)
 Replaces: fink (<< 0.17.2-1)
 CompileScript:  sed -e "s|@PREFIX@|%p|g" < postinstall.pl.in > postinstall.pl
