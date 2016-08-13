@@ -1,13 +1,13 @@
 Package: libgettext8-shlibs
-Version: 0.19.7
+Version: 0.19.8.1
 Revision: 1
 Source: mirror:gnu:gettext/gettext-%v.tar.gz
 #Source: mirror:sourceforge:fink/gettext-%v.tar.gz
-Source-MD5: 87c4ab267c4dce8a75db5d057bb3c92f
+Source-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 # libgettext8-shlibs.patch must be regenerated for every update since
 # dpkg uses it and needs the correct full file headers for patch -p0 
 PatchFile: %n.patch
-PatchFile-MD5: 16977225f4157db5f475a1f8067d4aaa 
+PatchFile-MD5: d4667d68ebe55562d5b443550c60c6f8 
 PatchScript: <<
  patch -p1 < %{PatchFile}
  cd build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
