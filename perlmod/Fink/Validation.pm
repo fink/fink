@@ -751,6 +751,12 @@ sub validate_info_file {
 			}
 		}
 
+		# Can't rename a source tarball to be into a subdir
+		if ($field =~ /^(test)?source(\d*)rename$/ && $value =~ /\//) {
+			print "Error: \"$field\" must be simple filename (no subdirs). ($filename)\n";
+			$looks_good = 0;
+		}
+
 		# Check for undefined custom mirrortype
 		if ($field =~ /^(test)?source(\d*)$/ && $value =~ /^mirror:custom:/) {
 			if (!exists $properties->{custommirror}) {
