@@ -752,6 +752,14 @@ sub validate_info_file {
 			return;
 		}
 
+		# Check for undefined custom mirrortype
+		if ($field =~ /^(test)?source(\d*)$/ && $value =~ /^mirror:custom:/) {
+			if (!exists $properties->{custommirror}) {
+				print "Error: \"$field\" uses \"mirror:custom:\" but there is no \"CustomMirror\" field to define it. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+
 		# Validate splitoffs
 		if ($field eq 'splitoff1') {
 			print "Warning: Field \"splitoff1\" is unknown (use \"splitoff\" for first SplitOff package). ($filename)\n";
