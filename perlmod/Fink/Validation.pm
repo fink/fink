@@ -746,10 +746,9 @@ sub validate_info_file {
 				my $msg = $field =~ /-(checksum|md5)$/
 					? "Warning" # no big deal
 					: "Error";  # probably means typo, giving broken behavior
-					print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
-					$looks_good = 0;
-				}
-			return;
+				print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
+				$looks_good = 0;
+			}
 		}
 
 		# Check for undefined custom mirrortype
