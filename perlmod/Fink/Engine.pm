@@ -2038,8 +2038,7 @@ sub real_install {
 			# Compare versions
 			if ($xcode_cli_version ne $xcode_app_version) {
 				&print_breaking( "\nWARNING: Xcode.app version ($xcode_app_version) and Xcode Command Line Tools version ($xcode_cli_version)\n" .
-					 			 "are not compatible.\nYou may experience build errors.\n\n");
-				sleep 10;
+					 			 "may not be compatible.\nYou may experience build errors.\n\n");
 			}
 		}
 
