@@ -2,6 +2,20 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.41.x
+\-------------
+
+0.41.0 "Backsaw" (2017-09-20)
+	* Support 10.12 (Sierra)
+
+/-------------
+| fink 0.40.x
+\-------------
+
+Skipped.  The development branch for Sierra was prematurely tagged with a 0.40.99 git
+version.
+
+/-------------
 | fink 0.39.x
 \-------------
 
