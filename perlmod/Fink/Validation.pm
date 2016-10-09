@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2015 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ package Fink::Validation;
 use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &file_MD5_checksum &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
 use Fink::PkgVersion;
+use Fink::Tie::IxHash;
 use Cwd qw(getcwd);
 use File::Find qw(find);
 use File::Path qw(rmtree);
@@ -793,10 +794,23 @@ sub validate_info_file {
 				my $msg = $field =~ /-(checksum|md5)$/
 					? "Warning" # no big deal
 					: "Error";  # probably means typo, giving broken behavior
-					print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
-					$looks_good = 0;
-				}
-			return;
+				print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+
+		# Can't rename a source tarball to be into a subdir
+		if ($field =~ /^(test)?source(\d*)rename$/ && $value =~ /\//) {
+			print "Error: \"$field\" must be simple filename (no subdirs). ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# Check for undefined custom mirrortype
+		if ($field =~ /^(test)?source(\d*)$/ && $value =~ /^mirror:custom:/) {
+			if (!exists $properties->{custommirror}) {
+				print "Error: \"$field\" uses \"mirror:custom:\" but there is no \"CustomMirror\" field to define it. ($filename)\n";
+				$looks_good = 0;
+			}
 		}
 
 		# Validate splitoffs
@@ -1504,6 +1518,15 @@ sub validate_info_component {
 		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.32'} }, 'use of RuntimeDepends', $filename);
 	}
 
+	# A bug related to RuntimeVars ordering was fixed; it could
+	# trigger runtime errors in a certain situation. Test here is a
+	# heuristic for that situation.
+	$value = $properties->{runtimevars};
+	if (defined $value and $value =~ /\$/) {
+		warn "  heuristic match\n";
+		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.39.4'} }, 'use of shell variables in RuntimeVars variable values', $filename);
+	}
+
 	# check syntax of each line of Shlibs field
 	$value = $properties->{shlibs};
 	if (defined $value) {
@@ -1592,14 +1615,14 @@ sub validate_info_component {
 	if (defined $properties->{triggers}) {
 		# Packages using Triggers must BuildDepends on a fink that
 		# supports it
-		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.39.99.git'} }, 'use of Triggers', $filename);
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.41.99.git'} }, 'use of Triggers', $filename);
 	}
 
 	# Debconf
 	if (defined $properties->{debconf}) {
 		# Packages using Debconf requires bdep on fink that supports it
 		# and dep on debconf
-		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.39.99.git'} }, 'use of Triggers', $filename);
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.41.99.git'} }, 'use of Triggers', $filename);
 		my $ckdepends = &pkglist2lol($properties->{depends});
 
 		my $has_debconf_dep = 0;
@@ -1678,7 +1701,7 @@ sub validate_info_component {
 			'makemaker'   => '0.30.0',
 			'ruby'        => '0.30.0',
 			'modulebuild' => '0.30.2',
-			'debhelper'   => '0.39.99.git',
+			'debhelper'   => '0.41.99.git',
 		}->{$value};
 		if (defined $ds_min) {
 			$looks_good = 0 unless _require_dep($properties, { build => {'fink' => $ds_min} }, "use of DefaultScript:$value", $filename);
@@ -1795,7 +1818,9 @@ sub _validate_dpkg {
 	my $destdir = shift;  # %d, or its moral equivalent
 	my $val_prefix = shift;
 
-	chomp(my $otool = `which otool 2>/dev/null`);
+	my $otool = '/Library/Developer/CommandLineTools/usr/bin/otool-classic'; # Xcode 8 CL Tools
+	undef $otool unless -x $otool;
+	chomp($otool = `which otool 2>/dev/null`) unless defined $otool;
 	undef $otool unless -x $otool;
 	chomp(my $otool64 = `which otool64 2>/dev/null`); # older OSX has separate tool for 64-bit
 	undef $otool64 unless -x $otool64;				  # binaries (otool itself cannot handle them)
@@ -1953,7 +1978,16 @@ sub _validate_dpkg {
 	}
 
 	# during File::Find loop, we stack all error msgs
-	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
+	my $msgs;
+	# hashref:
+	#   key: $message
+	#   val: [ $loc0, $loc1, ...]
+	#
+	#   $locN: [] or [$filename] or [$filename, $linenumber]
+	{
+		tie my %msgs, 'Fink::Tie::IxHash';
+		$msgs = \%msgs;
+	}
 
 	my $dpkg_file_count = 0;
 	my %case_insensitive_filename = (); # keys are lc($fullpathname) for all items in .deb
@@ -2035,9 +2069,8 @@ sub _validate_dpkg {
 			if (defined $otool) {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
-					$file =~ s/\'/\\\'/gs;
-					if (open(OTOOL, "$otool -hv '$file' |")) {
-						while (my $line = <OTOOL>) {
+					if (open my $otool_fh, '-|', $otool, '-hv', $file) {
+						while (my $line = <$otool_fh>) {
 							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB(\s+|_STUB\s+)/) {
 								if ($filename !~ /\.(dylib|jnilib)$/) {
 									print "Warning: $filename is a DYLIB but it does not end in .dylib or .jnilib.\n";
@@ -2049,7 +2082,7 @@ sub _validate_dpkg {
 								}
 							}
 						}
-						close (OTOOL);
+						close $otool_fh;
 					}
 				}
 			} elsif ($filename =~/\.(dylib|jnilib)$/) {
@@ -2248,14 +2281,12 @@ sub _validate_dpkg {
 
 	# handle messages generated during the File::Find loop
 	{
-		# when we switch to Tie::IxHash, we won't need to know the internal details of $msgs
-		my @msgs_ordered = @{$msgs->[0]};
-		my %msgs_details = %{$msgs->[1]};
+		my @msgs_ordered = keys %$msgs;
 		if (@msgs_ordered) {
 			$looks_good = 0;  # we have errors in the stack!
 			foreach my $msg (@msgs_ordered) {
 				print "Error: $msg\n";
-				foreach (@{$msgs_details{$msg}}) {
+				foreach (@{$msgs->{$msg}}) {
 					print "\tOffending file: ", $_->[0], "\n" if defined $_->[0];
 					print "\tOffending line: ", $_->[1], "\n" if defined $_->[1];
 				}
@@ -2335,19 +2366,18 @@ sub _validate_dpkg {
 		} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
 			# don't validate private shlibs entries
 		} else {
-			$file =~ s/\'/\\\'/gs;
 			if (defined $otool) {
-				if (open (OTOOL, "$otool -L '$file' |")) {
-					<OTOOL>; # skip the first line
-					my ($libname, undef, $compat_version) = <OTOOL> =~ /^\s*((\/|@[a-z,_]*path\/).+?)\s*\(compatibility version ([\d\.]+)/;
-					close (OTOOL);
+				if (open my $otool_fh, '-|', $otool, '-L', $file) {
+					<$otool_fh>; # skip the first line
+					my ($libname, undef, $compat_version) = <$otool_fh> =~ /^\s*((\/|@[a-z,_]*path\/).+?)\s*\(compatibility version ([\d\.]+)/;
+					close $otool_fh;
 
 					if (!defined $libname or !defined $compat_version) {
 						if (defined $otool64) {
-							if (open (OTOOL, "$otool64 -L '$file' |")) {
-								<OTOOL>; # skip the first line
-								($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
-								close (OTOOL);
+							if (open my $otool_fh, '-|', $otool64, '-L', $file) {
+								<$otool_fh>; # skip the first line
+								($libname, $compat_version) = <$otool_fh> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+								close $otool_fh;
 							}
 						}
 					}
@@ -2371,6 +2401,8 @@ sub _validate_dpkg {
 		}
 	}
 
+	{
+		my @flat_dylibs; # collect these then give a unified report later
 	for my $dylib (@installed_dylibs) {
 		next if (-l $destdir . $dylib);
 		if (defined $otool) {
@@ -2378,11 +2410,10 @@ sub _validate_dpkg {
 			if (not defined $dylib_temp) {
 				print "Warning: unable to resolve symlink for $dylib.\n";
 			} else {
-				$dylib_temp =~ s/\'/\\\'/gs;
-				if (open (OTOOL, "$otool -L '$dylib_temp' |")) {
-					<OTOOL>; # skip first line
-					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
-					close (OTOOL);
+				if (open my $otool_fh, '-|', $otool, '-L', $dylib_temp) {
+					<$otool_fh>; # skip first line
+					my ($libname, $compat_version) = <$otool_fh> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
+					close $otool_fh;
 					if (($libname !~ /^\//) and ($libname !~ /^\@[a-z,_]*path\//)) {
 						print "Error: package contains the shared library\n";
 						print "          $dylib\n";
@@ -2400,24 +2431,33 @@ sub _validate_dpkg {
 						$looks_good = 0;
 					}
 				}
-				if (open (OTOOL, "$otool -hv '$dylib_temp' |")) {
-					<OTOOL>; <OTOOL>; <OTOOL>; # skip first three lines
-					unless ( <OTOOL> =~ /TWOLEVEL/ ) {
-						print "SERIOUS WARNING: $dylib_temp appears to have been linked using a flat namespace.\n";
-						print "       If this package BuildDepends on libtool2, make sure that you use\n";
-						print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
-						print "       and use autoreconf to regenerate the configure script.\n";
-						print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
-						print "       update its build procedure to avoid passing\n";	 
-						print "          -Wl,-flat_namespace\n"; 
-						print "       when linking libraries.\n\n";
-						print "		  If this package actually requires a flat namespace build,\n";
-						print "		  then ignore this message.\n\n";
-						sleep 60;
+				if (open my $otool_fh, '-|', $otool, '-hv', $dylib_temp) {
+					<$otool_fh>; <$otool_fh>; <$otool_fh>; # skip first three lines
+					unless ( <$otool_fh> =~ /TWOLEVEL/ ) {
+						push @flat_dylibs, $dylib_temp;
 					} 
-					close (OTOOL);
+					close $otool_fh;
 				}
 			}
+		}
+	}
+
+		# msg has 1-minute sleep to view; only do it once per pkg
+		# (with all relevant files listed, not once per file)
+		if (@flat_dylibs) {
+			foreach (@flat_dylibs) {
+				print "SERIOUS WARNING: $_ appears to have been linked using a flat namespace.\n";
+			}
+			print "       If this package BuildDepends on libtool2, make sure that you use\n";
+			print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
+			print "       and use autoreconf to regenerate the configure script.\n";
+			print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
+			print "       update its build procedure to avoid passing\n";	 
+			print "          -Wl,-flat_namespace\n"; 
+			print "       when linking libraries.\n\n";
+			print "		  If this package actually requires a flat namespace build,\n";
+			print "		  then ignore this message.\n\n";
+			sleep 60;
 		}
 	}
 
@@ -2456,8 +2496,7 @@ sub stack_msg {
 	my $message = shift;   # the message to store
 	my @details = @_;      # additional details about this instance of the msg
 
-	push @{$queue->[0]}, $message unless exists $queue->[1]->{$message};
-	push @{$queue->[1]->{$message}}, \@details;
+	push @{$queue->{$message}}, \@details;
 }
 
 # given two filenames $file1 and $file2, check whether one is a more

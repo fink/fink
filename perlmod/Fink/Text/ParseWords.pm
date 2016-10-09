@@ -1,4 +1,4 @@
-# This file is based on Text::ParseWords v3.29 from CPAN.
+# This file is based on Text::ParseWords v3.30 from CPAN.
 # It was converted to Fink::Text::ParseWords and further modified 
 # for use by Fink. You can read about these changes by browsing
 # the fink git repository.
@@ -7,7 +7,7 @@ package Fink::Text::ParseWords;
 
 use strict;
 require 5.006;
-our $VERSION = "3.29";
+our $VERSION = "3.30";
 
 
 use Exporter;
@@ -207,8 +207,8 @@ one line you can call &parse_line() directly and save a function
 call.
 
 The $keep argument is a boolean flag.  If true, then the tokens are
-split on the specified delimiter, but all other characters (quotes,
-backslashes, etc.) are kept in the tokens.  If $keep is false then the
+split on the specified delimiter, but all other characters (including
+quotes and backslashes) are kept in the tokens.  If $keep is false then the
 &*quotewords() functions remove all quotes and backslashes that are
 not themselves backslash-escaped or inside of single quotes (i.e.,
 &quotewords() tries to interpret these characters just like the Bourne
@@ -300,8 +300,14 @@ for assuring me that a &nested_quotewords() would be useful, and to
 Jeff Friedl <jfriedl@yahoo-inc.com> for telling me not to worry about
 error-checking (sort of-- you had to be there).
 
+=head1 COPYRIGHT AND LICENSE
+
+From the original file:
+This library is free software; you may redistribute and/or modify it
+under the same terms as Perl itself.
+
 For the changes by Fink:
-Copyright (C) 2005-2014 The Fink Package Manager Team.
+Copyright (C) 2005-2016 The Fink Package Manager Team.
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2

@@ -1,9 +1,10 @@
+Info4: <<
 Package: base-files
-Version: 1.9.16
+Version: 1.9.17
 Revision: 1
 Source: mirror:custom:fink/%n-%v.tar.gz
 Essential: yes
-Source-MD5: 016e50d48d80be2f02a9c7f8e0ee6795
+Source-MD5: c04195e25a7f00303e3f63ed2ea11a94
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
 DocFiles: COPYING NEWS README
@@ -30,32 +31,29 @@ afr-KE: http://liquidtelecom.dl.sourceforge.net/sourceforge
 afr-ZA: http://tenet.dl.sourceforge.net/sourceforge
 asi-JP: http://jaist.dl.sourceforge.net/sourceforge
 asi-KZ: http://kaz.dl.sourceforge.net/sourceforge
-asi-SG: http://softlayer-sng.dl.sourceforge.net/sourceforge
 asi-TW: http://nchc.dl.sourceforge.net/sourceforge
 asi-TW: http://ncu.dl.sourceforge.net/sourceforge
-aus-AU: http://aarnet.dl.sourceforge.net/sourceforge
 aus-AU: http://internode.dl.sourceforge.net/sourceforge
-aus-AU: http://waia.dl.sourceforge.net/sourceforge
-eur-CH: http://switch.dl.sourceforge.net/sourceforge
 eur-CZ: http://cznic.dl.sourceforge.net/sourceforge
 eur-CZ: http://ignum.dl.sourceforge.net/sourceforge
 eur-DE: http://netcologne.dl.sourceforge.net/sourceforge
-eur-DE: http://optimate.dl.sourceforge.net/sourceforge
 eur-DE: http://skylink.dl.sourceforge.net/sourceforge
 eur-FR: http://freefr.dl.sourceforge.net/sourceforge
 eur-IE: http://heanet.dl.sourceforge.net/sourceforge
 eur-IT: http://garr.dl.sourceforge.net/sourceforge
 eur-RU: http://citylan.dl.sourceforge.net/sourceforge
-eur-SE: http://sunet.dl.sourceforge.net/sourceforge
+eur-UA: http://netassist.dl.sourceforge.net/sourceforge
 eur-UK: http://kent.dl.sourceforge.net/sourceforge
 eur-UK: http://vorboss.dl.sourceforge.net/sourceforge
 nam-CA: http://iweb.dl.sourceforge.net/sourceforge
 nam-US: http://colocrossing.dl.sourceforge.net/sourceforge
 nam-US: http://downloads.sourceforge.net
-nam-US: http://softlayer-ams.dl.sourceforge.net/sourceforge
-nam-US: http://softlayer-dal.dl.sourceforge.net/sourceforge
 nam-US: http://superb-dca2.dl.sourceforge.net/sourceforge
+nam-US: http://superb-dca3.dl.sourceforge.net/sourceforge
+nam-US: http://superb-sea2.dl.sourceforge.net/sourceforge
 nam-US: http://tcpdiag.dl.sourceforge.net/sourceforge
+sam-BR: http://nbtelecom.dl.sourceforge.net/sourceforge
 sam-BR: http://ufpr.dl.sourceforge.net/sourceforge
 <<
 
+<<

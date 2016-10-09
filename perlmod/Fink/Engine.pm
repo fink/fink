@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2015 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -2020,7 +2020,7 @@ sub real_install {
 	    	die	"\nThe Xcode Command Line Tools need to be (re)installed. \n" .
 	   		 	"$install_source" .
 	   		 	"Or you can get them via direct download from developer.apple.com\n" .
-	   		 	"(free registration required) if you don't want to install Xcode.app.";
+	   		 	"(free registration required) if you don't want to install Xcode.app.\n";
       	}
 	
 		# check whether the command-line tools and Xcode.app are compatible.
@@ -2038,8 +2038,7 @@ sub real_install {
 			# Compare versions
 			if ($xcode_cli_version ne $xcode_app_version) {
 				&print_breaking( "\nWARNING: Xcode.app version ($xcode_app_version) and Xcode Command Line Tools version ($xcode_cli_version)\n" .
-					 			 "are not compatible.\nYou may experience build errors.\n\n");
-				sleep 10;
+					 			 "may not be compatible.\nYou may experience build errors.\n\n");
 			}
 		}
 

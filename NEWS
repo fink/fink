@@ -2,8 +2,36 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.41.x
+\-------------
+
+0.41.0 "Backsaw" (2017-09-20)
+	* Support 10.12 (Sierra)
+
+/-------------
+| fink 0.40.x
+\-------------
+
+Skipped.  The development branch for Sierra was prematurely tagged with a 0.40.99 git
+version.
+
+/-------------
 | fink 0.39.x
 \-------------
+
+0.39.5 "Koloth" (2016-08-13)
+	* Support 10.11.0-6
+	* Bugfix in detecting variable marker ($) in RuntimeVars
+	* Use otool-classic under Xcode 8 CL tools
+
+0.39.4 "Morgan" (2016-07-29)
+	* Support 10.11.0-5
+	* Forbid the use of shell variables as RuntimeVars
+	* Additional tweaks (see commits)
+
+0.39.3 "Antilles" (2016-02-28)
+	* Support 10.11.0-3
+	* Output cleanup in various places (see commits)
 
 0.39.2 "Sheridan" (2015-10-31)
 	* Use system versions of tools (make, cp, chmod) in %{default_script}

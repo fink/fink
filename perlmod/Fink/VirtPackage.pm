@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2015 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -752,13 +752,14 @@ This package represents your Xcode.app version.
 	$hash->{descdetail} = <<END;
 This package represents Xcode.app and 'xcodebuild',
 provided by Apple.  If it does not show as installed,
-you can download it from Apple at:
+you can download it from Apple via the App Store or
+directly from:
 
   http://developer.apple.com/
 
 (free registration required).
-If you are on OS X 10.7 or later and have in fact installed
-Xcode 4.3 or later, then you may need to run
+If you have in fact installed Xcode, but this virtual package
+isn't showing up, then you may need to run
 
   sudo xcode-select -switch /path/to/Xcode.app
 
@@ -810,9 +811,11 @@ This package represents your Xcode CLI tools version.
 	$hash->{descdetail} = <<END;
 This package represents the C/C++/ObjC developer tools
 provided by Apple.  If it does not show as installed,
-you can download Xcode (for OS X 10.5 - 10.10)
-or the Command Line Tools For Xcode (OS X 10.7 or later)
-from Apple at:
+download the Command Line Tools For Xcode by running 
+  
+  sudo xcode-select --install
+
+or get them via the App Store or directly from Apple at:
 
   http://developer.apple.com/
 
@@ -912,6 +915,11 @@ as part of the Xcode tools.
 	} elsif ($osxversion == 15) {
 		@SDKDIRS=qw(
 			MacOSX10.11.sdk
+			MacOSX10.12.sdk
+		);
+	} elsif ($osxversion == 16) {
+		@SDKDIRS=qw(
+			MacOSX10.12.sdk
 		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
