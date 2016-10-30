@@ -1,0 +1,11 @@
+;;
+;; fink - sandbox profile
+;;
+
+(version 1)
+
+(allow default)
+
+(deny file*
+       (subpath "/usr/local")
+)
