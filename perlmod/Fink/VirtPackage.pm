@@ -1602,7 +1602,8 @@ END
 			}
 			my $xver = 0;
 			if ($found_pc_x11) {
-				$xver = '7.2';
+				# 10.8+ only, unless someone backporting fink wants to switch to supporting Xquartz rather than Apple's X11
+				($xver) = `pkgutil --pkg-info org.macosforge.xquartz.pkg | grep version | cut -d: -f2` =~ /\s(\S+)/;
 			} else {
 				($xver) = check_x11_version();
 			}
@@ -1813,7 +1814,7 @@ in the library.
 						$self->{$pkg} = {
 							'package'     => $pkg,
 							'status'      => STATUS_PRESENT,
-							'version'     => "2:${xver}-2",
+							'version'     => "3:${xver}-3",
 							'description' => "[placeholder for user installed x11]",
 							'descdetail'  => $descdetail,
 							'homepage'    => "http://www.finkproject.org/faq/usage-general.php#virtpackage",
