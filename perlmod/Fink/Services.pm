@@ -578,6 +578,20 @@ EOSCRIPT
 		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
 		push @wrap, "__CFPREFERENCES_AVOID_DAEMON=1";
 		unshift @wrap, 'env' if @wrap;
+		my $sandbox = "$Fink::Config::basepath/etc/fink.sb";
+		if (open my $info, $sandbox) {
+			my $sandbox_profile = "(version 1) \n";
+			$sandbox_profile .= "(allow default) \n";
+			$sandbox_profile .= "(deny file* \n";
+			while( my $line = <$info>)  {
+				chomp $line;
+				$sandbox_profile .= "\t(subpath \"".$line."\"\)\n";
+			}
+			$sandbox_profile .= "\)\n";
+			close $info;
+			print STDERR $sandbox_profile, "\n" if ($options{debug});
+			@wrap = (qw| sandbox-exec -p |, $sandbox_profile, @wrap) if -f $sandbox;
+		}
 		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
 		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
 		$wrap_token = "$sudo_cmd [ENV] sh -c ";
