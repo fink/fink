@@ -72,8 +72,9 @@ These functions handle managing changes in the fink.conf file.
 #  1: Added ConfFileCompatVersion, UseBinaryDist, fink 0.24.0
 #  2: Added MaxBuildJobs, fink 0.30.1 (belated bump)
 #  3: Added AutoUid, AutoUidMin, AutoUidMax, FinkBldUid, fink 0.33.0
+#  4. Added UseSandbox, fink 0.42.0
 #
-our $conf_file_compat_version  = 3;
+our $conf_file_compat_version  = 4;
 
 =head2 Exported Variables
 
@@ -188,6 +189,26 @@ sub choose_misc {
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
 	print "\n";
+	$sandbox_build $config->param_boolean("UseSandbox");
+
+	# New users should use the sandbox build, but an existing user who
+	# is running "fink configure" should see a default answer of "no"
+	# for this question... To tell these two classes of users apart,
+	# we check to see if the "Verbose" parameter has been set yet.
+
+	if (!$config->has_param("UseSandbox")) {
+		if ($config->has_param("Verbose")) {
+			$sandbox_build = 0;
+		} else {
+			$sandbox_build = 1;
+		}
+	}
+	$sandbox_build =
+		&prompt_boolean("Should Fink try to build packages under ".
+				"the Apple sandbox mechanism?",
+				default => $sandbox_build);
+	}
+	$config->set_param("UseSandbox", $sandbox_build ? "true" : "false");
 
 	if ($config->param("Distribution") ge "10.7") {
 		print_breaking(
