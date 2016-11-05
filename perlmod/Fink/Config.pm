@@ -218,6 +218,7 @@ my %option_defaults = (
 	map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
 		maintainermode showversion use_binary) ),
 	map( { $_ => 1 } qw(build_as_nobody) ),
+	map( { $_ => 1 } qw(build_in_sandbox) ),
 	map( { $_ => "" } qw(tests validate) ),
 	map ( { $_ => [] } qw(include_trees exclude_trees) ),
 	map( { $_ => -1 } qw(use_binary) ),
@@ -271,6 +272,7 @@ sub parse_options {
 			'download pre-compiled packages from the binary distribution '
 			. 'if available'	],
 		[ 'build-as-nobody!'   => \$opts{build_as_nobody},	'see man page'	],
+		[ 'build-in-sandbox!' => \$opts{build_in_sandbox}, 'see man page'  ],
 		[ 'maintainer|m'       => sub {set_checking_opts(\%opts, @_);}, 'see man page'	],
 		[ 'tests:s'            => sub {set_checking_opts(\%opts, @_);}, 'see man page'  ],
 		[ 'validate:s'         => sub {set_checking_opts(\%opts, @_);}, 'see man page'  ],

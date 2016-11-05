@@ -578,19 +578,32 @@ EOSCRIPT
 		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
 		push @wrap, "__CFPREFERENCES_AVOID_DAEMON=1";
 		unshift @wrap, 'env' if @wrap;
-		my $sandbox = "$Fink::Config::basepath/etc/fink.sb";
-		if (open my $info, $sandbox) {
-			my $sandbox_profile = "(version 1) \n";
-			$sandbox_profile .= "(allow default) \n";
-			$sandbox_profile .= "(deny file* \n";
-			while( my $line = <$info>)  {
-				chomp $line;
-				$sandbox_profile .= "\t(subpath \"".$line."\"\)\n";
+		my $runtime_request = Fink::Config::get_option("build_in_sandbox");
+		my $sandbox_request;
+		if ($runtime_request == 0) { # -no-build-in-sandbox
+			$sandbox_request = 0;
+		} elsif ($runtime_request == 1) {
+			$sandbox_request = 1;
+		} elsif ($Fink::Config::config->param_boolean('UseSandbox')) {
+			$sandbox_request = 1;
+		} else {
+			$sandbox_request = 0;
+		}
+		if ( $sandbox_request ) {
+			my $sandbox = "$Fink::Config::basepath/etc/fink.sb";
+			if (open my $info, $sandbox) {
+				my $sandbox_profile = "(version 1) \n";
+				$sandbox_profile .= "(allow default) \n";
+				$sandbox_profile .= "(deny file* \n";
+				while( my $line = <$info>)  {
+					chomp $line;
+					$sandbox_profile .= "\t(subpath \"".$line."\"\)\n";
+				}
+				$sandbox_profile .= "\)\n";
+				close $info;
+				print STDERR $sandbox_profile, "\n" if ($options{debug});
+				@wrap = (qw| sandbox-exec -p |, $sandbox_profile, @wrap) if -f $sandbox;
 			}
-			$sandbox_profile .= "\)\n";
-			close $info;
-			print STDERR $sandbox_profile, "\n" if ($options{debug});
-			@wrap = (qw| sandbox-exec -p |, $sandbox_profile, @wrap) if -f $sandbox;
 		}
 		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
 		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
