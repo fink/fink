@@ -1,0 +1,56 @@
+.\" -*- nroff -*-
+.Dd November 2011
+.Dt FINK.SB 5
+.Sh NAME
+.Nm fink.sb
+.Nd sandboxing configuration file for
+.Xr fink 8
+.Sh SYNOPSIS
+@PREFIX@/etc/fink.sb
+.\"
+.\"
+.\" DESCRIPTION
+.\"
+.\"
+.Sh DESCRIPTION
+When
+.Xr fink 8
+is initially installed it prompts you for whether you wish to enable the
+building of packages within a protected sandbox which blacklists access to
+those directories listed in
+.Nm
+by hand. In general, these options are meant for advanced users only.
+.Pp
+Your
+.Nm
+defaults to blacklisting the following directories
+.Bl -tag -width flag -offset indent -compact
+.It /usr/local
+.It /opt/local
+.El
+.Pp
+The blacklisted directories appear one per line in the file.
+.El
+.\"
+.\"
+.\" AUTHOR
+.\"
+.\"
+.Sh AUTHOR
+This manpage is maintained by the Fink Core Group <fink-core@lists.sourceforge.net>.
+.\"
+.\"
+.\" ACKNOWLEDGEMENTS
+.\"
+.\"
+.Sh ACKNOWLEDGEMENTS
+.Nm fink
+is developed and maintained by The Fink Project (http://www.finkproject.org).
+.\"
+.\"
+.\" SEE ALSO
+.\"
+.\"
+.Sh "SEE ALSO"
+.Xr apt-get 8 ,
+.Xr fink 8

@@ -26,6 +26,7 @@ fink.8.in
 fink.conf.5.in
 fink.csh
 fink.sb
+fink.sb.5.in
 fink.sh
 images/finkDoneFailed.png
 images/finkDonePassed.png
