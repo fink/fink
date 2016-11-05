@@ -137,7 +137,7 @@ Configure everything but the mirrors
 
 sub choose_misc {
 	my $verbose;
-	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
+	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist, $sandbox_build);
 	my ($auto_uid, $uid_min, $uid_max, $fink_conf_uid, $real_uid, $real_gid, 
 		$do_uid);
 
@@ -189,7 +189,7 @@ sub choose_misc {
 	$config->set_param("UseBinaryDist", $binary_dist ? "true" : "false");
 
 	print "\n";
-	$sandbox_build $config->param_boolean("UseSandbox");
+	$sandbox_build = $config->param_boolean("UseSandbox");
 
 	# New users should use the sandbox build, but an existing user who
 	# is running "fink configure" should see a default answer of "no"
@@ -207,7 +207,6 @@ sub choose_misc {
 		&prompt_boolean("Should Fink try to build packages under ".
 				"the Apple sandbox mechanism?",
 				default => $sandbox_build);
-	}
 	$config->set_param("UseSandbox", $sandbox_build ? "true" : "false");
 
 	if ($config->param("Distribution") ge "10.7") {
