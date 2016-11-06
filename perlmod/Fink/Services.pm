@@ -498,6 +498,11 @@ If the value of the option 'nonroot_okay' is true, fink was run with
 the --build-as-nobody flag, drop to user=nobody when running the
 actual commands.
 
+=item no_sandbox_okay
+
+If the value of the option 'no_sandbox_okay' is true, fink was run with
+the --no-build-in-sandbox flag.
+
 =item delete_tempfile
 
 Whether to delete temp-files that are created. The following values
@@ -580,14 +585,14 @@ EOSCRIPT
 		unshift @wrap, 'env' if @wrap;
 		my $runtime_request = Fink::Config::get_option("build_in_sandbox");
 		my $sandbox_request;
-		if ($runtime_request == 0) { # -no-build-in-sandbox
+		if ($runtime_request == 1) {  # --build-in-sandbox
+			$sandbox_request = 1;
+		} elsif ($runtime_request == 0) { # -no-build-in-sandbox
 			$sandbox_request = 0;
-		} elsif ($runtime_request == 1) {
-			$sandbox_request = 1;
-		} elsif ($Fink::Config::config->param_boolean('UseSandbox')) {
-			$sandbox_request = 1;
+		} elsif ($options{'no_sandbox_okay'}) { # NoSandbox: true in info file
+			$sandbox_request = 0;
 		} else {
-			$sandbox_request = 0;
+			$sandbox_request = 1;
 		}
 		if ( $sandbox_request ) {
 			my $sandbox = "$Fink::Config::basepath/etc/fink.sb";

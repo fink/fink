@@ -204,12 +204,6 @@ speaking,
 uses the value of this option in MAKEFLAGS=-j. Running
 .Cm fink configure
 will tell you how many active CPUs/cores are available on your system.
-.It Cm UseSandbox: Ar boolean
-Causes
-.Nm fink
-to execute within a sandbox which blacklists file read access to
-those directories listed in 
-.Pa @PREFIX@/etc/fink.sb.
 .El
 .\"
 .\"

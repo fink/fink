@@ -218,7 +218,7 @@ my %option_defaults = (
 	map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
 		maintainermode showversion use_binary) ),
 	map( { $_ => 1 } qw(build_as_nobody) ),
-	map( { $_ => 1 } qw(build_in_sandbox) ),
+	map( { $_ => -1 } qw(build_in_sandbox) ),
 	map( { $_ => "" } qw(tests validate) ),
 	map ( { $_ => [] } qw(include_trees exclude_trees) ),
 	map( { $_ => -1 } qw(use_binary) ),
