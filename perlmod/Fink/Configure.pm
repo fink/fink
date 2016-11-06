@@ -73,14 +73,14 @@ These functions handle managing changes in the fink.conf file.
 #  2: Added MaxBuildJobs, fink 0.30.1 (belated bump)
 #  3: Added AutoUid, AutoUidMin, AutoUidMax, FinkBldUid, fink 0.33.0
 #
-our $conf_file_compat_version  = 4;
+our $conf_file_compat_version  = 3;
 
 =head2 Exported Variables
 
 These variables are exported on request.  They are initialized by creating
 a Fink::Configure object.
 
-=over 3
+=over 4
 
 =item $conf_file_compat_version
 
