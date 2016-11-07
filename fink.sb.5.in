@@ -13,17 +13,17 @@
 .\"
 .\"
 .Sh DESCRIPTION
-When
+The
 .Xr fink 8
-is initially installed it prompts you for whether you wish to enable the
-building of packages within a protected sandbox which blacklists access to
-those directories listed in
+packaging system defaults to compiling packages within a protected sandbox that blacklists 
+access to directories listed in
 .Nm
-by hand. In general, these options are meant for advanced users only.
+In general, modifying the list of blacklisted directories meant for advanced users only.
 .Pp
-Your
+The default
 .Nm
-defaults to blacklisting the following directories
+blacklists the following directories
+
 .Bl -tag -width flag -offset indent -compact
 .It /usr/local
 .It /opt/local
