@@ -15,8 +15,6 @@ require_ok('Fink::Config');            # 3
 can_ok('Fink::Config','get_option');   # 4
 can_ok('Fink::Config','set_options');  # 5
 
-my $config_obj = Fink::Config->new_with_path('basepath/etc/fink.conf');
-
 # need a a safe place to create files
 
 # OS X 10.2 comes with perl 5.6.0, but File::Temp isn't in core until 5.6.1
