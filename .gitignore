@@ -6,6 +6,7 @@
 /fink
 /fink-dpkg-status-cleanup
 /fink-virtual-pkgs
+/fink-virtual-pkgs-bootstrap
 /fink-instscripts
 /fink-scanpackages
 /fink.8
