@@ -594,7 +594,7 @@ EOSCRIPT
 		} else {
 			$sandbox_request = 1;
 		}
-		if ( $sandbox_request ) {
+		if ( !-z "$Fink::Config::basepath/etc/fink.sb" && $sandbox_request ) {
 			my $sandbox = "$Fink::Config::basepath/etc/fink.sb";
 			if (open my $info, $sandbox) {
 				my $sandbox_profile = "(version 1) \n";
