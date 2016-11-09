@@ -606,7 +606,6 @@ EOSCRIPT
 				}
 				$sandbox_profile .= "\)\n";
 				close $info;
-				print STDERR $sandbox_profile, "\n" if ($options{debug});
 				@wrap = (qw| sandbox-exec -p |, $sandbox_profile, @wrap) if -f $sandbox;
 			}
 		}
