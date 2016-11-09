@@ -30,6 +30,10 @@ blacklists the following directories
 .El
 .Pp
 The blacklisted directories appear one per line in the file.
+
+Note that an empty
+.Nm
+file disables the automatic sandboxing in the fink program.
 .El
 .\"
 .\"
