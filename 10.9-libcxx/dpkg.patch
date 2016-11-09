@@ -1,3 +1,15 @@
+diff -ruN dpkg-1.17.6.orig/dpkg-deb/build.c dpkg-1.17.6/dpkg-deb/build.c
+--- dpkg-1.17.6.orig/dpkg-deb/build.c	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/dpkg-deb/build.c	2013-06-22 20:26:06.000000000 -0600
+@@ -599,7 +599,7 @@
+     m_dup2(p2[1],1); close(p2[0]); close(p2[1]);
+     if (chdir(dir))
+       ohshite(_("failed to chdir to `%.255s'"), dir);
+-    execlp(TAR, "tar", "-cf", "-", "--format=gnu", "--null", "-T", "-", "--no-recursion", NULL);
++    execlp(TAR, "tar", "-cf", "-", "--format=gnu", "--null", "--no-recursion", "-T", "-", NULL);
+     ohshite(_("unable to execute %s (%s)"), "tar -cf", TAR);
+   }
+   close(p1[0]);
 diff -ruN dpkg-1.17.6.orig/fink/buildflags.conf dpkg-1.17.6/fink/buildflags.conf
 --- dpkg-1.17.6.orig/fink/buildflags.conf	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/buildflags.conf	2013-06-22 20:26:06.000000000 -0600
