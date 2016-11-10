@@ -109,9 +109,11 @@ those directories listed in
 .Pa @PREFIX@/etc/fink.sb.
 \ This is the default behavior unless overridden by a
 .Pa NoSandbox: true
-directive in a .info file, or if the
+directive in a .info file, the
 .Cm --no-build-in-sandbox
-flag is used.
+flag is used, or if the
+.Pa @PREFIX@/etc/fink.sb
+file is empty.
 .It Cm --no-build-in-sandbox
 Don't execute within a sandbox, opposite of the
 .Cm --build-in-sandbox
