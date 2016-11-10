@@ -7,7 +7,7 @@ Depends: <<
 	gzip,
 	libgettext8-shlibs (>= 0.19.8.1-1),
 	libiconv (>= 1.14-6),
-	libncurses5-shlibs (>= 5.4-20041023-1006),
+	libncurses5-shlibs (>= 5.4-20041023-1006)
 <<
 Essential: yes
 UseMaxBuildJobs: false
