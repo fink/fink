@@ -514,6 +514,11 @@ If the value of the option 'nonroot_okay' is true, fink was run with
 the --build-as-nobody flag, drop to user=nobody when running the
 actual commands.
 
+=item no_sandbox_okay
+
+If the value of the option 'no_sandbox_okay' is true, fink was run with
+the --no-build-in-sandbox flag.
+
 =item delete_tempfile
 
 Whether to delete temp-files that are created. The following values
@@ -594,6 +599,32 @@ EOSCRIPT
 		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
 		push @wrap, "__CFPREFERENCES_AVOID_DAEMON=1";
 		unshift @wrap, 'env' if @wrap;
+		my $runtime_request = Fink::Config::get_option("build_in_sandbox");
+		my $sandbox_request;
+		if ($runtime_request == 1) {  # --build-in-sandbox
+			$sandbox_request = 1;
+		} elsif ($runtime_request == 0) { # -no-build-in-sandbox
+			$sandbox_request = 0;
+		} elsif ($options{'no_sandbox_okay'}) { # NoSandbox: true in info file
+			$sandbox_request = 0;
+		} else {
+			$sandbox_request = 1;
+		}
+		if ( !-z "$Fink::Config::basepath/etc/fink.sb" && $sandbox_request ) {
+			my $sandbox = "$Fink::Config::basepath/etc/fink.sb";
+			if (open my $info, $sandbox) {
+				my $sandbox_profile = "(version 1) \n";
+				$sandbox_profile .= "(allow default) \n";
+				$sandbox_profile .= "(deny file* \n";
+				while( my $line = <$info>)  {
+					chomp $line;
+					$sandbox_profile .= "\t(subpath \"".$line."\"\)\n";
+				}
+				$sandbox_profile .= "\)\n";
+				close $info;
+				@wrap = (qw| sandbox-exec -p |, $sandbox_profile, @wrap) if -f $sandbox;
+			}
+		}
 		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
 		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
 		$wrap_token = "$sudo_cmd [ENV] sh -c ";

@@ -500,6 +500,8 @@ sub bootstrap1 {
 	Fink::Config::set_options( { 'use_binary' => -1 });
 	# bootstrap as root
 	Fink::Config::set_options( { 'build_as_nobody' => 0 });
+	# don't use sandbox during bootstrap
+	Fink::Config::set_options( { 'build_in_sandbox' => 0 });
 
 	# make sure we have the package descriptions
 	Fink::Package->require_packages();
@@ -581,6 +583,8 @@ sub bootstrap2 {
 
 	# bootstrap as root
 	Fink::Config::set_options( { 'build_as_nobody' => 0 });
+	# don't use sandbox during bootstrap
+	Fink::Config::set_options( { 'build_in_sandbox' => 0 });
 	# use normal install routines, but do not use buildlocks
 	Fink::Config::set_options( { 'no_buildlock' => 1 } );
 	Fink::Engine::cmd_install(@elist, @addlist);
