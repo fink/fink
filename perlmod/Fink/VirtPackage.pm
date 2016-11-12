@@ -405,6 +405,36 @@ END
 	}
 	$self->{$hash->{package}} = $hash;
 
+=item "system-ruby"
+
+This package represents the version of the ruby in /usr/bin.  It
+is determined by parsing the output of ruby -v.
+
+=cut
+
+	# create dummy object for system-ruby
+	$hash = {};
+	$hash->{package}     = "system-ruby";
+	$hash->{status}      = STATUS_PRESENT;
+	$hash->{version}     = "0-1";
+	$hash->{description} = "[virtual package representing system-ruby]";
+	$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+	$hash->{descdetail}  = <<END;
+This package represents the version of ruby installed on the
+system at /usr/bin/ruby.
+END
+	if ((defined Fink::Services::get_system_ruby_version())) {
+		$hash->{version} = Fink::Services::get_system_ruby_version()."-1";
+		$hash->{status} = STATUS_PRESENT;
+		print STDERR Fink::Services::get_system_ruby_version(), "\n" if ($options{debug});
+		my $rubyver = my $shortver = Fink::Services::get_system_ruby_version();
+	} else {
+		$hash->{version} = '0-0';
+		$hash->{status} = STATUS_ABSENT;
+		print STDERR "unknown\n" if ($options{debug});
+	}
+	$self->{$hash->{package}} = $hash;
+
 =item "system-javaI<XX>"
 
 This package represents an installed version of Apple's and/or Oracle's Java.

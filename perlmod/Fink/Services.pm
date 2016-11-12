@@ -61,7 +61,7 @@ BEGIN {
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &file_MD5_checksum &get_osx_vers &enforce_gcc
-					  &get_system_perl_version &get_path
+					  &get_system_perl_version &get_system_ruby_version &get_path
 					  &eval_conditional &count_files
 					  &get_osx_vers_long &get_kernel_vers
 					  &get_darwin_equiv
@@ -80,6 +80,7 @@ our @EXPORT_OK;
 # non-exported package globals go here
 our $arch;
 our $system_perl_version;
+our $system_ruby_version;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -1490,6 +1491,27 @@ sub get_system_perl_version {
 		}
 	}
 	return $system_perl_version;
+}
+
+=item get_system_ruby_version
+
+    my $rubyversion = get_system_ruby_version;
+
+
+Returns the version of ruby that is in /usr/bin/ruby by parsing 'ruby -v'.
+The value is cached, so multiple calls to this function do not result in
+repeated spawning of processes.
+
+=cut
+
+sub get_system_ruby_version {
+	if (not defined $system_ruby_version) {
+		if (open(RUBY, "/usr/bin/ruby -v | cut -f 2 -d ' ' 2>/dev/null |")) {
+			chomp($system_ruby_version = <RUBY>);
+			close(RUBY);
+		}
+	}
+	return $system_ruby_version;
 }
 
 =item get_path
