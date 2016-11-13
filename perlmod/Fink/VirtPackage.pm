@@ -1522,9 +1522,11 @@ of X11 on your system that is not installed through
 Fink.
 
 If it shows as not installed, you likely need to
-install the X11User and/or X11SDK packages from
-Apple, or a similarly-compatible version.  For more
-information, please see the FAQ entry on X11
+(re)install the XQuartz package from
+
+  https://www.xquartz.org
+
+For more information, please see the FAQ entry on X11
 installation at:
 
   http://www.finkproject.org/faq/usage-packages.php#apple-x11-wants-xfree86
@@ -1574,13 +1576,9 @@ END
 This package represents the various components of an
 X11 on your system that is not installed through Fink.
 
-You can either use a Fink-supplied X11, such as the
-xfree86 or xorg sets of packages, or you can use a
-manually-installed (non-Fink) X11, such as the
-X11User and X11SDK packages from Apple. You must not
-mix X11 suppliers. If you are already using some type
-of manually-installed X11, please make sure you have
-installed all components of it.
+Currently we support the XQuartz distribution from
+
+https://www.xquartz.org
 
 For more information, please see the FAQ entry on X11
 installation at:
