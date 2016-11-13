@@ -423,11 +423,12 @@ is determined by parsing the output of ruby -v.
 This package represents the version of ruby installed on the
 system at /usr/bin/ruby.
 END
+	$hash->{compilescript} = &gen_compile_script($hash);
+
 	if ((defined Fink::Services::get_system_ruby_version())) {
 		$hash->{version} = Fink::Services::get_system_ruby_version()."-1";
 		$hash->{status} = STATUS_PRESENT;
 		print STDERR Fink::Services::get_system_ruby_version(), "\n" if ($options{debug});
-		my $rubyver = my $shortver = Fink::Services::get_system_ruby_version();
 	} else {
 		$hash->{version} = '0-0';
 		$hash->{status} = STATUS_ABSENT;
