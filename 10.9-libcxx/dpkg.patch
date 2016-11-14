@@ -532,7 +532,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/
 ++/*
 ++ * install-info.c - transitional ginstall-info wrapper
 ++ *
-++ * Copyright ¬© 2009 Rapha√´l Hertzog <hertzog@debian.org>
+++ * Copyright © 2009 Raphaël Hertzog <hertzog@debian.org>
 ++ *
 ++ * This is free software; you can redistribute it and/or modify
 ++ * it under the terms of the GNU General Public License as published by
@@ -1225,7 +1225,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 +--- dpkg.orig/lib/dpkg/parse.c
 ++++ dpkg/lib/dpkg/parse.c
 +@@ -227,11 +227,11 @@
-+    * ‚Äònot-installed‚Äô (in which case there is no Config-Version). */
++    * ‘not-installed’ (in which case there is no Config-Version). */
 +   if (!(ps->flags & pdb_recordavailable)) {
 +     if (pkg->configversion.version) {
 +-      if (pkg->status == stat_installed || pkg->status == stat_notinstalled)
@@ -1423,11 +1423,11 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/pa
 +--- dpkg.orig/scripts/Dpkg/Vendor/Fink.pm
 ++++ dpkg/scripts/Dpkg/Vendor/Fink.pm
 +@@ -0,0 +1,98 @@
-++# Copyright ¬© 2009-2011 Rapha√´l Hertzog <hertzog@debian.org>
+++# Copyright © 2009-2011 Raphaël Hertzog <hertzog@debian.org>
 ++#
 ++# Hardening build flags handling derived from work of:
-++# Copyright ¬© 2009-2011 Kees Cook <kees@debian.org>
-++# Copyright ¬© 2007-2008 Canonical, Ltd.
+++# Copyright © 2009-2011 Kees Cook <kees@debian.org>
+++# Copyright © 2007-2008 Canonical, Ltd.
 ++#
 ++# This program is free software; you can redistribute it and/or modify
 ++# it under the terms of the GNU General Public License as published by
@@ -1614,7 +1614,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/location-fixes.patch dpkg-1.17.6/fink/pa
 ++ * The queue, by default located in @FINKPREFIX@/var/lib/dpkg/parts/, is a plain
 +  * directory with one file per part.
 +  *
-+  * Each part is named ‚Äú<md5sum>.<maxpartlen>.<thispartn>.<maxpartn>‚Äù,
++  * Each part is named “<md5sum>.<maxpartlen>.<thispartn>.<maxpartn>”,
 +diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Changelog/Parse.pm dpkg-1.16.4.3/scripts/Dpkg/Changelog/Parse.pm
 +--- dpkg-1.16.4.3.orig/scripts/Dpkg/Changelog/Parse.pm	2012-06-09 08:32:08.000000000 -0600
 ++++ dpkg-1.16.4.3/scripts/Dpkg/Changelog/Parse.pm	2012-07-02 16:14:45.000000000 -0600

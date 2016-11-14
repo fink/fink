@@ -1522,9 +1522,11 @@ of X11 on your system that is not installed through
 Fink.
 
 If it shows as not installed, you likely need to
-install the X11User and/or X11SDK packages from
-Apple, or a similarly-compatible version.  For more
-information, please see the FAQ entry on X11
+(re)install the XQuartz package from
+
+  https://www.xquartz.org
+
+For more information, please see the FAQ entry on X11
 installation at:
 
   http://www.finkproject.org/faq/usage-packages.php#apple-x11-wants-xfree86
@@ -1574,13 +1576,9 @@ END
 This package represents the various components of an
 X11 on your system that is not installed through Fink.
 
-You can either use a Fink-supplied X11, such as the
-xfree86 or xorg sets of packages, or you can use a
-manually-installed (non-Fink) X11, such as the
-X11User and X11SDK packages from Apple. You must not
-mix X11 suppliers. If you are already using some type
-of manually-installed X11, please make sure you have
-installed all components of it.
+Currently we support the XQuartz distribution from
+
+https://www.xquartz.org
 
 For more information, please see the FAQ entry on X11
 installation at:
@@ -1602,7 +1600,12 @@ END
 			}
 			my $xver = 0;
 			if ($found_pc_x11) {
-				$xver = '7.2';
+				# First item is for 10.8+ only, unless someone backporting fink on 10.6-7
+				# wants to switch to supporting Xquartz rather than Apple's X11.
+				# Fall back to legacy "7.2" version if something goes wrong.
+				($xver) = `pkgutil --pkg-info org.macosforge.xquartz.pkg 2>/dev/null | grep version | cut -d: -f2` =~ /\s(\S+)/ or $xver = '7.2';
+				# assign Epoch=3 and Revision=3 here if we're using the receipt, so $xver isn't literally '7.2'.
+				$xver = "3:${xver}-3" unless $xver eq "7.2";
 			} else {
 				($xver) = check_x11_version();
 			}
@@ -1810,10 +1813,13 @@ in the library.
 
 				for my $pkg ('system-xfree86', 'system-xfree86-shlibs', 'system-xfree86-dev') {
 					if (exists $provides->{$pkg}) {
+						# if $xver already has an Epoch and Revision then do nothing,
+						# otherwise fall back to the previous behavior.
+						$xver = "2:${xver}-2" unless $xver =~ ":.*-";	
 						$self->{$pkg} = {
 							'package'     => $pkg,
 							'status'      => STATUS_PRESENT,
-							'version'     => "2:${xver}-2",
+							'version'     => "${xver}",
 							'description' => "[placeholder for user installed x11]",
 							'descdetail'  => $descdetail,
 							'homepage'    => "http://www.finkproject.org/faq/usage-general.php#virtpackage",
