@@ -2143,7 +2143,7 @@ sub _get_option_help {
 		$negopt->{names} = [
 			map { length($_) > 1 ? "no-$_" : () } @{$opt->{names}}
 		];
-		$negopt->{help} = "Opposite of $opt->{names}->[0]";
+		$negopt->{help} = 'Opposite of --'.$opt->{names}->[0];
 		@realopts = ($opt, $negopt);
 	} else {
 		@realopts = $opt;
