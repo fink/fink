@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@ chmod 755 "$basepath"
 
 for dir in bin sbin \
 	lib lib/perl5 lib/perl5/Fink \
-	lib/perl5/Fink/{Text,Notify,Checksum,Finally,SelfUpdate} \
+	lib/perl5/Fink/{Text,Tie,Notify,Checksum,Finally,SelfUpdate} \
 	lib/fink lib/fink/update lib/fink/update-packages \
 	etc etc/dpkg \
 	share share/doc share/doc/fink \
@@ -49,7 +49,9 @@ for dir in bin sbin \
 	share/fink share/fink/images \
 	var var/run var/run/fink var/run/fink/buildlock \
 	var/lib var/lib/fink var/lib/fink/path-prefix-g++-{3.3,4.0} \
-	var/lib/fink/path-prefix-10.6 ; do
+	var/lib/fink/path-prefix-10.6 \
+	var/lib/fink/path-prefix-clang \
+	var/lib/fink/path-prefix-libcxx ; do
   mkdir "$basepath/$dir"
   chmod 755 "$basepath/$dir"
 done
@@ -80,7 +82,7 @@ done
 install -c -m 755 fink-dpkg-status-cleanup "$basepath/sbin/"
 
 # copy all perl modules
-for subdir in . Fink Fink/{Text,Notify,Checksum,Finally,SelfUpdate} ; do
+for subdir in . Fink Fink/{Text,Tie,Notify,Checksum,Finally,SelfUpdate} ; do
   for file in perlmod/${subdir}/*.pm ; do
     if [ -f $file ]; then
       install -c -p -m 644 $file "$basepath/lib/perl5/$subdir"
@@ -104,24 +106,41 @@ for file in AUTHORS COPYING README README.html README.removing-fink-bld readme.*
   install -c -p -m 644  $file "$basepath/share/doc/fink/"
 done
 
-# some/place/ChangeLog goes as ChangeLoge.some.place
-for cl_src in . perlmod perlmod/Fink update; do
-  cl_dst=`echo $cl_src | tr '/' '.' | sed -e 's/^\.*//'`
-  [ -n "$cl_dst" ] && cl_dst=".$cl_dst"
-  install -c -p -m644 $cl_src/ChangeLog "$basepath/share/doc/fink/ChangeLog$cl_dst"
-done
-
 for gccvers in 3.3 4.0; do
 	install -c -p -m 755 "g++-wrapper-$gccvers" \
 		"$basepath/var/lib/fink/path-prefix-g++-$gccvers/g++"
 	ln -s -n -f g++ "$basepath/var/lib/fink/path-prefix-g++-$gccvers/c++" 
 done
 
-for file in c++ c++-4.2 c++-4.0 cc gcc gcc-4.0 gcc-4.2 g++ g++-4.0 g++-4.2; do
-    ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-10.6/$file"
-done
 install -c -p -m 755 "compiler_wrapper" \
 	    "$basepath/var/lib/fink/path-prefix-10.6/compiler_wrapper"
+
+install -c -p -m 755 "compiler_wrapper-10.7" \
+	    "$basepath/var/lib/fink/path-prefix-clang/compiler_wrapper"
+
+install -c -p -m 755 "compiler_wrapper-10.9" \
+	    "$basepath/var/lib/fink/path-prefix-libcxx/compiler_wrapper"
+
+for file in \
+	cc \
+	c++ c++-4.0 c++-4.2 \
+	gcc gcc-4.0 gcc-4.2 \
+	g++ g++-4.0 g++-4.2 \
+	clang clang++ \
+; do
+    ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-10.6/$file"
+done
+
+for file in cc c++ gcc g++ clang clang++ \
+; do
+	ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-clang/$file"
+done
+
+for file in c++ g++ clang++ \
+; do
+	ln -s compiler_wrapper "$basepath/var/lib/fink/path-prefix-libcxx/$file"
+done
+
 
 # Gotta do this in install.sh, takes too long for setup.sh
 echo "Creating man pages from POD..."
@@ -164,6 +183,7 @@ for p in \
 		Fink::SysState		\
 		Fink::Text::DelimMatch			\
 		Fink::Text::ParseWords			\
+		Fink::Tie::IxHash	\
 		Fink::VirtPackage	\
 		; do
 	manify_pm $p

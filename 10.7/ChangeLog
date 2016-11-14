@@ -1,8 +1,0 @@
-2012-07-31  Hanspeter Niederstrasser  <nieder@users.sourceforge.net>
-
-	* Upgrade Essential packages to use libgettext8-0.18.1.1
-
-2011-07-20  Dave Morrison  <drm@finkproject.org>
-
-	* initializing 10.7 tree as clone of 10.4 tree
-

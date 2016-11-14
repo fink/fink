@@ -3,7 +3,7 @@
 # Fink::Scanpackages module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2006-2013 The Fink Package Manager Team
+# Copyright (c) 2006-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -354,6 +354,11 @@ sub _control {
 
 	my (%control, $field);
 	my $dpkgdeb = $self->_prefix . "/bin/dpkg-deb";
+	# Set ENV so for tar on 10.9+, dpkg-deb calls tar and thus requires it
+	# as well.
+	local %ENV;
+	$ENV{LANG} = "C";
+	$ENV{LC_ALL} = "C";
 	open CONTROL, '-|', $dpkgdeb, '-f', $path
 		or die "SKIPPING: Can't read control for '$path': $!\n";
 	eval {
@@ -501,7 +506,9 @@ sub _output {
 	return if !$self->{restrictive} && (
 		!exists $control->{'Fink-License'}
 		|| lc $control->{'Fink-License'} eq 'restrictive'
-		|| lc $control->{'Fink-License'} eq 'commercial');
+		|| lc $control->{'Fink-License'} eq 'commercial'
+		|| lc $control->{'Fink-License'} eq 'gpl/openssl'
+		|| lc $control->{'Fink-License'} eq 'lgpl/openssl');
 
 	# Order to output fields, from apt-pkg/tagfile.cc
 	my @fieldorder = qw(Package Essential Status Priority Section

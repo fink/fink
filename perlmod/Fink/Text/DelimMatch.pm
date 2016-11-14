@@ -1,7 +1,7 @@
 # This file is based on Text::DelimMatch v1.06 from CPAN.
-# It was converted to Fink::Text::DelimMatch and further modified 
-# for use by Fink. You can read about these changes in the accompanying
-# ChangeLog files and by browsing the CVS repository.
+# It was converted to Fink::Text::DelimMatch and further modified
+# for use by Fink. You can read about these changes by browsing
+# the fink git repository.
 
 package Fink::Text::DelimMatch;
 
@@ -867,7 +867,7 @@ All rights reserved.  This program is free software; you can
 redistribute it and/or modify it under the same terms as Perl itself.
 
 For the changes by Fink:
-Copyright (C) 2004-2013 The Fink Package Manager Team.
+Copyright (C) 2004-2014 The Fink Package Manager Team.
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2

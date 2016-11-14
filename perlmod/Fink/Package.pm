@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -761,9 +761,9 @@ sub can_read_write_db {
 		return (0,0);
 	}
 
-    # do not use disk cache if we are in the first bootstrap phase
-    # (because we may be running under a different perl than fink will
-    #  eventually use, and Storable.pm may be incompatible)
+	# do not use disk cache if we are in the first bootstrap phase
+	# (because we may be running under a different perl than fink will
+	#  eventually use, and Storable.pm may be incompatible)
 	if ($config->has_flag("bootstrap1")) {
 		return (0,0);
 		}
@@ -1119,26 +1119,23 @@ sub tree_infos {
 		}
 	};
 
-	if (1) {						# ACTIVATE THIS FEATURE
-	# 10.4 support is being dropped from main .info collection:
-	# migrated into 10.4-EOL subdir for legacy semi-support
-	if (-d "$treedir/10.4-EOL") {
-		if ($config->param('Distribution') eq '10.4') {
-			# legacy system: only look in legacy-support subdir
-			$treedir = "$treedir/10.4-EOL";
-		} else {
-			# current system: don't look in legacy-support subdir
-			$wanted = sub {
-				if (-f _ and not /^[\.\#]/ and /\.info$/) {
-					push @filelist, $File::Find::fullname;
-				} elsif (-d _ and /10\.4-EOL$/) {
-					$File::Find::prune = 1;
-				}
-			};
+	# 10.4 and 10.5 support are being dropped from main .info collection:
+	# migrated into 10.4-EOL and 10.5-EOL subdirs for legacy semi-support
+
+	my $legacy_subdir = $config->param('Distribution') . '-EOL';
+	if (-d "$treedir/$legacy_subdir") {
+		# legacy system: only look in legacy-support subdir
+		$treedir = "$treedir/$legacy_subdir";
+	} else {
+		# current system: don't look in legacy-support subdirs
+		$wanted = sub {
+			if (-f _ and not /^[\.\#]/ and /\.info$/) {
+				push @filelist, $File::Find::fullname if defined ($File::Find::fullname);
+			} elsif (-d _ and /-EOL$/) {
+				$File::Find::prune = 1;
+			}
 		}
 	}
-	}
-
 	find({ wanted => $wanted, follow => 1, no_chdir => 1 }, $treedir);
 
 	return @filelist;

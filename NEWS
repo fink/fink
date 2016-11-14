@@ -2,25 +2,236 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.41.x
+\-------------
+
+
+0.41.1 "Jigsaw" (2017-11-13)
+	* Support 10.12.1
+	* Change system-xfree86* versioning to 3:<XQuartz version from receipt>-3, with 
+	  fallback to the current 2:7.2-2 if the receipt is missing.
+	
+0.41.0 "Backsaw" (2017-09-20)
+	* Support 10.12 (Sierra)
+
+/-------------
+| fink 0.40.x
+\-------------
+
+Skipped.  The development branch for Sierra was prematurely tagged with a 0.40.99 git
+version.
+
+/-------------
+| fink 0.39.x
+\-------------
+
+0.39.5 "Koloth" (2016-08-13)
+	* Support 10.11.0-6
+	* Bugfix in detecting variable marker ($) in RuntimeVars
+	* Use otool-classic under Xcode 8 CL tools
+
+0.39.4 "Morgan" (2016-07-29)
+	* Support 10.11.0-5
+	* Forbid the use of shell variables as RuntimeVars
+	* Additional tweaks (see commits)
+
+0.39.3 "Antilles" (2016-02-28)
+	* Support 10.11.0-3
+	* Output cleanup in various places (see commits)
+
+0.39.2 "Sheridan" (2015-10-31)
+	* Use system versions of tools (make, cp, chmod) in %{default_script}
+	* Add Restrictive/GPL and related License forms for OpenSSL-linked packages.
+
+0.39.1 "Pierce" (2015-10-03)
+	* Properly support Apple's JavaForOSX2015-1
+	* Bugfix: Downgrade errors during postinstall .deb migration to nonfatal warnings
+
+0.39.0 "Pike" (2015-10-01)
+	* Support OS 10.11
+	* Switch 10.9, 10.10, and 10.11 to use the 10.9-libcxx tree.
+
+/-------------
+| fink 0.38.x
+\-------------
+
+0.38.8 "Canyonlands" (2015-10-01)
+	* Last release to support 10.7 and 10.8.
+	* Updated pkgconfig path handling.
+
+0.38.7 "Bryce Canyon" (2015-08-15)
+	* Support OS 10.10.4 and 10.10.5
+	* Bugfix: Replace more version strings with version objects  so that 10.10+ do the 
+	  right thing under comparisons.
+	  * Avoids people seeing information about enabling the nonexistent unstable tree
+	  	on 10.7 and later.
+	  * Also prevent creation of %p/fink/dists/stable/crypto
+
+0.38.6 "Black Canyon of the Gunnison" (2015-06-13)
+	* Bugfix: Maximum Xcode version conditional for 10.9 was being applied
+	  to 10.(>=9) .
+	* Bugfix: Fix Xcode.app version detection in Engine.pm not to warn when
+	  there is no installed Xcode.app .
+	* Validation fix for empty Description field.
+	* Bump max Mountain Lion kernel version to 12.6, even though that's still
+	  OS 10.8.5.
+
+0.38.5 "Biscayne" (2015-05-13)
+	* Support OS 10.10.3
+	* Revert supporting /opt/X11 directly on 10.8+ to provide X11 virtuals. 
+	* Remove cgi-pm from Provides.
+	* Reduce flat-namespace linkage validation to give a warning rather 
+	  than a fatal error, since some packages require being built this way.
+	* Fatal validation error for filename/install_name mismatch in Shlibs.
+	* Validate package names in dependency lists.
+
+0.38.4 "Big Bend" (2015-02-09)
+	* Support OS 10.10.2
+	* Issue warning if Xcode and Xcode CLI versions don't match.
+	* Fail if 'dev-tools' virtual package disappears.
+	* Support /opt/X11 directly on 10.8+. 
+	* Improved --dotty-build output.
+	* Other diagnostic improvements.
+
+0.38.3 "Badlands" (2014-11-29)
+	* Enable 10.10 bindist by default
+	* Support OS 10.10.1
+	* Make system-java* packages visible even if not installed.
+	* Validator now allows for public libraries to use @rpath.
+	* Bootstrap with perl-5.18.
+	
+0.38.2 "Arches" (2014-10-29)
+	* dev-tools virtual package now requires /usr/include/
+	* Validator check for flat-namespace linkage
+	* Skip validation of virtual package .infos
+	* Bugfix: 10.10 SDK option for 10.9/Xcode 6.1 now works
+	* Bugfix: Use appropriate prefixes for Yosemite
+
+0.38.1 "American Samoa" (2014-10-18)
+	* Bugfix: restore Fink::CLI::prompt_selection to Engine.pm (removed accidentally
+	  in [9177185])
+	* Add 10.10 SDK option for 10.9/Xcode 6.1.
+
+0.38.0 "Acadia" (2014-10-18)
+	* Support Yosemite (10.10)
+
+/-------------
+| fink 0.37.x
+\-------------
+
+0.37.1 "Alaska Assessor" (2014-09-20) 
+	* Officially recognize OS 10.9.4.
+
+
+0.37.0 "Alabama Antiquarian" (2014-06-03) 
+	* First release not to support 10.6.
+	* Officially recognize OS 10.9.3.
+	* Install compiler wrappers in the .deb rather than autogenerating them.
+	* Additional fixes and enhancements.
+	
+/-------------
 | fink 0.36.x
 \-------------
 
-0.36.0 "TBD" (2012?-??-??)
-	* EOL for Leopard: First release to only support 10.6 and upwards
-	
+0.36.5 "Order today" (2014-06-03) 
+	* Last release to support 10.6.
+	* fix system-java detection for older Java versions.
+	* Additional fixes and enhancements.
+
+0.36.4.1 (2014-04-11)
+	* Bugfix: change compiler wrapper test so that clang from Xcode 5.0 doesn't
+	  use -Wno-error=unused-command-line-argument-hard-error-in-future.
+
+0.36.4 "Supplies are limited" (2014-04-06)
+	* Activate official binary distributions. 
+	* Official 10.9.2. support
+	* Bootstrap on 10.6 defaults to 10.6/x86_64.
+	* Tweak compiler wrappers to allow packages that pass flags that clang doesn't
+	  understand still to build with the Xcode 5.1 Command Line Tools.
+	  (-Wno-error=unused-command-line-argument-hard-error-in-future)
+	* Bugfix: fix issue with bootstrapping with no Xcode.app installed.
+	* Additional fixes  
+	  
+0.36.3.1 (2013-12-30)
+	* Bugfix: fix dpkg-lockwait and apt-get-lockwait on 10.6/i386
+	  by reverting the changes from dcf07ad27536cea139069ea3570a225bb91590b3
+	  only for that platform. 
+
+0.36.3 "Order now, and we'll double the offer!" (2013-12-26)
+	* Official 10.9.1 support.
+	* Allow binary distributions to work for x86_64.
+	* Other bugfixes and validator improvements.
+
+0.36.1 "But wait, there's more!" (2013-11-17)
+	* Bugfix: fix a perlmod build issue which crept in with 0.36.0.
+	* Check for compatible CLI tools version in bootstrap.
+	* Validator improvements.
+
+0.36.0 "Watch this space" (2013-10-31)
+	* Support OS 10.9.
+
 /-------------
 | fink 0.35.x
 \-------------
 
-0.35.? "TBD" (2012?-??-??)
-	* EOL for Leopard: Last release to support Leopard
+0.35.2 "BYOB" (2013-09-26)
+	* Bugfix: Fix bootstrap/build under 10.8/Xcode 5.
+	* Support OS 10.8.5.
+	* Bugfix: Fix 'fink dumpinfo' output for PatchFileN.
+	* Validation::_min_fink_version() replaced by more generic
+	  Validation::_require_dep().
 
-0.35.? "TBD" (2012?-??-??)
-	* git/svn support
-	
+0.35.1 "BBQ" (2013-07-08)
+	* Bugfix:  10.5-EOL was still visible.  Fix that.
+
+0.35.0 "TLA" (2013-07-05)
+	* First release to support only Snow Leopard (10.6) and later.
+	* Support OS 10.8.4.
+	* Add detection for Java-1.7.0.
+	* Have fink display the help text if given an unknown verb.  This lets "fink help"
+	  and "fink --help" give the same output and reduces surprises. :-)
+	* Prevent package builds/installs if there is no upgrade path between the prior
+	  Distribution and the current OS.
+	* We appear to need the fixes from both 0.34.7 and 0.34.8 for hanging tar, so 
+	  we'll have both.
+	* For MakeMaker builds:  Override the default "g(cc|++)2-4.2" compiler option 
+	  given by the system's Perl on 10.6 in favor of our "g(cc|++)" wrapper, since
+	  gcc-4.2 isn't present for clean Xcode 4.2 installs, and our wrapper is equivalent
+	  (and contains arch information) for Xcode 3.2.x.
+	* Validation::_min_fink_version() API change to allow more generic dependencies.
+	  Example:  Depends: fink (>= 0.32) now automatically satisfies BuildDepends 
+	  fink (>= 0.32).  Similarly, Depends: automatically satisfies RuntimeDepends.
+
 /-------------
 | fink 0.34.x
 \-------------
+
+0.34.9 "recessed" (2013-07-05)
+	* Last release to support Leopard (10.5.x).
+	* Have fink display the help text if given an unknown verb.  This lets "fink help"
+	  and "fink --help" give the same output and reduces surprises. :-)
+	* Prevent package builds/installs if there is no upgrade path between the prior
+	  Distribution and the current OS.
+	* Validation::_min_fink_version() API change to allow more generic dependencies.
+	  Example:  Depends: fink (>= 0.32) now automatically satisfies BuildDepends 
+	  fink (>= 0.32).  Similarly, Depends: automatically satisfies RuntimeDepends.
+=== in common with 0.35.0 ===
+	* Support OS 10.8.4.
+	* Add detection for Java-1.7.0.
+	* We appear to need the fixes from both 0.34.7 and 0.34.8 for hanging tar, so 
+	  we'll have both.
+	* For MakeMaker builds:  Override the default "g(cc|++)2-4.2" compiler option 
+	  given by the system's Perl on 10.6 in favor of our "g(cc|++)" wrapper, since
+	  gcc-4.2 isn't present for clean Xcode 4.2 installs, and our wrapper is equivalent
+	  (and contains arch information) for Xcode 3.2.x.
+	
+0.34.8 "duct tape" (2013-05-08)
+	* More general fix to the hanging tar issue.  Thanks to Eric Gallager (cooljeanius)
+	  for suggesting and testing this option.  Thanks, also, to Murr.
+	* Improved "fink list --dotty-build".
+	* Suggest using "fink configure" when facing legacy fink.conf path issue.
+	* clang and clang++ wrappers, mostly for 10.6/i386.
+	* Other bugfixes.
 
 0.34.7 "overhead track" (2013-03-29)
 	* Bugfix: address issue where fink's tar hangs during unpack operations. Thanks to

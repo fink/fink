@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@ use Fink::Services qw(&read_properties &read_properties_multival &filename
 use Fink::CLI qw(&prompt &prompt_boolean &prompt_selection &print_breaking);
 
 use strict;
+use version 0.77;
 use warnings;
 
 BEGIN {
@@ -137,7 +138,7 @@ Configure everything but the mirrors
 sub choose_misc {
 	my $verbose;
 	my ($proxy_prompt, $proxy, $passive_ftp, $same_for_ftp, $binary_dist);
-	my ($auto_uid, $uid_min, $uid_max, $fink_conf_uid, $real_uid, $real_gid, 
+	my ($auto_uid, $uid_min, $uid_max, $fink_conf_uid, $real_uid, $real_gid,
 		$do_uid);
 
 	sub validpath {
@@ -154,7 +155,7 @@ sub choose_misc {
 
 	# Same for Buildpath.
 	$config->set_param('Buildpath', &validpath('Buildpath'));
-	
+
 	#Complain if Buildpath is Spotlight-indexable
 	&spotlight_warning();
 
@@ -189,7 +190,8 @@ sub choose_misc {
 
 	print "\n";
 
-	if ($config->param("Distribution") ge "10.7") {
+	my $v_distribution = version->parse('v'.$config->param("Distribution"));
+	if ($v_distribution >= version->parse("v10.7")) {
 		print_breaking(
 			"Note: As of the OS X 10.7 distribution, fink no longer ".
 			"has a separate \"unstable\" tree. All development and ".
@@ -250,24 +252,24 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 "If you are interested in the \"unstable\" tree, first run \"fink ".
 			   "selfupdate\" and then run \"fink configure\" again.");
 	}
-   
+
 	# build user settings
 	print "\n";
 	&print_breaking("Fink build user settings");
-    chomp ($_ = `/usr/bin/id -P fink-bld 2>&1`);
-    ($real_uid,$real_gid) = /.*:.*:(\d+):(\d+):.*:.*:.*:.*:.*/ ;
+	chomp ($_ = `/usr/bin/id -P fink-bld 2>&1`);
+	($real_uid,$real_gid) = /.*:.*:(\d+):(\d+):.*:.*:.*:.*:.*/ ;
 	$auto_uid = $config->param_boolean("AutoUid","true");
 	$uid_min = $config->param("AutoUidMin",600);
 	$uid_max = $config->param("AutoUidMax",699);
-    if ($real_uid) {
-    	$fink_conf_uid = $config->param("FinkBldUid",$real_uid);
-    } else {
-    	$fink_conf_uid = $config->param("FinkBldUid");
-    }
+	if ($real_uid) {
+		$fink_conf_uid = $config->param("FinkBldUid",$real_uid);
+	} else {
+		$fink_conf_uid = $config->param("FinkBldUid");
+	}
 	$do_uid=1; #default
 	if ($real_uid && $real_gid) {
 		$do_uid = &prompt_boolean(	"Fink's build user is currently set up. ".
-									"Do you want to reconfigure it?", default => 0); 
+									"Do you want to reconfigure it?", default => 0);
 		unless ($do_uid) {
 			&print_breaking("Using UID:$real_uid") unless $fink_conf_uid == $real_uid;
 			$fink_conf_uid=$real_uid;
@@ -275,7 +277,7 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 			undef $uid_min if !$config->param("AutoUidMin");
 			undef $uid_max if !$config->param("AutoUidMax");
 		}
-	} 
+	}
 	if ($do_uid) {
 		my $id;
 		my $fail_msg =	"WARNING: No UID/GID set for Fink's build user. ".
@@ -283,13 +285,13 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 						"we recommend running 'fink configure' again or ".
 						"otherwise installing the build user.";
 		$auto_uid = &prompt_boolean("Fink can set the UID and GID of its build user ".
-								   	"dynamically to find unused values in a safe ".
-								   	"range.  This is recommended unless you need ".
-								   	"to have a specific UID/GID e.g. due to a ".
-								   	"policy on your network.  Allow Fink to set ". 
-								   	"the UID/GID dynamically?", default => $auto_uid);
+									"dynamically to find unused values in a safe ".
+									"range.  This is recommended unless you need ".
+									"to have a specific UID/GID e.g. due to a ".
+									"policy on your network.  Allow Fink to set ".
+									"the UID/GID dynamically?", default => $auto_uid);
 		if ($auto_uid) {
-			$auto_uid = "true" ; 
+			$auto_uid = "true" ;
 			IDRANGE: while (1) {
 				&print_breaking("The current ID search range is $uid_min-$uid_max.");
 				IDSCAN: for ($id = $uid_min; $id <= $uid_max; $id++) {
@@ -321,22 +323,22 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 						$uid_max = &prompt("Enter maximum ID value:", default => $defmax);
 						@uid_list = sort ($uid_min,$uid_max); #ensure max >= min;
 						$uid_min = shift @uid_list;
-						$uid_max = shift @uid_list; 
+						$uid_max = shift @uid_list;
 						redo IDRANGE;
 					} else {
 						&print_breaking($fail_msg);
 						# unset values to keep them from getting entered in fink.conf
 						undef $uid_min;
 						undef $uid_max;
-			  			undef $auto_uid;
+						undef $auto_uid;
 						undef $fink_conf_uid;
 						last IDRANGE;
 					}
 				}
-			}		
+			}
 		} else	{
 			$auto_uid="false";
-			MANUAL_UID: while (1) {					
+			MANUAL_UID: while (1) {
 				$id = &prompt("Enter UID/GID value: ");
 				last MANUAL_UID unless (getpwuid $id or getgrgid $id);
 				my $retry = prompt_boolean("$id in use.  Try another?");
@@ -353,19 +355,19 @@ print_breaking("The selfupdate method has not been set yet, so you ".
 			} else {
 				&print_breaking($fail_msg);
 				# unset values to keep them from getting entered in fink.conf
-			  	undef $auto_uid;
-			  	undef $uid_min;
-			  	undef $uid_max;
+				undef $auto_uid;
+				undef $uid_min;
+				undef $uid_max;
 				undef $fink_conf_uid;
 			}
-		}								
-	} 
+		}
+	}
 	#write values
-    $config->set_param("AutoUid", $auto_uid);
-    $config->set_param("AutoUidMin",$uid_min);
-    $config->set_param("AutoUidMax",$uid_max);
-    $config->set_param("FinkBldUid",$fink_conf_uid);
-	
+	$config->set_param("AutoUid", $auto_uid);
+	$config->set_param("AutoUidMin",$uid_min);
+	$config->set_param("AutoUidMax",$uid_max);
+	$config->set_param("FinkBldUid",$fink_conf_uid);
+
 	$verbose = $config->param_default("Verbose", 1);
 	$verbose =
 		&prompt_selection("How verbose should Fink be?",
@@ -482,8 +484,7 @@ sub spotlight_warning {
 										  "$basepath/src/fink.build");
 	if ( $> == 0
 			&& !$config->has_flag('SpotlightWarning')
-			&& $builddir !~ /\.build$/
-			&& $config->param("distribution") ge "10.4") {
+			&& $builddir !~ /\.build$/) {
 
 		$config->set_flag('SpotlightWarning');
 

@@ -1,0 +1,56 @@
+From: Pavel Raiskup <address@hidden>
+Date: Thu, 2 Jun 2016 07:28:01 +0200
+Subject: [PATCH] tests: fix numeric.at for BSD
+
+While creating file, BSD kernels inherit the group ownership from
+parent directory.
+http://lists.gnu.org/archive/html/bug-tar/2016-06/msg00000.html
+
+* tests/numeric.at: Attempt to 'chown' the newly created directory
+to proper group (at least on affected machines that command is
+expected to succeed).
+---
+ THANKS           | 1 +
+ tests/numeric.at | 9 ++++++---
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/THANKS b/THANKS
+index f1def93..8d00396 100644
+--- a/THANKS
++++ b/THANKS
+@@ -94,6 +94,7 @@ Christian Laubscher	christian.laubscher@tiscalinet.ch
+ Christian T. Dum	ctd@mpe-garching.mpg.de
+ Christian von Roques	roques@pond.sub.org
+ Christian Wetzel	wetzel@phoenix-pacs.de
++Christian Weisgerber	christophe.kalt@kbcfp.com
+ Christoph Litauer	litauer@mailhost.uni-koblenz.de
+ Christophe Colle	colle@krtkg1.rug.ac.be
+ Christophe Kalt	Christophe.Kalt@kbcfp.com
+diff --git a/tests/numeric.at b/tests/numeric.at
+index 2fcd7ea..7a97248 100644
+--- a/tests/numeric.at
++++ b/tests/numeric.at
+@@ -27,14 +27,17 @@ tar $1 -vvf a dir |dnl
+ ])
+ 
+ AT_TAR_CHECK([
+-mkdir dir
+-genfile --file dir/file
+-
+ MYUID=$(id -u) || AT_SKIP_TEST
+ MYGID=$(id -g) || AT_SKIP_TEST
+ MYUSR=$(id -un) || AT_SKIP_TEST
+ MYGRP=$(id -gn) || AT_SKIP_TEST
+ 
++mkdir dir
++# Ensure correct group id on BSDs.
++chown :$MYGID dir >/dev/null 2>/dev/null
++genfile --file dir/file
++
++
+ TESTOP([--create])
+ TESTOP([--list])
+ TESTOP([--diff])
+-- 
+2.5.5
+

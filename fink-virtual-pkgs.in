@@ -2,7 +2,7 @@
 #
 # fink-virtual-pkgs
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ use Fcntl;
 
 my $standalone = 0;
 my $basepath = '@BASEPATH@';
+my $config;
 
 our $VERSION = 1.28;
 
@@ -70,11 +71,43 @@ if ($standalone == 0)
 				}
 			}
 		} else {
-			printf "Package: %s\nStatus: %s\nVersion: %s\n", $hash->{package},$hash->{status},$hash->{version};
+			# The following code tries very hard to exactly match the output in the dpkg
+			# status file. This is necessary to make sure that (the new) apt works
+			# correctly. Thus, be very careful when changing any of this code.
+			print "Package: ".$hash->{package}."\n";
+			print "Status: ".$hash->{status}."\n";
+			print "Priority: optional\n";
+			print "Architecture: ".$config->param('Debarch')."\n";
+			print "Version: ".$hash->{version}."\n";
+			print "Maintainer: ".$hash->{maintainer}."\n";
 			foreach $field (keys %$hash)
 			{
-				next if ($field =~ /^(package|status|version|descdetail|compilescript)$/);
-				printf "%s: %s\n",$field,$hash->{$field};
+				next if ($field =~ /^(package|status|version|descdetail|compilescript|homepage|maintainer)$/);
+				if ($field eq "description") {
+					print "Description: ".$hash->{'description'}."\n";
+					if ($hash->{'descdetail'}) {
+						my $descdetail = $hash->{'descdetail'};
+						chomp($descdetail);
+						my @descdetails;
+						foreach my $line (split("\n", $descdetail)) {
+							if ($line eq "" || $line =~ /^[\s|\t]+?$/) {
+								$line = ".";
+							}
+							$line = " ".$line;
+							push @descdetails, $line;
+						}
+						$descdetail = join("\n", @descdetails);
+						print $descdetail."\n";
+					}
+					if ($hash->{'homepage'}) {
+						print " .\n";
+						print " Web site: ".$hash->{'homepage'}."\n";
+					}
+					printf " .\n";
+					printf " Maintainer: ".$hash->{'maintainer'}."\n";
+				} else {
+					printf ucfirst $field.": ".$hash->{$field}."\n";
+				}
 			}
 			print "\n";
 		}
@@ -106,9 +139,14 @@ else
 	}
 	else
 	{
-		printf "Package: %s\nStatus: install ok installed\nVersion: %s-1\nProvides: kernel\n\n", lc((uname())[0]), lc((uname())[2]);
+		print "Package: ".lc((uname())[0])."\n";
+		print "Status: install ok installed\n";
+		print "Version: ".lc((uname())[2])."-1\n", ;
+		print "Provides: kernel\n\n";
 		if ($macosx_version ne 0) {
-			printf "Package: macosx\nStatus: install ok installed\nVersion: %s-1\n\n",$macosx_version;
+			print "Package: macosx\n";
+			print "Status: install ok installed\n";
+			print "Version: ".$macosx_version."-1\n", ;
 		}
 	}
 }
@@ -162,7 +200,6 @@ sub UseFinkModules {
 	if ($standalone != 1)
 	{
 		my $configpath = "$basepath/etc/fink.conf";
-                my $config;
 		if (-f $configpath) {
 			$config = read_config($configpath,
                                               { Basepath => "$basepath" }

@@ -1,0 +1,745 @@
+buf_free_data must free data independently
+of send or reseived bytes over network.
+
+Moreover, when buffer is usually freed
+buffer _is_ empty, but has one clean mapped page.
+
+I've observed massive 'cvs server' leaks
+when importing large gentoo-x86 repo with 'cvsps'.
+Leak ate all my 32GBs of RAM and killed process.
+(Leaked around 3 pages per client request).
+
+valgrind found the leak easily:
+
+$ valgrind \
+    cvsps \
+           --root :local:$HOME/portage/gentoo-x86.rsync \
+           --fast-export \
+           gentoo-x86/dev-vcs/git-annex 2>l |
+    git fast-import
+
+    ==13504== 1,248 bytes in 52 blocks are still reachable in loss record 41 of 47
+    ==13504==    at 0x4C2C19B: malloc (vg_replace_malloc.c:270)
+    ==13504==    by 0x48A556: xnmalloc_inline (xmalloc.c:40)
+    ==13504==    by 0x48A5B5: xmalloc (xmalloc.c:56)
+    ==13504==    by 0x4855F5: new_memnode (pagealign_alloc.c:91)
+    ==13504==    by 0x48571B: pagealign_alloc (pagealign_alloc.c:151)
+    ==13504==    by 0x485739: pagealign_xalloc (pagealign_alloc.c:182)
+    ==13504==    by 0x408DD7: get_buffer_data (buffer.c:98)
+    ==13504==    by 0x409C0C: buf_input_data (buffer.c:738)
+    ==13504==    by 0x45BB63: do_cvs_command (server.c:3847)
+    ==13504==    by 0x45D39E: serve_co (server.c:4809)
+    ==13504==    by 0x45F845: server (server.c:6438)
+    ==13504==    by 0x438784: main (main.c:1066)
+
+And now it takes constant space (less, than 18MB)
+for 'cvs server' process to convert all gentoo-x86
+by serving more, than 5 000 000 client requests.
+
+Signed-off-by: Sergei Trofimovich <slyfox@gentoo.org>
+diff --git a/src/buffer.c b/src/buffer.c
+index 3f12513..9a7a559 100644
+--- src/buffer.c.orig
++++ src/buffer.c
+@@ -526,7 +526,7 @@ buf_copy_data (struct buffer *buf, struct buffer_data *data,
+ void
+ buf_free_data (struct buffer *buffer)
+ {
+-    if (buf_empty_p (buffer)) return;
++    if (! buffer->data) return;
+     buf_free_datas (buffer->data, buffer->last);
+     buffer->data = buffer->last = NULL;
+ }
+--- lib/openat.c.orig
++++ lib/openat.c
+@@ -55,9 +55,13 @@ rpl_openat (int fd, char const *filename
+       va_list arg;
+       va_start (arg, flags);
+ 
+-      /* Assume that mode_t is passed compatibly with mode_t's type
+-	 after argument promotion.  */
+-      mode = va_arg (arg, mode_t);
++      /* If mode_t is narrower than int, use the promoted type (int),
++         not mode_t.  Use sizeof to guess whether mode_t is nerrower;
++         we don't know of any practical counterexamples.  */
++      if (sizeof (mode_t) < sizeof (int))
++	mode = va_arg (arg, int);
++      else
++	mode = va_arg (arg, mode_t);
+ 
+       va_end (arg);
+     }
+--- src/cvsbug.in	2003-02-26 05:31:33.000000000 +0800
++++ src/cvsbug.in	2006-02-26 22:07:08.000000000 +0800
+@@ -109,14 +109,14 @@
+     /usr/bin/ypcat passwd 2>/dev/null | cat - /etc/passwd | grep "^$LOGNAME:" |
+       cut -f5 -d':' | sed -e 's/,.*//' > $TEMP
+     ORIGINATOR="`cat $TEMP`"
+-    rm -f $TEMP
++    > $TEMP
+   fi
+ fi
+ 
+ if [ "$ORIGINATOR" = "" ]; then
+   grep "^$LOGNAME:" /etc/passwd | cut -f5 -d':' | sed -e 's/,.*//' > $TEMP
+   ORIGINATOR="`cat $TEMP`"
+-  rm -f $TEMP
++  > $TEMP
+ fi
+ 
+ if [ -n "$ORGANIZATION" ]; then
+--- src/error.c.orig	2007-05-03 15:17:29.000000000 -0700
++++ src/error.c	2007-05-03 15:17:59.000000000 -0700
+@@ -208,7 +208,7 @@
+      *   with the message here.
+      */
+ #if HAVE_SYSLOG_H
+-    syslog (LOG_DAEMON | LOG_EMERG, "Memory exhausted.  Aborting.");
++    syslog (LOG_DAEMON | LOG_ERR, "Memory exhausted.  Aborting.");
+ #endif /* HAVE_SYSLOG_H */
+ 
+     goto sidestep_done;
+@@ -219,18 +219,18 @@
+      * error while attempting to send the last error message to the client.
+      */
+ 
+-    syslog (LOG_DAEMON | LOG_EMERG,
++    syslog (LOG_DAEMON | LOG_ERR,
+ 	    "error (%d, %d) called recursively.  Original message was:",
+ 	    last_status, last_errnum);
+-    syslog (LOG_DAEMON | LOG_EMERG, "%s", last_message);
++    syslog (LOG_DAEMON | LOG_ERR, "%s", last_message);
+ 
+ 
+-    syslog (LOG_DAEMON | LOG_EMERG,
++    syslog (LOG_DAEMON | LOG_ERR,
+             "error (%d, %d) called recursively.  Second message was:",
+ 	    status, errnum);
+-    syslog (LOG_DAEMON | LOG_EMERG, "%s", buf2);
++    syslog (LOG_DAEMON | LOG_ERR, "%s", buf2);
+ 
+-    syslog (LOG_DAEMON | LOG_EMERG, "Aborting.");
++    syslog (LOG_DAEMON | LOG_ERR, "Aborting.");
+ #endif /* HAVE_SYSLOG_H */
+ 
+ sidestep_done:
+--- src/ignore.c.orig	2005-09-12 18:57:45.000000000 -0700
++++ src/ignore.c	2005-09-12 18:57:58.000000000 -0700
+@@ -36,7 +36,7 @@
+ 
+ const char *ign_default = ". .. core RCSLOG tags TAGS RCS SCCS .make.state\
+  .nse_depinfo #* .#* cvslog.* ,* CVS CVS.adm .del-* *.a *.olb *.o *.obj\
+- *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$";
++ *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$ ._*";
+ 
+ #define IGN_GROW 16			/* grow the list by 16 elements at a
+ 					 * time */
+--- config.h.in.orig	2006-04-27 16:50:13.000000000 -0700
++++ config.h.in	2006-04-27 16:53:12.000000000 -0700
+@@ -1079,7 +1079,11 @@
+ 
+ /* Define to 1 if your processor stores words with the most significant byte
+    first (like Motorola and SPARC, unlike Intel and VAX). */
+-#undef WORDS_BIGENDIAN
++#ifdef __BIG_ENDIAN__
++#define WORDS_BIGENDIAN 1
++#else
++/* #undef WORDS_BIGENDIAN */
++#endif
+ 
+ /* Define to 1 if on AIX 3.
+    System headers sometimes define this.
+--- src/client.c.orig	2008-07-10 21:11:29.000000000 -0700
++++ src/client.c	2008-07-10 21:11:36.000000000 -0700
+@@ -612,7 +612,7 @@
+     else
+     {
+ 	if (!redirects) redirects = getlist();
+-	push_string (redirects, args);
++	push_string (redirects, xstrdup (args));
+     }
+ 
+     if (referred_since_last_redirect)
+--- src/sanity.sh.orig	2005-09-22 13:34:06.000000000 -0700
++++ src/sanity.sh	2008-07-09 21:57:38.000000000 -0700
+@@ -28385,20 +28385,21 @@
+ 	  else # server insensitive
+ 	    # There is only one archive when the server is insensitive, but the
+ 	    # printed file/archive name can vary.
++	    $testcvs status file >/dev/null 2>&1
+ 	    dotest recase-4si "$testcvs status file" \
+ "===================================================================
+-File: $file             	Status: Up-to-date
++File: file             	Status: Up-to-date
+ 
+    Working revision:	1\.3.*
+-   Repository revision:	1\.3	$CVSROOT_DIRNAME/first-dir/$file,v
++   Repository revision:	1\.3	$CVSROOT_DIRNAME/first-dir/file,v
+    Commit Identifier:	${commitid}
+    Sticky Tag:		(none)
+    Sticky Date:		(none)
+    Sticky Options:	(none)"
+ 	    dotest recase-5si "$testcvs log file" \
+ "
+-RCS file: $CVSROOT_DIRNAME/first-dir/$file,v
+-Working file: $file
++RCS file: $CVSROOT_DIRNAME/first-dir/file,v
++Working file: file
+ head: 1\.3
+ branch:
+ locks: strict
+@@ -28421,6 +28422,7 @@
+ date: ${ISO8601DATE};  author: $username;  state: Exp;  commitid: ${commitid};
+ add
+ ============================================================================="
++	    sed -i '' -e '2d' CVS/Entries >/dev/null 2>&1
+ 	    dotest recase-6si "$testcvs status FiLe" \
+ "===================================================================
+ File: FiLe             	Status: Up-to-date
+@@ -28470,16 +28472,18 @@
+    Working revision:	No entry for fIlE
+    Repository revision:	No revision control file"
+ 	  else # !$client_sensitive || !$server_sensitive
++	    $testcvs status fIlE >/dev/null 2>&1
+ 	    dotest recase-8anyi "$testcvs status fIlE" \
+ "===================================================================
+-File: $fIlE             	Status: Up-to-date
++File: fIlE             	Status: Up-to-date
+ 
+    Working revision:	1\.[0-9]*.*
+-   Repository revision:	1\.[0-9]*	$CVSROOT_DIRNAME/first-dir/$fIlE,v
++   Repository revision:	1\.[0-9]*	$CVSROOT_DIRNAME/first-dir/fIlE,v
+    Commit Identifier:	${commitid}
+    Sticky Tag:		(none)
+    Sticky Date:		(none)
+    Sticky Options:	(none)"
++	    sed -i '' -e '2d' CVS/Entries >/dev/null 2>&1
+ 	  fi
+ 
+ 	  # and an update
+@@ -28692,16 +28696,18 @@
+    Working revision:	No entry for fIlE
+    Repository revision:	No revision control file"
+ 	  else # !$client_sensitive || !$server_sensitive
++	    $testcvs status fIlE >/dev/null 2>&1
+ 	    dotest recase-19anyi "$testcvs status fIlE" \
+ "===================================================================
+-File: $fIlE             	Status: Up-to-date
++File: fIlE             	Status: Up-to-date
+ 
+    Working revision:	1\.[0-9]*.*
+-   Repository revision:	1\.[0-9]*	$CVSROOT_DIRNAME/first-dir/$fIlE,v
++   Repository revision:	1\.[0-9]*	$CVSROOT_DIRNAME/first-dir/fIlE,v
+    Commit Identifier:	${commitid}
+    Sticky Tag:		(none)
+    Sticky Date:		(none)
+    Sticky Options:	(none)"
++	    sed -i '' -e '2d' CVS/Entries >/dev/null 2>&1
+ 	  fi
+ 
+ 	  # And last but not least, prove that a checkout is still possible.
+--- src/client.c	2004-10-29 12:55:14.000000000 -0700
++++ /var/tmp/client.c	2005-11-19 19:15:01.000000000 -0800
+@@ -1558,7 +1558,8 @@ update_entries (data_arg, ent_list, shor
+ 	sprintf (temp_filename, "%s_new_", filename);
+ #else
+ #ifdef _POSIX_NO_TRUNC
+-	sprintf (temp_filename, ".new.%.9s", filename);
++	sprintf (temp_filename, ".new.XXXXXX");
++	mktemp (temp_filename);
+ #else /* _POSIX_NO_TRUNC */
+ 	sprintf (temp_filename, ".new.%s", filename);
+ #endif /* _POSIX_NO_TRUNC */
+--- src/server.c.orig	2008-08-26 19:00:15.000000000 -0700
++++ src/server.c	2008-08-26 19:00:26.000000000 -0700
+@@ -6629,6 +6629,25 @@
+ 	}
+     }
+ 
++#if HAVE_INITGROUPS
++    if (initgroups (pw->pw_name, pw->pw_gid) < 0
++#  ifdef EPERM
++	/* At least on the system I tried, initgroups() only works as root.
++	   But we do still want to report ENOMEM and whatever other
++	   errors initgroups() might dish up.  */
++	&& errno != EPERM
++#  endif
++	)
++    {
++	/* This could be a warning, but I'm not sure I see the point
++	   in doing that instead of an error given that it would happen
++	   on every connection.  We could log it somewhere and not tell
++	   the user.  But at least for now make it an error.  */
++	printf ("error 0 initgroups failed: %s\n", strerror (errno));
++	exit (EXIT_FAILURE);
++    }
++#endif /* HAVE_INITGROUPS */
++
+     if (setuid (pw->pw_uid) < 0)
+     {
+ 	/* Note that this means that if run as a non-root user,
+--- src/Makefile.in.orig	2005-09-13 17:53:18.000000000 -0700
++++ src/Makefile.in	2005-09-13 17:53:28.000000000 -0700
+@@ -161,7 +161,7 @@
+ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
+ am__depfiles_maybe = depfiles
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
++	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -mdynamic-no-pic
+ CCLD = $(CC)
+ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+ SOURCES = $(cvs_SOURCES) $(EXTRA_cvs_SOURCES)
+--- configure.orig	2011-10-11 14:28:52.000000000 -0700
++++ configure	2011-10-11 14:29:00.000000000 -0700
+@@ -39337,134 +39337,6 @@
+ fi
+ 
+ 
+-  #
+-  # crypto             Need by gssapi under FreeBSD 5.4
+-  #
+-  echo "$as_me:$LINENO: checking for library containing RC4" >&5
+-echo $ECHO_N "checking for library containing RC4... $ECHO_C" >&6
+-if test "${ac_cv_search_RC4+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  ac_func_search_save_LIBS=$LIBS
+-ac_cv_search_RC4=no
+-cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-/* Override any gcc2 internal prototype to avoid an error.  */
+-#ifdef __cplusplus
+-extern "C"
+-#endif
+-/* We use char because int might match the return type of a gcc2
+-   builtin and then its argument prototype would still apply.  */
+-char RC4 ();
+-int
+-main ()
+-{
+-RC4 ();
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext conftest$ac_exeext
+-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+-  (eval $ac_link) 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } &&
+-	 { ac_try='test -z "$ac_c_werror_flag"
+-			 || test ! -s conftest.err'
+-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+-  (eval $ac_try) 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; } &&
+-	 { ac_try='test -s conftest$ac_exeext'
+-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+-  (eval $ac_try) 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; }; then
+-  ac_cv_search_RC4="none required"
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-fi
+-rm -f conftest.err conftest.$ac_objext \
+-      conftest$ac_exeext conftest.$ac_ext
+-if test "$ac_cv_search_RC4" = no; then
+-  for ac_lib in crypto; do
+-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+-    cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-/* Override any gcc2 internal prototype to avoid an error.  */
+-#ifdef __cplusplus
+-extern "C"
+-#endif
+-/* We use char because int might match the return type of a gcc2
+-   builtin and then its argument prototype would still apply.  */
+-char RC4 ();
+-int
+-main ()
+-{
+-RC4 ();
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext conftest$ac_exeext
+-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+-  (eval $ac_link) 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } &&
+-	 { ac_try='test -z "$ac_c_werror_flag"
+-			 || test ! -s conftest.err'
+-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+-  (eval $ac_try) 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; } &&
+-	 { ac_try='test -s conftest$ac_exeext'
+-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+-  (eval $ac_try) 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; }; then
+-  ac_cv_search_RC4="-l$ac_lib"
+-break
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-fi
+-rm -f conftest.err conftest.$ac_objext \
+-      conftest$ac_exeext conftest.$ac_ext
+-  done
+-fi
+-LIBS=$ac_func_search_save_LIBS
+-fi
+-echo "$as_me:$LINENO: result: $ac_cv_search_RC4" >&5
+-echo "${ECHO_T}$ac_cv_search_RC4" >&6
+-if test "$ac_cv_search_RC4" != no; then
+-  test "$ac_cv_search_RC4" = "none required" || LIBS="$ac_cv_search_RC4 $LIBS"
+-
+-fi
+ 
+ 
+   #
+--- doc/cvs.1.orig      2004-11-11 10:29:46.000000000 -0800
++++ doc/cvs.1   2005-07-06 11:59:42.000000000 -0700
+@@ -3654,6 +3654,83 @@
+ \fB/etc/cvs.conf\fR or prefixed by \fB/etc/cvs/\fR.  This option is
+ supported beginning with \fBcvs\fR release 1.12.13.
+ .SP
++.SH "tag"
++.SS "Add a symbolic tag to checked out version of RCS file"
++.IX "tag (subcommand)"
++.SP
++.IP "\(bu" 2
++tag [-lQqR] [-b] [-d] symbolic_tag [files...]
++.IP "\(bu" 2
++Requires: repository, working directory.
++.IP "\(bu" 2   
++Changes: repository.
++.IP "\(bu" 2
++Synonym: freeze.
++.SP
++Use this command to assign symbolic tags to the nearest repository versions to your
++working sources.  The tags are applied immediately to the repository, as with
++\fBrtag\fR, but the versions are supplied implicitly by the CVS records of your
++working files' history rather than applied explicitly.
++.SP
++One use for tags is to record a snapshot of the current sources when the software
++freeze date of a project arrives.  As bugs are fixed after the freeze date, only
++those changed sources that are to be part of the release need be re-tagged.
++.SP
++The symbolic tags are meant to permanently record which revisions of which files were
++used in creating a software distribution.  The \fBcheckout\fR and \fBupdate\fR
++commands allow you to extract an exact copy of a tagged release at any time in the
++future, regardless of whether files have been changed, added, or removed since the
++release was tagged.
++.SP
++This command can also be used to delete a symbolic tag, or to create a branch.
++See the options section below.
++.SP
++.SH "tag options"
++.SP
++These standard options are supported by \fBtag\fR
++(see node `Common options\(aq in the CVS manual, for a complete description of
++them):
++.SP
++.IP "" 0
++\fB-l\fR
++.IP "" 2
++Local; run only in current working directory.
++.SP
++.IP "" 0
++\fB-R\fR
++.IP "" 2
++Commit directories recursively.  This is on by default.
++.SP
++.IP "" 0
++\fB-Q\fR
++.IP "" 2
++Really quiet.
++.SP
++.IP "" 0
++\fB-q\fR
++.IP "" 2
++Somewhat quiet.
++.SP
++.IP "" 0
++Two special options are available:
++.SP
++.IP "" 0
++\fB-b\fR
++.IP "" 2
++The \fB-b\fR option makes the tag a branch tag (see node `Branches\(aq in the
++CVS manual), allowing concurrent, isolated development.  This is most useful for
++creating a patch to a previously released software distribution.
++.SP
++.IP "" 0
++\fB-d\fR
++.IP "" 2
++Delete a tag.
++.SP
++If you use \fBcvs tag -d symbolic_tag\fR, the symbolic tag you specify is deleted
++instead of being added.  Warning: Be very certain of your ground before you delete
++a tag; doing this effectively discards some historical information, which may later
++turn out to have been valuable.
++.SP
+ .SH "update"
+ .SS "Bring work tree in sync with repository"
+ .IX "update (subcommand)"
+--- src/zlib.c.orig	2005-06-03 11:26:09.000000000 -0700
++++ src/zlib.c	2006-08-18 17:08:36.000000000 -0700
+@@ -221,15 +221,14 @@
+            point.  */
+ 	assert (bd->size == 0);
+ 
+-	/* This will work well in the server, because this call will
+-	   do an unblocked read and fetch all the available data.  In
+-	   the client, this will read a single byte from the stdio
+-	   stream, which will cause us to call inflate once per byte.
+-	   It would be more efficient if we could make a call which
+-	   would fetch all the available bytes, and at least one byte.  */
+-
++	/* On the server, this will do an unblocking read of as much data as is
++	 * available.  On the client, with a blocking input descriptor and the
++	 * current fd_buffer implementation, this should read as much data as
++	 * is currently available, and at least 1 byte (or EOF), from the
++	 * underlying buffer.
++	 */
+ 	status = (*cb->buf->input) (cb->buf->closure, bd->text,
+-				    need, BUFFER_DATA_SIZE, &nread);
++				    need ? 1 : 0, BUFFER_DATA_SIZE, &nread);
+ 
+ 	if (status == -2)
+ 	    /* Don't try to recover from memory allcoation errors.  */
+
+--- /dev/null	2013-11-06 10:54:46.000000000 -0500
++++ config.h.ed	2013-11-06 10:54:44.000000000 -0500
+@@ -0,0 +1,36 @@
++/SIZEOF_LONG/c
++#ifdef __LP64__
++#define SIZEOF_LONG 8
++#else /* !__LP64__ */
++#define SIZEOF_LONG 4
++#endif /* __LP64__ */
++.
++/SIZEOF_PTRDIFF_T/c
++#ifdef __LP64__
++#define SIZEOF_PTRDIFF_T 8
++#else /* !__LP64__ */
++#define SIZEOF_PTRDIFF_T 4
++#endif /* __LP64__ */
++.
++/SIZEOF_SIZE_T/c
++#ifdef __LP64__
++#define SIZEOF_SIZE_T 8
++#else /* !__LP64__ */
++#define SIZEOF_SIZE_T 4
++#endif /* __LP64__ */
++.
++/UNIQUE_INT_TYPE_LONG/c
++#ifdef __LP64__
++#define UNIQUE_INT_TYPE_LONG 1
++#else /* !__LP64__ */
++/* #undef UNIQUE_INT_TYPE_LONG */
++#endif /* __LP64__ */
++.
++/UNIQUE_INT_TYPE_LONG_LONG/c
++#ifdef __LP64__
++/* #undef UNIQUE_INT_TYPE_LONG_LONG */
++#else /* !__LP64__ */
++#define UNIQUE_INT_TYPE_LONG_LONG 1
++#endif /* __LP64__ */
++.
++w
+--- src/main.c.orig	2013-11-09 18:18:10.000000000 -0500
++++ src/main.c	2013-11-09 18:20:07.000000000 -0500
+@@ -1458,7 +1458,7 @@
+ {
+     (void) fprintf (stderr, *cpp++, program_name, cvs_cmd_name);
+     for (; *cpp; cpp++)
+-	(void) fprintf (stderr, *cpp);
++	(void) fprintf (stderr, "%s", *cpp);
+     exit (EXIT_FAILURE);
+ }
+ 
+--- diff/diff3.c.orig	2013-11-09 18:24:49.000000000 -0500
++++ diff/diff3.c	2013-11-09 18:25:36.000000000 -0500
+@@ -1503,7 +1503,7 @@
+ 	      line = 0;
+ 	      do
+ 		{
+-		  printf_output (line_prefix);
++		  printf_output ("%s", line_prefix);
+ 		  cp = D_RELNUM (ptr, realfile, line);
+ 		  length = D_RELLEN (ptr, realfile, line);
+ 		  write_output (cp, length);
+--- src/parseinfo.c.orig	2013-11-09 18:28:58.000000000 -0500
++++ src/parseinfo.c	2013-11-09 18:30:20.000000000 -0500
+@@ -250,7 +250,7 @@
+ 		       infopath, option, p[strlen(p)]);
+ 		return false;
+ 	}
+-	TRACE (TRACE_DATA, "readSizeT(): Found factor %u for %s",
++	TRACE (TRACE_DATA, "readSizeT(): Found factor %zu for %s",
+ 	       factor, option);
+     }
+ 
+@@ -274,9 +274,9 @@
+ 	/* Don't return an error, just max out.  */
+ 	num = SIZE_MAX;
+ 
+-    TRACE (TRACE_DATA, "readSizeT(): read number %u for %s", num, option);
++    TRACE (TRACE_DATA, "readSizeT(): read number %zu for %s", num, option);
+     *val = xtimes (strtoul (p, NULL, 10), factor);
+-    TRACE (TRACE_DATA, "readSizeT(): returnning %u for %s", *val, option);
++    TRACE (TRACE_DATA, "readSizeT(): returnning %zu for %s", *val, option);
+     return true;
+ }
+ 
+--- src/server.c.orig	2013-11-09 18:33:18.000000000 -0500
++++ src/server.c	2013-11-09 18:37:04.000000000 -0500
+@@ -977,7 +977,7 @@
+ 	if (forced && !quiet
+ 	    && alloc_pending_warning (120 + strlen (program_name)))
+ 	    sprintf (pending_warning_text,
+-"E %s server: Forcing compression level %d (allowed: %d <= z <= %d).",
++"E %s server: Forcing compression level %d (allowed: %zu <= z <= %zu).",
+ 		     program_name, gzip_level, config->MinCompressionLevel,
+ 		     config->MaxCompressionLevel);
+     }
+@@ -5483,7 +5483,7 @@
+     if (forced && !quiet
+ 	&& alloc_pending_warning (120 + strlen (program_name)))
+ 	sprintf (pending_warning_text,
+-"E %s server: Forcing compression level %d (allowed: %d <= z <= %d).",
++"E %s server: Forcing compression level %d (allowed: %zu <= z <= %zu).",
+ 		 program_name, level, config->MinCompressionLevel,
+ 		 config->MaxCompressionLevel);
+ 
+@@ -5514,7 +5514,7 @@
+     if (forced && !quiet
+ 	&& alloc_pending_warning (120 + strlen (program_name)))
+ 	sprintf (pending_warning_text,
+-"E %s server: Forcing compression level %d (allowed: %d <= z <= %d).",
++"E %s server: Forcing compression level %d (allowed: %zu <= z <= %zu).",
+ 		 program_name, level, config->MinCompressionLevel,
+ 		 config->MaxCompressionLevel);
+ 	
+--- src/subr.c.orig	2013-11-09 18:41:16.000000000 -0500
++++ src/subr.c	2013-11-09 18:42:28.000000000 -0500
+@@ -1285,7 +1285,7 @@
+ 	    		dellist(&pflist);
+ 	    		free(b);
+ 			error (1, 0,
+-"internal error:  unknown integer arg size (%d)",
++"internal error:  unknown integer arg size (%zu)",
+                                length);
+ 			break;
+ 		}
+@@ -1328,7 +1328,7 @@
+ 	    		dellist(&pflist);
+ 	    		free(b);
+ 			error (1, 0,
+-"internal error:  unknown floating point arg size (%d)",
++"internal error:  unknown floating point arg size (%zu)",
+                                length);
+ 			break;
+ 		}
+--- src/hash.c.orig	2013-11-09 18:45:36.000000000 -0500
++++ src/hash.c	2013-11-09 18:45:57.000000000 -0500
+@@ -347,7 +347,7 @@
+ {
+     Node *head, *p;
+ 
+-    if ((list == NULL))
++    if (list == NULL)
+ 	return NULL;
+ 
+     assert (key != NULL);
+
+--- src/import.c.orig	2013-11-10 11:49:26.000000000 -0500
++++ src/import.c	2013-11-10 11:53:46.000000000 -0500
+@@ -1592,10 +1592,8 @@
+  *   no error message has yet been printed).
+  */
+ static int
+-expand_and_copy_contents (fprcs, file_type, user, fpuser)
+-    FILE *fprcs, *fpuser;
+-    mode_t file_type;
+-    const char *user;
++expand_and_copy_contents (FILE *fprcs, mode_t file_type, const char *user, 
++	FILE *fpuser)
+ {
+     if (
+ #ifdef PRESERVE_PERMISSIONS_SUPPORT
+--- src/ls.c.orig	2013-11-10 11:37:15.000000000 -0500
++++ src/ls.c	2013-11-10 11:38:08.000000000 -0500
+@@ -503,7 +503,7 @@
+          */
+ 	if (!isdir (dir))
+         {
+-	    int nonbranch;
++	    int nonbranch = 0;
+ 	    if (show_tag == NULL && show_date == NULL)
+ 	    {
+ 		ParseTag (&show_tag, &show_date, &nonbranch);
+--- src/server.c.orig	2013-11-10 11:40:01.000000000 -0500
++++ src/server.c	2013-11-10 11:40:28.000000000 -0500
+@@ -7468,7 +7468,7 @@
+        We could instead use an authentication to access mapping.  */
+     {
+ 	krb5_context kc;
+-	krb5_principal p;
++	krb5_principal p = NULL;
+ 	gss_buffer_desc desc;
+ 
+ 	krb5_init_context (&kc);
+--- src/rcscmds.c.orig	2013-11-10 11:56:27.000000000 -0500
++++ src/rcscmds.c	2013-11-10 11:56:56.000000000 -0500
+@@ -356,7 +356,7 @@
+     char *tmpfile1 = NULL;
+     char *tmpfile2 = NULL;
+     const char *use_file1, *use_file2;
+-    int status, retval;
++    int status, retval = 0;
+ 
+ 
+     cvs_output ("\
+--- diff/util.c.orig	2013-11-10 11:42:14.000000000 -0500
++++ diff/util.c	2013-11-10 11:42:51.000000000 -0500
+@@ -235,7 +235,7 @@
+ 	      close (pipes[0]);
+ 	    }
+ 
+-	  execl (PR_PROGRAM, PR_PROGRAM, "-f", "-h", name, 0);
++	  execl (PR_PROGRAM, PR_PROGRAM, "-f", "-h", name, NULL);
+ 	  pfatal_with_name (PR_PROGRAM);
+ 	}
+       else
+

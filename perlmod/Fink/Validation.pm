@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,6 +25,8 @@ package Fink::Validation;
 
 use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &file_MD5_checksum &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
+use Fink::PkgVersion;
+use Fink::Tie::IxHash;
 use Cwd qw(getcwd);
 use File::Find qw(find);
 use File::Path qw(rmtree);
@@ -114,7 +116,7 @@ our %allowed_license_values = map {$_, 1}
 	 "GPL", "LGPL", "GPL/LGPL", "BSD", "Artistic", "Artistic/GPL", "GFDL",
 	 "GPL/GFDL", "LGPL/GFDL", "GPL/LGPL/GFDL", "LDP", "GPL/LGPL/LDP",
 	 "OSI-Approved", "Public Domain", "Restrictive/Distributable",
-	 "Restrictive", "Commercial", "DFSG-Approved"
+	 "Restrictive", "Commercial", "DFSG-Approved", "GPL/OpenSSL", "LGPL/OpenSSL"
 	);
 
 # Allowed values of the architecture field
@@ -288,6 +290,7 @@ our %pkglist_fields = map {lc $_, 1}
 	 'Suggests',
 	 'Recommends',
 	 'Enhances',
+	 'Replaces',
 	 # 'Architecture' is not a "Depends"-style list, but its syntax is
 	 # like a package-list, so piggy-back on those fields' parser
 	 'Architecture',
@@ -532,17 +535,20 @@ sub validate_info_file {
 	#
 
 	if ($pkgname =~ /[^+\-.a-z0-9]/) {
-		print "Error: Package name may only contain lowercase letters, numbers,";
+		print "Error: Package name ' $pkgname ' is invalid. ";
+		print "Package names may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgversion =~ /[^+\-.a-z0-9]/) {
-		print "Error: Package version may only contain lowercase letters, numbers,";
+		print "Error: Version ' $pkgversion ' is invalid. ";
+		print "Package versions may only contain lowercase letters, numbers,";
 		print "'.', '+' and '-' ($filename)\n";
 		$looks_good = 0;
 	}
 	if ($pkgrevision =~ /[^+.a-z0-9]/) {
-		print "Error: Package revision may only contain lowercase letters, numbers,";
+		print "Error: Revision ' $pkgrevision ' is invalid. ";
+		print "Package revisions may only contain lowercase letters, numbers,";
 		print "'.' and '+' ($filename)\n";
 		$looks_good = 0;
 	}
@@ -650,11 +656,11 @@ sub validate_info_file {
 			# fink recently changed .tar.xz source handling (now
 			# auto-extracts) and maybe other .xz effects as well
 			if (exists $source_props->{$_} and $source_props->{$_} =~ /\.xz$/ ) {
-				$looks_good=0 unless _min_fink_version($properties->{builddepends}, '0.32', 'use of a .xz source archive', $filename); 
+				$looks_good=0 unless _require_dep($properties, {build => {'fink' => '0.32'} }, 'use of a .xz source archive', $filename);
 			}
 		}
 	}
-	
+
 	$expand = { 'n' => $pkgname,
 				'N' => $pkgname,
 				'v' => $pkgversion,
@@ -740,10 +746,23 @@ sub validate_info_file {
 				my $msg = $field =~ /-(checksum|md5)$/
 					? "Warning" # no big deal
 					: "Error";  # probably means typo, giving broken behavior
-					print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
-					$looks_good = 0;
-				}
-			return;
+				print "$msg: \"$field\" specified for non-existent \"$sourcefield\". ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+
+		# Can't rename a source tarball to be into a subdir
+		if ($field =~ /^(test)?source(\d*)rename$/ && $value =~ /\//) {
+			print "Error: \"$field\" must be simple filename (no subdirs). ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# Check for undefined custom mirrortype
+		if ($field =~ /^(test)?source(\d*)$/ && $value =~ /^mirror:custom:/) {
+			if (!exists $properties->{custommirror}) {
+				print "Error: \"$field\" uses \"mirror:custom:\" but there is no \"CustomMirror\" field to define it. ($filename)\n";
+				$looks_good = 0;
+			}
 		}
 
 		# Validate splitoffs
@@ -807,46 +826,11 @@ sub validate_info_file {
 			if ($line =~ m,^\s*(DYLD_LIBRARY_PATH:\s+($basepath|\%p)/lib/?)\s*$,) {
 				print "Error: '$1' in RuntimeVars will break many shared libraries. ($filename)\n";
 				$looks_good = 0;
-			# error for PYTHONPATH pointing to global install location in RuntimeVars
-			} elsif ($line =~ m,^\s*(PYTHONPATH:\s+($basepath|\%p)/lib/(Python|python\d\.\d/))\s*$,) {
-				print "Error: '$1' in RuntimeVars can break other Python scripts. ($filename)\n";
+			# error for PYTHONPATH as it is version agnostic and will break other pymods
+        	} elsif ($line =~ m,^\s*PYTHONPATH:.*$,) {
+				print "Error: 'PYTHONPATH' in RuntimeVars can break other Python scripts. ($filename)\n";
+				$looks_good = 0;
 			}
-		}
-	}
-
-	# Warn for missing / overlong package descriptions
-	$value = $properties->{description};
-	if (not (defined $value and length $value)) {
-		print "Error: No package description supplied. ($filename)\n";
-		$looks_good = 0;
-	} elsif (length($value) > 60 and !&obsolete_via_depends($properties) ) {
-		print "Error: Length of package description exceeds 60 characters. ($filename)\n";
-		$looks_good = 0;
-	} elsif (Fink::Config::get_option("Pedantic")) {
-		# Some pedantic checks
-		if (length($value) > 45 and !&obsolete_via_depends($properties) ) {
-			print "Warning: Length of package description exceeds 45 characters. ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ m/^[Aa]n? /) {
-			print "Warning: Description starts with \"A\" or \"An\". ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ m/^[a-z]/) {
-			print "Warning: Description starts with lower case. ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ /(\b\Q$pkgname\E\b|%\{?n)/i and !&obsolete_via_depends($properties) ) {
-			print "Warning: Description contains package name. ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ m/\.$/) {
-			print "Warning: Description ends with \".\". ($filename)\n";
-			$looks_good = 0;
-		}
-		if ($value =~ m/^\[/) {
-			print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
-			$looks_good = 0;
 		}
 	}
 
@@ -885,50 +869,53 @@ sub validate_info_file {
 	# check the contents of PatchFile (if any)
 	if (exists $expand->{patchfile}) {
 		for my $field (keys %patchfile_fields) {
+			my $pretty_field = $field;
+			$pretty_field =~ s/patchfile/PatchFile/i;
 			$value = "\%{$field}";
 			$value = &expand_percent($value, $expand, $filename.' Patch');
 			unless (-f $value) {
-				print "Error: can't find patchfile \"$value\"\n";
+				print "Error: can't read $pretty_field. ($value)\n";
 				$looks_good = 0;
 			}
 			else {
 				# Check patch file
-				open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+				open(INPUT, "<$value") or die "Couldn't read $pretty_field ($value): $!\n";
 				my $patch_file_content = <INPUT>;
-				close INPUT or die "Couldn't read $value: $!\n";
+				close INPUT or die "Couldn't read $pretty_field ($value): $!\n";
 				# Check for empty patch file
 				if (!$patch_file_content) {
-					print "Warning: Patch file is empty. ($value)\n";
+					print "Warning: $pretty_field is an empty file. ($value)\n";
 					$looks_good = 0;
 				}
 				# Check for line endings of patch file
 				elsif ($patch_file_content =~ m/\r\n/s) {
-					print "Error: Patch file has DOS line endings. ($value)\n";
+					print "Error: $pretty_field has DOS line endings. ($value)\n";
 					$looks_good = 0;
 				}
 				elsif ($patch_file_content =~ m/\r/s) {
-					print "Error: Patch file has Mac line endings. ($value)\n";
+					print "Error: $pretty_field has Mac line endings. ($value)\n";
 					$looks_good = 0;
 				}
 				# Check for hardcoded /sw.
-				open(INPUT, "<$value") or die "Couldn't read $value: $!\n";
+				open(INPUT, "<$value") or die "Couldn't read $pretty_field ($value): $!\n";
 				while (defined($patch_file_content=<INPUT>)) {
 					# only check lines being added (and skip diff header line)
 					next unless $patch_file_content =~ /^\+(?!\+\+ )/;
 					if ($patch_file_content =~ /\/sw([\s\/]|\Z)/) {
-						print "Warning: Patch file appears to contain a hardcoded /sw. ($value)\n";
+						print "Warning: $pretty_field appears to contain a hardcoded /sw. ($value)\n";
 						$looks_good = 0;
 						last;
 					}
 				}
-				close INPUT or die "Couldn't read $value: $!\n";
+				close INPUT or die "Couldn't read $pretty_field ($value): $!\n";
 			}
 		}
 	}
 
 	# if we are using new PatchFile field, check some things about it
 	for my $field (keys %patchfile_fields) {
-		my $pretty_field = $field; $pretty_field =~ s/patchfile/PatchFile/i;
+		my $pretty_field = $field;
+		$pretty_field =~ s/patchfile/PatchFile/i;
 
 		if (not exists $patchfile_md5_fields{$field.'-md5'}) {
 			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";
@@ -939,9 +926,9 @@ sub validate_info_file {
 		if ($field eq "patchfile") {
 # 0.24.12 came out many years ago and nothing that old likely even
 # boots on any currently supported OSX
-#			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.24.12', 'use of PatchFile', $filename);
+#			$looks_good = 0 unless _require_dep($properties, {build => {'fink' => '0.24.12'} }, 'use of PatchFile', $filename);
 		} else {
-			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, '0.30.0', 'use of PatchFileN', $filename);
+			$looks_good = 0 unless _require_dep($properties, {build => {'fink' => '0.30.0'} }, 'use of PatchFileN', $filename);
 		}
 
 		# can't mix old and new patching styles
@@ -989,14 +976,101 @@ sub validate_info_file {
 	}
 
 	# instantiate the PkgVersion objects
-	my @pv = Fink::PkgVersion->pkgversions_from_info_file($full_filename, no_exclusions => 1);
+	my @pvs = Fink::PkgVersion->pkgversions_from_info_file($full_filename, no_exclusions => 1);
 
-	if (@pv > 1) {
+	if (@pvs > 1) {
 		my %names;
-		foreach (map {$_->get_name()} @pv) {
+		foreach (map {$_->get_name()} @pvs) {
 			if ($names{$_}++) {
 				print "Error: Duplicate declaration of package \"$_\". ($filename)\n";
 				$looks_good = 0;
+			}
+		}
+	}
+
+	# Warn for missing / overlong package descriptions
+	if (not (defined $properties->{description} and length $properties->{description})) {
+		# main package in .info must have one
+		print "Error: No package description supplied. ($filename)\n";
+		$looks_good = 0;
+	}
+
+	foreach my $pv (@pvs) {
+		# sanity-checks for each in family (including variants and splitoffs)
+
+		my $name = $pv->get_name();
+
+		# misc rules for the Description field (if there is one)
+		if (defined (my $desc = $pv->{description})) {
+			if (length($desc) > 60 and !$pv->is_obsolete()) {
+				print "Error: Description of \"$name\" exceeds 60 characters. ($filename)\n";
+				$looks_good = 0;
+			} elsif (Fink::Config::get_option("Pedantic")) {
+				# Some pedantic checks
+				if (length($desc) > 45 and !$pv->is_obsolete() ) {
+					print "Warning: Description of \"$name\" exceeds 45 characters. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^[Aa]n? /) {
+					print "Warning: Description of \"$name\" starts with \"A\" or \"An\". ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^[a-z]/) {
+					print "Warning: Description of \"$name\" starts with lower case. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ /\b\Q$name\E\b/i and !$pv->is_obsolete() ) {
+					print "Warning: Description of \"$name\" contains package name. ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/\.$/) {
+					print "Warning: Description of \"$name\" ends with \".\". ($filename)\n";
+					$looks_good = 0;
+				}
+				if ($desc =~ m/^\[/) {
+					print "Warning: Descriptions beginning with \"[\" are only for special types of packages. ($filename)\n";
+					$looks_good = 0;
+				}
+			}
+		}
+
+		# Language-versioned packages need the language itself
+		# (otherwise mis- or fail-to-build, and not usable at
+		# runtime). Require only for bottom of lang-versioned
+		# dep-trees (e.g., varianted perlmods that do not depend on
+		# other varianted perlmods must depend on varianted perl
+		# interp). Higher parts of dep-tree thus get them indirectly.
+		# Skip obsolete packages (replacement might be unified).
+		if ($name =~ /-(pm|py|rb)(\d+)/) {
+			my $modpkg = "-$1$2";
+			my $langpkg;
+			if ($1 eq 'pm') {
+				$langpkg = "perl$2-core";
+			} elsif ($1 eq 'py') {
+				$langpkg = "python$2";
+			} else {
+				$langpkg = "ruby$2";
+			}
+
+			my $depends = $pv->pkglist_default('depends', '');
+			unless ($depends =~ /(\A|,|\s)($langpkg|.*$modpkg)(-|\z|,|\s|\()/ || $pv->is_obsolete) {
+				print "Error: language-versioned package $name needs Depends on another $modpkg (package of the same language-version) or on $langpkg (the language interpretter itself). ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+
+		foreach my $field (sort keys %pkglist_fields) {
+			next if $field eq 'architecture'; # same format but entries not same as for dpkg package specs
+			foreach my $altspecs (@{&pkglist2lol($pv->pkglist_default($field, ''))}) {
+				foreach my $depspec (@$altspecs) {
+					$depspec =~ s/\s+//g;
+					my $verspec = ($depspec =~ s/\((.*)\)//);
+					if ($depspec =~ /[^+\-.a-z0-9]/) {
+						print "Error: invalid character in packagename \"$depspec\" in $field of package $name. ($filename)\n";
+						$looks_good = 0;
+					}
+					# TODO: check epoch, version, revision
+				}
 			}
 		}
 	}
@@ -1055,34 +1129,100 @@ sub _validate_info_filename {
 	return 1;
 }
 
-# Given a $builddepends from the $filename .info field, check whether
-# any "fink" less than the given $required_version will suffice. If so
-# (i.e., insufficient dependency for something that requires at least
-# the given version-string), print warning indicating the minimum
-# requirement for $feature
 
-sub _min_fink_version {
-	my $builddepends = shift;
-	my $required_version = shift;
+# Given a $package_hash hashref of fields, check that there is a
+# dependency on a specified minimum version of some package according
+# to the $required_versions hashref:
+#   One or more of these mode keys controlling the type of dep:
+#     "build" -- compile-time deps (BuildDepends and Depends)
+#     "run" -- run-time deps (Depends and RuntimeDepends)
+#   The value of each of the above keys is a hashref of the form:
+#     {$pkg,$minver}
+#   meaning there must be a dependency of the form: $pkg (>= $minver)
+#     If $minver is not defined, no "(>= ...)" is required.
+#     The actual dep in the $package_hash may be stricter (higher than
+#       $minver).
+# All entries in the hashrefs of all mode keys must be satisfied.
+# If there is not a sufficient dependency, a warning is printed
+# print warning indicating the minimum dependency requirement in
+# the $filename (.info file) for $feature.
+# The return value is a boolean indicating whether all dep
+# requirements were satisfied.
+sub _require_dep {
+	my $package_hash = shift;
+	my $required_versions = shift;
 	my $feature = shift;
 	my $filename = shift;
 
-	$builddepends = &pkglist2lol($builddepends);
+	my $all_ok = 1;
 
-	my $has_fink_bdep = 0;
-	foreach (@$builddepends) {
-		foreach my $atom (@$_) {
-			$atom =~ s/^\(.*?\)\s*//;
-			next unless $atom =~ /^fink\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
-			$has_fink_bdep = 1 if version_cmp($2, '>=', $required_version);
+	if (exists $required_versions->{build}) {
+		my %reqs = %{$required_versions->{build}}; # clone so we can alter it
+
+		foreach (
+			@{&pkglist2lol($package_hash->{builddepends})},
+			@{&pkglist2lol($package_hash->{depends})},
+		) {
+			foreach my $atom (@$_) {
+				$atom =~ s/^\(.*?\)\s*//;
+				while ( my($pkg,$minver) = each %reqs ) {
+					if (defined $minver) {
+						# need to check version spec
+						$atom =~ /^$pkg\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
+						delete $reqs{$pkg} if version_cmp($2, '>=', $minver);
+					} elsif ($atom eq $pkg) {
+						# no version spec needed, just check that dep
+						# exists without version spec...
+						delete $reqs{$pkg};
+ 					} elsif ($atom =~ /^$pkg\s*\(/) {
+						# ...but any version spec still okay
+						delete $reqs{$pkg};
+					}
+				}
+			}
+		}
+
+		if (keys %reqs) {
+			print "Error: $feature requires declaring a BuildDepends or Depends on:\n";
+			print map { "\t$_" . ( defined $reqs{$_} ? " (>= $reqs{$_})\n" : "\n" ) } sort keys %reqs;
+			$all_ok = 0;
 		}
 	}
 
-	if (!$has_fink_bdep) {
-		print "Error: $feature requires declaring a BuildDepends on fink (>= $required_version) or higher. ($filename)\n";
-		return 0;
+	if (exists $required_versions->{run}) {
+		my %reqs = %{$required_versions->{run}}; # clone so we can alter it
+
+		foreach (
+			@{&pkglist2lol($package_hash->{depends})},
+			@{&pkglist2lol($package_hash->{runtimedepends})},
+		) {
+			foreach my $atom (@$_) {
+				$atom =~ s/^\(.*?\)\s*//;
+				while ( my($pkg,$minver) = each %reqs ) {
+					if (defined $minver) {
+						# need to check version spec
+						$atom =~ /^$pkg\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
+						delete $reqs{$pkg} if version_cmp($2, '>=', $minver);
+					} elsif ($atom eq $pkg) {
+						# no version spec needed, just check that dep
+						# exists without version spec...
+						delete $reqs{$pkg};
+ 					} elsif ($atom =~ /^$pkg\s*\(/) {
+						# ...but any version spec still okay
+						delete $reqs{$pkg};
+					}
+				}
+			}
+		}
+
+		if (keys %reqs) {
+			print "Error: $feature requires declaring a Depends or RuntimeDepends on:\n";
+			print map { "\t$_" . ( defined $reqs{$_} ? " (>= $reqs{$_})\n" : "\n" ) } sort keys %reqs;
+			$all_ok = 0;
+		}
 	}
-	return 1;
+
+	return $all_ok;
 }
 
 # checks that are common to a parent and a splitoff package of a .info file
@@ -1211,7 +1351,7 @@ sub validate_info_component {
 		# check dpkg Depends-style field syntax
 		# Architecture is a special case of this same syntax
 		if ($pkglist_fields{$field}) {
-			(my $pkglist = $value) =~ tr/\n//d; # convert to single line
+			(my $pkglist = $value) =~ tr/\n/ /s; # convert to single line (NB: don't concat strings that were separated by lines)
 			if ($info_level >= 3) {
 				$pkglist =~ s/#.*$//mg;
 				$pkglist =~ s/,\s*$//;
@@ -1246,7 +1386,7 @@ sub validate_info_component {
 				my ($cond, $pkgname, $vers) = ($1, $2, $3);
 				# no logical AND (OR would be split() and give broken atoms)
 				if (defined $cond and $cond =~ /&/) {
-					print "Warning: invalid dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
+					print "Warning: invalid conditional in dependency \"$atom\" in \"$field\"$splitoff_field. ($filename)\n";
 				}
 				if ($field eq 'architecture') {
 					$pkgname .= " ($vers)" if defined $vers;
@@ -1282,7 +1422,16 @@ sub validate_info_component {
 	# Packages using RuntimeDepends must BuildDepends on a fink that supports it
 	$value = $properties->{runtimedepends};
 	if (defined $value) {
-		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.32', 'use of RuntimeDepends', $filename);
+		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.32'} }, 'use of RuntimeDepends', $filename);
+	}
+
+	# A bug related to RuntimeVars ordering was fixed; it could
+	# trigger runtime errors in a certain situation. Test here is a
+	# heuristic for that situation.
+	$value = $properties->{runtimevars};
+	if (defined $value and $value =~ /\$/) {
+		warn "  heuristic match\n";
+		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.39.4'} }, 'use of shell variables in RuntimeVars variable values', $filename);
 	}
 
 	# check syntax of each line of Shlibs field
@@ -1295,11 +1444,11 @@ sub validate_info_component {
 			next unless /\S/;
 
 			if (s/^\(.*?\)\s*//) {
-				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in Shlibs', $filename);
+				$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.27.2'} }, 'use of conditionals in Shlibs', $filename);
 		}
 
 			if (/^\!\s*(.*)/) {
-				$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.28', 'private-library entry in Shlibs', $filename);
+				$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.28'} }, 'private-library entry in Shlibs', $filename);
 				if ($1 =~ /\s/) {
 					print "Warning: Malformed line in field \"shlibs\"$splitoff_field.\n  $_\n";
 					$looks_good = 0;
@@ -1313,12 +1462,12 @@ sub validate_info_component {
 				$looks_good = 0;
 				next;
 			}
-			if (not $shlibs_parts[0] =~ /^(\%p)?\//) {
-				print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p in field \"shlibs\"$splitoff_field. ($filename)\n";
+			if (not $shlibs_parts[0] =~ /^(\%p|@[a-z,_]*path)?\//) {
+				print "Warning: Pathname \"$shlibs_parts[0]\" is not absolute and is not in \%p or a runtime path in field \"shlibs\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
 			}
 			if ($shlibs{$shlibs_parts[0]}++) {
-				print "Warning: File \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\"$splitoff_field. ($filename)\n";
+				print "Warning: Entry \"$shlibs_parts[0]\" is listed more than once in field \"shlibs\"$splitoff_field. ($filename)\n";
 				$looks_good = 0;
 			}
 			if (not $shlibs_parts[1] =~ /^\d+\.\d+\.\d+$/) {
@@ -1367,11 +1516,10 @@ sub validate_info_component {
 
 	$value = $properties->{conffiles};
 	if (defined $value and $value =~ /\(.*?\)/) {
-		$looks_good = 0 unless _min_fink_version($options{builddepends}, '0.27.2', 'use of conditionals in ConfFiles', $filename);
+		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.27.2'} }, 'use of conditionals in ConfFiles', $filename);
 	}
 
 	# Special checks when package building script uses an explicit interp
-
 
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
 		next unless defined ($value = $properties->{$field});
@@ -1410,7 +1558,7 @@ sub validate_info_component {
 			'modulebuild' => '0.30.2',
 		}->{$value};
 		if (defined $ds_min) {
-			$looks_good = 0 unless _min_fink_version($properties->{builddepends}, $ds_min, "use of DefaultScript:$value", $filename);
+			$looks_good = 0 unless _require_dep($properties, { build => {'fink' => $ds_min} }, "use of DefaultScript:$value", $filename);
 		} else {
 			print "Warning: unknown DefaultScript type \"$value\". ($filename)\n";
 			$looks_good = 0;
@@ -1519,7 +1667,9 @@ sub _validate_dpkg {
 	my $destdir = shift;  # %d, or its moral equivalent
 	my $val_prefix = shift;
 
-	chomp(my $otool = `which otool 2>/dev/null`);
+	my $otool = '/Library/Developer/CommandLineTools/usr/bin/otool-classic'; # Xcode 8 CL Tools
+	undef $otool unless -x $otool;
+	chomp($otool = `which otool 2>/dev/null`) unless defined $otool;
 	undef $otool unless -x $otool;
 	chomp(my $otool64 = `which otool64 2>/dev/null`); # older OSX has separate tool for 64-bit
 	undef $otool64 unless -x $otool64;				  # binaries (otool itself cannot handle them)
@@ -1628,11 +1778,11 @@ sub _validate_dpkg {
 		map { /\s*([^ \(]*)/, undef } split /[|,]/, $deb_control->{depends}
 	};
 
-	# prepare to check that -pmXXX and -pyXX packages only contain
+	# prepare to check that -pmXXX, -pyXX, and -rbXX packages only contain
 	# file in language-versioned locations: define a regex for the
 	# language-versioned path component
 	my $langver_re;
-	if ($deb_control->{package} =~ /-(pm|py)(\d+)$/) {
+	if ($deb_control->{package} =~ /-(pm|py|rb)(\d+)$/) {
 		$langver_re = $2;
 		if ($1 eq 'pm') {
 			# perl language is major.minor.teeny
@@ -1642,12 +1792,17 @@ sub _validate_dpkg {
 			} elsif ($langver_re =~ /^(\d)(\d)(\d)(\d)$/) {
 				# -pmWXYZ is perlW.X.YZ or perlW.XY.Z
 				$langver_re = "(?:$langver_re|$1.$2.$3$4|$1.$2$3.$4)";
+			} elsif ($langver_re =~ /^(\d)(\d\d)(\d\d)$/) {
+				# -pmXYYZZ is perlX.YY.ZZ
+				$langver_re = "(?:$langver_re|$1.$2.$3)";
 			}
 		} else {
 			# python language is major.minor
+			# ruby language is major.minor
 			# numbers are all "small" (one-digit)
 			$langver_re =~ /^(\d)(\d)$/;
 			# -pyXY is pythonX.Y
+			# -rbXY is rubyX.Y
 			$langver_re = "(?:$langver_re|$1.$2)";
 		}
 	}
@@ -1668,7 +1823,16 @@ sub _validate_dpkg {
 		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}};
 
 	# during File::Find loop, we stack all error msgs
-	my $msgs = [ [], {} ];  # poor-man's Tie::IxHash
+	my $msgs;
+	# hashref:
+	#   key: $message
+	#   val: [ $loc0, $loc1, ...]
+	#
+	#   $locN: [] or [$filename] or [$filename, $linenumber]
+	{
+		tie my %msgs, 'Fink::Tie::IxHash';
+		$msgs = \%msgs;
+	}
 
 	my $dpkg_file_count = 0;
 	my %case_insensitive_filename = (); # keys are lc($fullpathname) for all items in .deb
@@ -1726,6 +1890,22 @@ sub _validate_dpkg {
 		if ($filename =~/\/include\// && !-d $File::Find::name) {
 			$installed_headers = 1;
 		}
+		if ($filename =~/\.framework\/(.+)/) {
+			# heuristic for Framework library suites
+			if (-d $File::Find::name && !-l $File::Find::name) {
+				# allow real directory (only care about real file or
+				# symlink to dir ("real file" on disk) that would
+				# collide among .deb)
+			} else {
+				my $component = $1;
+				if ($component eq 'Versions/Current/' or $component !~ /^Versions\//) {
+					# non-libversioned Framework files
+					if (!exists $deb_control->{builddependsonly} or $deb_control->{builddependsonly} =~ /Undefined/) {
+						&stack_msg($msgs, "Framework files not part of a specific library-version, but package does not declare BuildDependsOnly to be true (or false)", $filename);
+					}
+				}
+			}
+		}
 
 		if ($filename =~ /\.(dylib|jnilib|so|bundle)$/) {
 			if ($filename =~ /\.dylib$/) {
@@ -1734,9 +1914,8 @@ sub _validate_dpkg {
 			if (defined $otool) {
 				my $file = $destdir . $filename;
 				if (not -l $file) {
-					$file =~ s/\'/\\\'/gs;
-					if (open(OTOOL, "$otool -hv '$file' |")) {
-						while (my $line = <OTOOL>) {
+					if (open my $otool_fh, '-|', $otool, '-hv', $file) {
+						while (my $line = <$otool_fh>) {
 							if (my ($type) = $line =~ /MH_MAGIC.*\s+DYLIB(\s+|_STUB\s+)/) {
 								if ($filename !~ /\.(dylib|jnilib)$/) {
 									print "Warning: $filename is a DYLIB but it does not end in .dylib or .jnilib.\n";
@@ -1748,7 +1927,7 @@ sub _validate_dpkg {
 								}
 							}
 						}
-						close (OTOOL);
+						close $otool_fh;
 					}
 				}
 			} elsif ($filename =~/\.(dylib|jnilib)$/) {
@@ -1857,10 +2036,10 @@ sub _validate_dpkg {
 		}
 
 		# check for files in a language-versioned package whose path
-		# is not language-versioned (goal: language-versioned modules
-		# are orthogonal and do not conflict with each other)
+		# is not language-versioned (goal: all language-versions of a
+		# package are orthogonal and do not conflict with each other)
 		if (defined $langver_re and $filename !~ /$langver_re/ and !-d $File::Find::name) {
-			&stack_msg($msgs, "File in a language-versioned package is neither versioned nor in a versioned directory.", $filename);
+			&stack_msg($msgs, "File in a language-versioned package does not have a pathname specific to that version.", $filename);
 		}
 
 		# passing -framework flag and its argument as separate words
@@ -1946,14 +2125,12 @@ sub _validate_dpkg {
 
 	# handle messages generated during the File::Find loop
 	{
-		# when we switch to Tie::IxHash, we won't need to know the internal details of $msgs
-		my @msgs_ordered = @{$msgs->[0]};
-		my %msgs_details = %{$msgs->[1]};
+		my @msgs_ordered = keys %$msgs;
 		if (@msgs_ordered) {
 			$looks_good = 0;  # we have errors in the stack!
 			foreach my $msg (@msgs_ordered) {
 				print "Error: $msg\n";
-				foreach (@{$msgs_details{$msg}}) {
+				foreach (@{$msgs->{$msg}}) {
 					print "\tOffending file: ", $_->[0], "\n" if defined $_->[0];
 					print "\tOffending line: ", $_->[1], "\n" if defined $_->[1];
 				}
@@ -2008,16 +2185,24 @@ sub _validate_dpkg {
 		print "Warning: Package has shlibs data but otool is not in the path; skipping parts of shlibs validation.\n";
 	}
 	foreach my $shlibs_file (sort keys %$deb_shlibs) {
-		my $file = resolve_rooted_symlink($destdir, $shlibs_file);
+		my ($file, $named_file);
+		#discard runtime path portion of the install_name
+		($named_file) = $shlibs_file =~ /^\@[a-z,_]*path\/(.*)/ ; 
+		if ( $named_file ) {
+			find ({wanted => sub {$file = $File::Find::name if m,$named_file,}, no_chdir=>1 }, $destdir);
+		} else {
+			$file = resolve_rooted_symlink($destdir, $shlibs_file);
+		}
 		if (not defined $file) {
 			if ($deb_control->{'package'} eq 'fink') {
-				# fink is a special case, it has an shlibs field that provides system-shlibs
+				# fink is a special case, it has a shlibs field that provides system-shlibs
 			} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
+				# AKH: it appears that we've been allowing @rpath and friends for private libraries?
 				if ($shlibs_file !~ /^\@/) {
-					print "Warning: Shlibs field specifies private file '$shlibs_file', but it does not exist!\n";
+					print "Warning: Shlibs field specifies private install_name '$shlibs_file', but it does not exist!\n";
 				}
 			} else {
-				print "Error: Shlibs field specifies file '$shlibs_file', but it does not exist!\n";
+				print "Error: Shlibs field specifies install_name '$shlibs_file', but it does not exist!\n";
 				$looks_good = 0;
 			}
 		} elsif (not -f $file) {
@@ -2025,28 +2210,28 @@ sub _validate_dpkg {
 		} elsif ($deb_shlibs->{$shlibs_file}->{'is_private'}) {
 			# don't validate private shlibs entries
 		} else {
-			$file =~ s/\'/\\\'/gs;
 			if (defined $otool) {
-				if (open (OTOOL, "$otool -L '$file' |")) {
-					<OTOOL>; # skip the first line
-					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
-					close (OTOOL);
+				if (open my $otool_fh, '-|', $otool, '-L', $file) {
+					<$otool_fh>; # skip the first line
+					my ($libname, undef, $compat_version) = <$otool_fh> =~ /^\s*((\/|@[a-z,_]*path\/).+?)\s*\(compatibility version ([\d\.]+)/;
+					close $otool_fh;
 
 					if (!defined $libname or !defined $compat_version) {
 						if (defined $otool64) {
-							if (open (OTOOL, "$otool64 -L '$file' |")) {
-								<OTOOL>; # skip the first line
-								($libname, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
-								close (OTOOL);
+							if (open my $otool_fh, '-|', $otool64, '-L', $file) {
+								<$otool_fh>; # skip the first line
+								($libname, $compat_version) = <$otool_fh> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+								close $otool_fh;
 							}
 						}
 					}
 					if (!defined $libname or !defined $compat_version) {
-						print "Error: File name '$shlibs_file' specified in Shlibs does not appear to have linker data at all\n";
+						print "Error: Name '$shlibs_file' specified in Shlibs does not appear to have linker data at all\n";
 						$looks_good = 0;
 					} else {
 						if ($shlibs_file ne $libname) {
-							print "Error: File name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
+							print "Error: Name '$shlibs_file' specified in Shlibs does not match install_name '$libname'\n";
+							$looks_good = 0;
 						}
 						if ($deb_shlibs->{$shlibs_file}->{'compatibility_version'} ne $compat_version) {
 							print "Error: Shlibs field says compatibility version for $shlibs_file is ".$deb_shlibs->{$shlibs_file}->{'compatibility_version'}.", but it is actually $compat_version.\n";
@@ -2060,6 +2245,8 @@ sub _validate_dpkg {
 		}
 	}
 
+	{
+		my @flat_dylibs; # collect these then give a unified report later
 	for my $dylib (@installed_dylibs) {
 		next if (-l $destdir . $dylib);
 		if (defined $otool) {
@@ -2067,17 +2254,16 @@ sub _validate_dpkg {
 			if (not defined $dylib_temp) {
 				print "Warning: unable to resolve symlink for $dylib.\n";
 			} else {
-				$dylib_temp =~ s/\'/\\\'/gs;
-				if (open (OTOOL, "$otool -L '$dylib_temp' |")) {
-					<OTOOL>; # skip first line
-					my ($libname, $compat_version) = <OTOOL> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
-					close (OTOOL);
-					if ($libname !~ /^\//) {
+				if (open my $otool_fh, '-|', $otool, '-L', $dylib_temp) {
+					<$otool_fh>; # skip first line
+					my ($libname, $compat_version) = <$otool_fh> =~ /^\s*(\S+)\s*\(compatibility version ([\d\.]+)/;
+					close $otool_fh;
+					if (($libname !~ /^\//) and ($libname !~ /^\@[a-z,_]*path\//)) {
 						print "Error: package contains the shared library\n";
 						print "          $dylib\n";
 						print "       but the corresponding install_name\n";
 						print "          $libname\n";
-						print "       is not an absolute pathname.\n";
+						print "       is not an absolute pathname or runtime path.\n";
 						$looks_good = 0;
 					} elsif (not exists $deb_shlibs->{$libname}) {
 						$libname =~ s/^$basepath/%p/;
@@ -2089,7 +2275,33 @@ sub _validate_dpkg {
 						$looks_good = 0;
 					}
 				}
+				if (open my $otool_fh, '-|', $otool, '-hv', $dylib_temp) {
+					<$otool_fh>; <$otool_fh>; <$otool_fh>; # skip first three lines
+					unless ( <$otool_fh> =~ /TWOLEVEL/ ) {
+						push @flat_dylibs, $dylib_temp;
+					} 
+					close $otool_fh;
+				}
 			}
+		}
+	}
+
+		# msg has 1-minute sleep to view; only do it once per pkg
+		# (with all relevant files listed, not once per file)
+		if (@flat_dylibs) {
+			foreach (@flat_dylibs) {
+				print "SERIOUS WARNING: $_ appears to have been linked using a flat namespace.\n";
+			}
+			print "       If this package BuildDepends on libtool2, make sure that you use\n";
+			print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
+			print "       and use autoreconf to regenerate the configure script.\n";
+			print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
+			print "       update its build procedure to avoid passing\n";	 
+			print "          -Wl,-flat_namespace\n"; 
+			print "       when linking libraries.\n\n";
+			print "		  If this package actually requires a flat namespace build,\n";
+			print "		  then ignore this message.\n\n";
+			sleep 60;
 		}
 	}
 
@@ -2128,8 +2340,7 @@ sub stack_msg {
 	my $message = shift;   # the message to store
 	my @details = @_;      # additional details about this instance of the msg
 
-	push @{$queue->[0]}, $message unless exists $queue->[1]->{$message};
-	push @{$queue->[1]->{$message}}, \@details;
+	push @{$queue->{$message}}, \@details;
 }
 
 # given two filenames $file1 and $file2, check whether one is a more

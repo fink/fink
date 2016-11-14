@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -28,15 +28,16 @@ use Fink::Services	qw(&read_properties &get_options $VALIDATE_HELP);
 
 
 use strict;
+use version 0.77;
 use warnings;
 
 require Exporter;
 
 our @ISA	 = qw(Exporter Fink::Base);
 our @EXPORT_OK	 = qw($config $basepath $libpath $buildpath $dbpath
-                      $distribution $ignore_errors
-                      get_option set_options fink_tree_default
-                     );
+					  $distribution $ignore_errors
+					  get_option set_options fink_tree_default
+					 );
 our $VERSION	 = 1.00;
 
 
@@ -336,7 +337,7 @@ HELPFORMAT
 		print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2013 The Fink Package Manager Team
+Copyright (c) 2001-2016 The Fink Package Manager Team
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -370,7 +371,8 @@ binary distribution supplied by fink.  Prior to 10.6, the list was
 sub apt_tree_default {
 	my $distribution = shift;
 
-	if ($distribution gt "10.5") {
+	my $v_distribution = version->parse("v$distribution");
+	if ($v_distribution > version->parse("v10.5")) {
 		return "main";
 	} else {
 		return "main crypto";
@@ -735,7 +737,7 @@ EOF
 	# We only include the remote debs if the bindist looks like it's ok
 	if (!$self->bindist_check_prefix && !$self->bindist_check_distro) {
 
-		my $apt_mirror = "http://us.dl.sourceforge.net/fink/direct_download";
+		my $apt_mirror = "http://bindist.finkmirrors.net";
 
 		if ($self->has_param("Mirror-apt")) {
 			$apt_mirror = $self->param("Mirror-apt");
@@ -748,14 +750,8 @@ EOF
 # Official binary distribution: download location for packages
 # from the latest release
 EOF
-
-	$body .= "deb $apt_mirror $distribution/release $apt_trees\n\n";
-		$body .= <<EOF;
-# Official binary distribution: download location for updated
-# packages built between releases
-EOF
-
-	$body .= "deb $apt_mirror $distribution/current $apt_trees\n\n";
+	# bindist structure for supported distros as of 3/2014.  
+	$body .= "deb $apt_mirror/$distribution stable $apt_trees\n\n";
 
 	}
 
@@ -932,24 +928,23 @@ Return the current verbosity level as a value 0-3, where 0 is the
 quietest. This is affected by the --verbose and --quiet command line
 options as well as by the "Verbose" setting in fink.conf. A --quiet
 always takes precedence; otherwise the more verbose of the fink.conf
-and cmdline values is used. The former documentation here described
-the values as:
+and cmdline values is used. The general sense of each level is:
 
 =over 4
 
-=item 3
+=item Z<>3
 
 full
 
-=item 2
+=item Z<>2
 
 download and tarballs
 
-=item 1
+=item Z<>1
 
 download
 
-=item 0
+=item Z<>0
 
 none
 

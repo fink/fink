@@ -3,7 +3,7 @@
 # Fink::SelfUpdate::Base class
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2007-2013 The Fink Package Manager Team
+# Copyright (c) 2007-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -73,10 +73,10 @@ sub system_check { warn "Not implemented\n"; return 0; }
 
 	my $boolean = Fink::SelfUpdate::$method->devtools_check($vcs, $vcs_exec);
 
-Common test for all selfupdate methods.  
+Common test for all selfupdate methods.
 
 If the "dev-tools" virtual package doesn't exist, or if the executable referenced by
-$vcs_executable isn't executable (typically this means not installed), devtools_check() 
+$vcs_executable isn't executable (typically this means not installed), devtools_check()
 returns 0 and prints an OS-versioned warning about what Xcodes to install and where to get
 them.
 
@@ -85,27 +85,35 @@ them.
 sub devtools_check {
 	my $vcs_exec = pop; # comes in as $_[2];
 	my $vcs = pop;
-	my ($line2,$line4)=("","");
-	my $osxversion=Fink::VirtPackage->query_package("macosx");
+	my $line2 = "";
+	my $line4 = "";
+	my $osxversion = Fink::VirtPackage->query_package("macosx");
+
 	# OS X versioned text.  
 	if (&version_cmp ("$osxversion", "<<", "10.6")) {
-		$line2="\nXcode, available on your original OS X install disk, or from "; 
+		$line2 = "\n".
+				 "Xcode, available on your original OS X install disk, or from "; 
 	} elsif (&version_cmp ("$osxversion", "<<", "10.7")) {
-		$line2="\nXcode, available on your original OS X install disk, from the App Store, or from\n" ;
+		$line2 = "\n".
+				 "Xcode, available on your original OS X install disk, from the App Store, or from\n";
 	} elsif (&version_cmp ("$osxversion", "<<", "10.8")) {
-		$line2 = ":\n* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
-		$line4 = "\n* or the Xcode Command Line Tools package,\n".
-				 "which is available from connect.apple.com\n".
+		$line2 = ":\n".
+		         "* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 
+		$line4 = "\n".
+		         "* or the Xcode Command Line Tools package,\n".
+				 "which is available from developer.apple.com\n".
 				 "or via the Downloads tab of the Preferences in Xcode 4.3 and later";
 	} else {
-		$line2 = "\nthe Xcode Command Line Tools package from\n"; 
-		$line4 = ",\nor via the Downloads tab of the Xcode Preferences";
+		$line2 = "\n".
+		         "the Xcode Command Line Tools package from\n"; 
+		$line4 = ",\n".
+		         "or via the Downloads tab of the Xcode Preferences";
 	}	
-	unless ((-x $vcs_exec) and Fink::VirtPackage->query_package("dev-tools")) {
+	unless (-f $vcs_exec and -x $vcs_exec  and Fink::VirtPackage->query_package("dev-tools")) {
 		warn "Before changing your selfupdate method to '$vcs', you must install".
-		     $line2.
-		     "http://connect.apple.com (after free registration)".
-		     $line4.".\n";
+			 $line2.
+			 "http://developer.apple.com (after free registration)".
+			 $line4.".\n";
 		return 0;
 	}
 	return 1;

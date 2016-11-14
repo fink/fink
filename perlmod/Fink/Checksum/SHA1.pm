@@ -3,7 +3,7 @@
 # Fink::Checksum::SHA1 module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2005-2013 The Fink Package Manager Team
+# Copyright (c) 2005-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -55,8 +55,8 @@ sub new {
 		} elsif (-x "/usr/bin/openssl") {
 			$sha1cmd = '/usr/bin/openssl sha1';
 			$match   = 'SHA1\([^\)]+\)\s*=\s*(\S+)';
-		} elsif (-e "$basepath/bin/sha1sum") {
-			$sha1cmd = "$basepath/bin/sha1sum";
+		} elsif (-e "$basepath/lib/coreutils/bin/sha1sum") {
+			$sha1cmd = "$basepath/lib/coreutils/bin/sha1sum";
 		}
 	}
 

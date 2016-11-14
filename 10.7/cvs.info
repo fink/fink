@@ -1,0 +1,87 @@
+# -*- coding: ascii; tab-width: 4; x-counterpart: cvs.patch -*-
+Package: cvs
+Version: 1.12.13
+Revision: 18
+Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
+#
+Conflicts: cvs-stable, cvs-proxy
+Replaces: cvs-stable, cvs-proxy
+Source: mirror:gnu:non-gnu/%n/source/feature/%v/%n-%v.tar.bz2 
+Source-MD5: 956ab476ce276c2d19d583e227dbdbea
+PatchFile: %n.patch
+PatchFile-MD5: c8f480b3d01d9ff1e980044274e1d192
+ConfigureParams: <<
+--mandir=%p/share/man\
+--infodir=%p/share/info\
+--with-libiconv-prefix=%p\
+--with-libintl-prefix=%p\
+--with-gssapi=/usr\
+--enable-case-sensitivity\
+--with-external-zlib\
+--with-editor=vim\
+ac_cv_func_working_mktime=no
+<<
+SetCFLAGS: -D_DARWIN_NO_64_BIT_INODE -O2 -g -Wall
+BuildDepends: libgettext8-dev, libiconv-dev, fink (>= 0.30.0)
+Depends: libgettext8-shlibs, libiconv
+PatchScript: cat %{PatchFile} | patch -p0
+# Tests take a REALLY long time and I did get a failure.
+#InfoTest: <<
+# TestDepends: coreutils, gawk
+# TestSuiteSize: large
+# TestScript: AWK=gawk EXPR=gexpr ID=gid TR=gtr TESTDIR='/private/tmp/cvs-sanity' make -j1 -k localcheck || exit 2
+#<<
+CompileScript: <<
+ ./configure %c
+ ed - %b/config.h < %b/config.h.ed
+ echo TESTDIR=/private/tmp/cvs-sanity >> %b/src/sanity.config.sh
+ echo TMPDIR=/private/tmp/cvs-sanity/tmp >> %b/src/sanity.config.sh
+ make
+<<
+InstallScript: <<
+ make install DESTDIR=%d
+<<
+DocFiles: <<
+ BUGS COPYING* ChangeLog* DEVEL-CVS FAQ HACKING MINOR-BUGS NEWS
+ PROJECTS README TESTS TODO
+<<
+InfoDocs: cvs.info cvsclient.info
+#
+Description: Version control system
+DescDetail: <<
+ CVS is the Concurrent Versions System, the dominant open-source
+ network-transparent version control system. CVS is useful for
+ everyone from individual developers to large, distributed teams:
+	- Its client-server access method lets developers access the
+	  latest code from anywhere there's an Internet connection.
+	- Its unreserved check-out model to version control avoids
+	  artificial conflicts common with the exclusive check-out model.
+	- Its client tools are available on most platforms.
+This version is based on the upstream "feature" tree.  If you need to downgrade
+for any reason, either just remove the package and use the builtin version
+(1.11.20 for the 2.2 and later XCode tools), or install the "cvs-stable" 
+package.
+<<
+DescPackaging: <<
+ added the configure params to comply with Fink policy
+ added InfoDocs field
+ enabled case sensitivity for everybody:
+ "Enabling this on a case insensitive system should
+  have little effect on the server or client
+  operation":  from the help text in the configure script.
+ Prior versions by Sylvain Cuaz <zauc@users.sourceforge.net>
+ and Alexander Hansen <alexkhansen@users.sourceforge.net>
+ Added patches from Apple cvs-45 and adopt their build approach.
+ Added Gentoo's cvs-1.12.12-fix-massive-leak.patch for cvsps usage
+ and cvs-1.12.12-openat.patch.
+ Added Gentoo cvs-1.12.12-cvsbug-tmpfix.patch to prevent race.
+ Eliminate clang warnings on formatting.
+ Added FreeBSD patch-64bit_crashfix, restore -O2 -g and add -Wall.
+ Fixed K&R function parameter issue and uninitialized variables
+ detected by clang.
+<<
+DescPort: <<
+
+<<
+Homepage: http://www.nongnu.org/cvs/
+License: GPL

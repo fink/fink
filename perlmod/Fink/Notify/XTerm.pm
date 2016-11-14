@@ -3,7 +3,7 @@
 # Fink::Notify::XTerm module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2009-2013 The Fink Package Manager Team
+# Copyright (c) 2009-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -37,7 +37,7 @@ sub about {
 }
 
 sub events {
-    my @eventlist = ();  # this is a non-standard notifier!
+	my @eventlist = ();  # this is a non-standard notifier!
 	return wantarray? @eventlist : \@eventlist;
 }
 

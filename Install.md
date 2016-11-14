@@ -1,11 +1,9 @@
-Generated from: `$Fink: install.xml,v 1.38 2013/03/15 21:08:13 alexkhansen Exp $`
-
- Fink 0.34.7 Installation
+ Fink 0.41.1 Installation
 =========================
 
-These are the installation instructions for the "source" distribution based on "fink-0.34.7" , intended for use with OS X v.10.5 and later.
+These are the installation instructions for the "source" distribution based on "fink-0.41.1" , intended for use with OS X v.10.9 and later.
 
-This document does not apply to the "[binary](http://fink.sourceforge.net/download/index.php)" distribution.
+This document does not apply to the "[binary](http://www.finkproject.org/download/index.php)" distribution.
 
 There are instructions for both first time installation and upgrading from a previous version. Fast track instructions for the impatient are at the top.
 
@@ -21,30 +19,59 @@ If you're looking for the real instructions, skip to the next section. (You can 
 --------------
 You need:
 
-* An installed Mac OS X system, version 10.5 or later.
+* An installed Mac OS X system, version 10.9 or later.
 
-* Development tools. For OS X versions up to 10.6, you should install the newest version of Xcode available for your system, which can be downloaded from connect.apple.com after registering. For 10.7 and 10.8, installing the Xcode Command Line Tools is mandatory to use the most current build applications. This can be installed either by downloading it directly via connect.apple.com or through the Xcode application via the Components page of the Downloads tab of the Preferences. On 10.7 one can install an earlier monolithic Xcode (4.2.1 and earlier), but this isn't recommended.
+ * The Xcode Command Line Tools are mandatory. This package can be installed
+   either by downloading it directly via developer.apple.com, or by running the
+   `xcode-select --install` command and choosing the Install 
+   button in the window that pops up.
+   You may also need to use this command to update the tools, especially if you're
+   having build problems.
 
-* On 10.7 and 10.8 you will need to install Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you.
+   If you're doing a manual download, make sure that the tools you install
+   match your Mac OS X version.
 
-* Many other things that come with Mac OS X and the Developer Tools. 
-This includes `perl` and `curl`.
+   You will need to accept the Xcode license as root. To do that, run
+
+      `sudo xcodebuild -license`
+
+   then scroll to the bottom of the text and type
+
+      `agree`
+
+   Some packages require the full Xcode.
+
+
+   Some packages require the full Xcode.
+
+* Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you.
+
+* Many other things that come with Mac OS X. This includes `perl` and `curl`.
 
 * Internet access. All source code is downloaded from mirror sites.
 
 * Patience. Compiling several big packages takes time. I'm talking hours or even days here.
 
 
+First Time Installation Very Fast Track
+-----------------------------------------
+Download the Install Fink.tool
+[https://raw.githubusercontent.com/fink/scripts/master/srcinstaller/Install%
+20Fink.tool] script and double-click on it. This will automate the downloads
+in the steps below.
+
+The script may have to stop for you to do something. If so, run it again.
+
 First Time Installation Fast Track
 ------------------------------------
-Start out by copying the "fink-0.34.7.tar.gz" file to your home folder (it might also show up as "fink-0.34.7.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
+Start out by copying the "fink-0.41.1.tar.gz" file to your home folder (it might also show up as "fink-0.41.1.tar" if you used Safari to download it). Then, open Terminal.app and follow the session below. Computer output is in "`normal (monospaced) face`", your input is in **"bold face"** (or otherwise highlighted). The actual input prompts from the shell may vary, and some chunks of the output have been omitted ( "`...`" ).
 
-Note: on 10.8, after you start the install process you may see dialog windows asking whether you want to install Xquartz. 
+Note: You may see dialog windows asking whether you want to install Xquartz. 
 If you want to do so, go ahead. You won't have to stop the Fink install to do that.
 
-    [frodo:~] testuser% tar xf fink-0.34.7.tar.gz
-    [frodo:~] testuser% cd fink-0.34.7
-    [frodo:~/fink-0.34.7] testuser% ./bootstrap
+    [frodo:~] testuser% tar xf fink-0.41.1.tar.gz
+    [frodo:~] testuser% cd fink-0.41.1
+    [frodo:~/fink-0.41.1] testuser% ./bootstrap
 
     Fink must be installed and run with superuser (root) privileges
 
@@ -52,7 +79,7 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
     Choose a method: [1] 
    **1**
 
-    sudo /Users/testuser/fink-0.34.7/bootstrap .sudo '/sw'
+    sudo /Users/testuser/fink-0.41.1/bootstrap .sudo '/sw'
     Password:
    **(your normal password here)**
 
@@ -98,7 +125,7 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
     Mirror selection
     Choose a continent:
     ...
-   **(enter the numbers corresponding to you location)**
+   **(enter the numbers corresponding to your location)**
 
     ...
     Writing updated configuration to '/sw/etc/fink.conf'...
@@ -110,8 +137,8 @@ If you want to do so, go ahead. You won't have to stop the Fink install to do th
    
    You should now have a working Fink installation in '/sw'.
    
-    [frodo:~/fink-0.34.7] testuser% cd
-    [frodo:~] testuser% rm -r fink-0.34.7
+    [frodo:~/fink-0.41.1] testuser% cd
+    [frodo:~] testuser% rm -r fink-0.41.1
     [frodo:~] testuser% /sw/bin/pathsetup.sh
 
 The last command runs a little script to help set up your Unix paths (and other things) for use with Fink. In most cases, it will run automatically, and prompt you for permission to make changes. If the script fails, you'll have to do things by hand.
@@ -171,7 +198,7 @@ To do this, in your new Terminal.app window, ether use:
 
 especially if you are using a proxy.
 
-If you are using Xcode 4.3 or later, you should also run
+You should also run
 
     sudo xcodebuild -license
 
@@ -258,7 +285,7 @@ You can now install additional packages with the "`fink`" command, like this:
     Do you want to continue? [Y/n]
     ...
 
-If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](http://fink.sourceforge.net/faq/). You can also ask on the [fink-users mailing list](http://fink.sourceforge.net/lists/fink-users.php), but expect to be pointed back at the documentation when your problem actually is well-documented.
+If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](http://www.finkproject.org/faq/). You can also ask on the [fink-users mailing list](http://www.finkproject.org/lists/fink-users.php), but expect to be pointed back at the documentation when your problem actually is well-documented.
 
  First Time Installation
 =========================
@@ -267,9 +294,29 @@ If these instructions don't work for you, well, you'll have to take the time to 
 
 You need:
 
-* Development tools. For OS X versions up to 10.6, you should install the newest version of Xcode available for your system, which can be downloaded from connect.apple.com after registering. For 10.7 and 10.8, installing the Xcode Command Line Tools is mandatory to use the most current build applications. This can be installed either by downloading it directly via connect.apple.com or through the Xcode application via the Components page of the Downloads tab of the Preferences. On 10.7 one can install an earlier monolithic Xcode (4.2.1 and earlier), but this isn't recommended.
+ * An installed Mac OS X system, version 10.9 or later.
 
-* On 10.7 and 10.8 you will need to install Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you.
+ * The Xcode Command Line Tools are mandatory. This package can be installed
+   either by downloading it directly via developer.apple.com, or on by running
+   the `xcode-select --install` command and choosing the Install  button in 
+   the window that pops up, or you can install the full Xcode if you prefer. 
+   You may also need to use this command to update the tools, especially if 
+   you're having build problems.
+
+   If you're doing a manual download, make sure that the tools you install
+   match your Mac OS X version.
+
+   You will need to accept the Xcode license as root. To do that, run
+
+      `sudo xcodebuild -license`
+
+   then scroll to the bottom of the text and type
+
+      `agree`
+
+   Some packages require the full Xcode.
+
+* Java. Entering `javac` from a Terminal.app window should suffice to make the system download it for you, (10.7, 10.9, 10.10) or open up a browser window from which you can downloadthe latest Java JDK (10.8).
 
 * Many other things that come with Mac OS X and the Developer Tools. This includes `perl` and `curl`.
 
@@ -291,13 +338,13 @@ A special note about /usr/local: While it is possible to install Fink in /usr/lo
 
 Installation
 --------------
-First, you need to unpack the fink-0.34.7.tar.gz tarball (it might also show up as "fink-0.34.7.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
+First, you need to unpack the fink-0.41.1.tar.gz tarball (it might also show up as "fink-0.41.1.tar" if you used Safari to download it). So, in a terminal window, go to the directory where you put the tarball, and run this command:
 
-    tar xf fink-0.34.7.tar.gz
+    tar xf fink-0.41.1.tar.gz
 
-You now have a directory named fink-0.34.7. Change to it with "`cd fink-0.34.7`".
+You now have a directory named fink-0.41.1. Change to it with "`cd fink-0.41.1`".
 
-The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.34.7 directory and run this command:
+The actual installation is performed by the perl script `bootstrap`. So, to start installation, go to the fink-0.41.1 directory and run this command:
 
     ./bootstrap
 
@@ -330,12 +377,6 @@ However, `rsync` is often blocked by network administrators. If your firewall do
 
 to download package descriptions using `cvs`. If you have an HTTP proxy set up, `fink` will pass its information along to `cvs`. Note: you can only use anonymous cvs (pserver) through a proxy.
 
-If you are using Xcode 4.3 or later, you should also run
-
-    sudo xcodebuild -license
-
-and enter agree so that Fink's unprivileged user can build packages that need more than just the basic tools.
-
 You can now use "`fink`" commands to install packages.
 
     fink --help
@@ -347,20 +388,12 @@ is a useful place to get more information about how to use "`fink`" .
 ------------------------
 Fink uses virtual packages to declare dependencies on X11. As of OS 10.5, we don't provide any packages of our own. The supported options are:
 
-* 10.5: Either Apple's standard X11 or XQuartz-2.6.3 or earlier. Note: if
-   you install XQuartz-2.4 or later you will quite likely need to reinstall
-   Fink if you update to 10.6.
+* 10.9: Only XQuartz 2.7.4 and later.
 
-* 10.6: Only Apple's standard X11, since XQuartz installs in a different
-   directory tree ("/opt/X11") than the standard X11 ("/usr/X11") for
-   10.6 and later so that they can coexist.
-
-* 10.7: Only Apple's standard X11.
-
-* 10.8: Only Xquartz 2.7 and later.
+* 10.10-11: Only XQuartz 2.7.7 and later.
 
 For more information on installing and running X11, refer to the online X11
-on Darwin and Mac OS X document [http://fink.sourceforge.net/doc/x11/](http://fink.sourceforge.net/doc/x11/).
+on Darwin and Mac OS X document [http://www.finkproject.org/doc/x11/](http://www.finkproject.org/doc/x11/).
 
  Upgrading Fink
 ================
@@ -394,8 +427,6 @@ may find that you need to install Fink over again.
 
  Situations Calling for a Clean Reinstall
 ------------------------------------------
-* You want to switch architectures, e.g. you have a 32-bit (i386) Fink distribution on OS 10.6, and you would like to have a 64-bit (x86_64) one instead. This also applies if you try to migrate a PowerPC OS X setup to an Intel machine.
-
 * You want to move Fink to a different path.
 
 * You want to update, or have already updated, OS X between versions where Fink doesn't support an upgrade path:
@@ -405,6 +436,8 @@ may find that you need to install Fink over again.
 - 10.5 -> 10.7+
 
 - 10.6 -> 10.7+
+
+- 10.8- -> 10.9+
 
 * You have updated from 10.5 to 10.6 with XQuartz-2.4 or later installed, and X11-based libraries and executables stop working.
 

@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2013 The Fink Package Manager Team
+# Copyright (c) 2001-2016 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -60,6 +60,7 @@ use File::Temp qw(tempdir);
 use Fcntl;
 use Storable;
 use IO::Handle;
+use version 0.77;	
 
 use strict;
 use warnings;
@@ -544,7 +545,7 @@ sub initialize {
 				$expand->{"lib"} = "lib/x86_64";
 			} elsif ($config->param('Architecture') eq "x86_64" ) {
 				# paradoxically, no special library location is required for
-                # -64bit variants under x86_64 architecture
+				# -64bit variants under x86_64 architecture
 			} else {
 				print_breaking_stderr "Skipping $self->{_filename}\n";
 				delete $self->{package};
@@ -1156,7 +1157,7 @@ sub get_script {
 		$field_value = $self->param_default($field, '%{default_script}');
 
 		for my $suffix ($self->get_patchfile_suffixes()) {
-			$default_script .= "patch -p1 < \%{PatchFile$suffix}\n";
+			$default_script .= "/usr/bin/patch -p1 < \%{PatchFile$suffix}\n";
 		}
 
 	} elsif ($field eq 'compilescript') {
@@ -1167,21 +1168,14 @@ sub get_script {
 
 		my $type = $self->get_defaultscript_type();
 		if ($type eq 'makemaker') {
+			# We specify explicit CC and CXX values below, because even though
+			# path-prefix-*wraps gcc and g++, system-perl configure hardcodes
+			# gcc-4.x, which is not wrapped or necessarily even present.
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			$perlcmd = "ARCHFLAGS=\"\" $perlcmd"; # prevent Apple's perl from building fat
-			my $makeflags = '';
-			if ($self->get_subtype('perl') eq '5.12.3' and Fink::Services::get_kernel_vers() eq '11') {
-				# path-prefix-clang wraps gcc and g++ but system-perl
-				# configure hardcodes gcc-4.x, which is not wrapped
-				$makeflags = ' CC=gcc CXX=g++';
-			} elsif ($self->get_subtype('perl') eq '5.12.4' and Fink::Services::get_kernel_vers() eq '12') {
-				# path-prefix-clang wraps gcc and g++ but system-perl
-				# configure hardcodes gcc-4.x, which is not wrapped
-				$makeflags = ' CC=gcc CXX=g++';
-			}
+			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
 			$default_script =
-				"$perlcmd Makefile.PL \%c\n".
-				"make$makeflags\n";
+				"$archflags $perlcmd Makefile.PL \%c\n".
+				"/usr/bin/make CC=gcc CXX=g++\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
 			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
@@ -1192,13 +1186,13 @@ sub get_script {
 			my ($rubydirectory, $rubyarchdir, $rubycmd) = $self->get_ruby_dir_arch();
 			$default_script =
 				"$rubycmd extconf.rb\n".
-				"make\n";
+				"/usr/bin/make\n";
 		} elsif ($self->is_type('dummy')) {
 			$default_script = "";
 		} else {
 			$default_script =
 				"./configure \%c\n".
-				"make\n";
+				"/usr/bin/make\n";
 		}
 
 	} elsif ($field eq 'installscript') {
@@ -1227,7 +1221,7 @@ sub get_script {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 			$default_script =
-				"make -j1 install PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin DESTDIR=\%d\n";
+				"/usr/bin/make -j1 install PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin DESTDIR=\%d\n";
 		} elsif ($type eq 'modulebuild') {
 			$default_script =
 				"./Build install\n";
@@ -1236,7 +1230,7 @@ sub get_script {
 				"/bin/mkdir -p \%i/share/doc/\%n\n".
 				"echo \"\%n is a bundle package that doesn't install any files of its own.\" >\%i/share/doc/\%n/README\n";
 		} else {
-			$default_script = "make -j1 install prefix=\%i\n";
+			$default_script = "/usr/bin/make -j1 install prefix=\%i\n";
 		}
 
 	} elsif ($field eq 'testscript') {
@@ -1249,7 +1243,7 @@ sub get_script {
 		my $type = $self->get_defaultscript_type();
 		if ($type eq 'makemaker' && !$self->param_boolean('NoPerlTests')) {
 			$default_script =
-				"make test || exit 2\n";
+				"/usr/bin/make test || exit 2\n";
 		} elsif ($type eq 'modulebuild' && !$self->param_boolean('NoPerlTests')) {
 			$default_script =
 				"./Build test || exit 2\n";
@@ -1314,7 +1308,6 @@ sub activate_infotest {
 	}
 
 	delete $self->{_source_suffixes};
-
 }
 
 ### add a splitoff package
@@ -2471,6 +2464,9 @@ sub find_debfile {
 	# maybe it's available from the bindist?
 	if ($config->binary_requested()) {
 		my $epoch = $self->get_epoch();
+		# Fix for Debarch since Apt converts _ into %5f
+		my $debarch = $config->param('Debarch');
+		$debarch =~ s/_/%5f/g;
 		# the colon (':') for the epoch needs to be url encoded to
 		# '%3a' since likes to store the debs in its cache like this
 		$fn = sprintf "%s/%s_%s%s-%s_%s.deb",
@@ -2479,7 +2475,7 @@ sub find_debfile {
 			$epoch ? $epoch.'%3a' : '',
 			$self->get_version(),
 			$self->get_revision(),
-			$config->param('Debarch');
+			$debarch;
 		if (-f $fn) {
 			return $fn;
 		}
@@ -3195,6 +3191,10 @@ sub fetch_deb {
 	if ($dryrun) {
 		$aptcmd .= "--dry-run ";
 	}
+	# Newer apt does a sign authentication, since we don't have that in
+	# place yet, we need to ignore it.  That way it doesn't stop for
+	# interaction, not to mention it defaults to 'N'. 0.6.8 is required!
+	#$aptcmd .= "--allow-unauthenticated ";
 	$aptcmd .= "--ignore-breakage --download-only install " .
 		join(' ', map {
 			sprintf "%s=%s", $_->get_name(), $_->get_fullversion
@@ -3432,7 +3432,7 @@ sub phase_unpack {
 	my ($tarcommand, $tarflags, $cat, $gzip, $bzip2, $unzip, $xz);
 	my ($tar_is_pax,$alt_bzip2)=(0,0);
 	my $build_as_user_group = $self->pkg_build_as_user_group();
-	
+
 	$config->mixed_arch(msg=>'build a package', fatal=>1);
 
 	if ($self->is_type('bundle') || $self->is_type('dummy')) {
@@ -3491,9 +3491,10 @@ GCC_MSG
 
 		$tarflags = "-x${verbosity}f";
 		my $permissionflags = " --no-same-owner --no-same-permissions";
-		$tarcommand = "/usr/bin/gnutar $permissionflags $tarflags"; # Default to Apple's GNU Tar
-		# Determine the rename list (if any)
-		if ($self->has_param($renamefield)) {
+
+		# set up "tar"
+		# Determine the rename list ; if not present then then move on.
+		if ($self->has_param($renamefield)) { # we need pax
 			@renamefiles = split(' ', $self->param($renamefield));
 			foreach $renamefile (@renamefiles) {
 				$renamefile = &expand_percent($renamefile, $expand, $self->get_info_filename." \"$renamefield\"");
@@ -3504,10 +3505,18 @@ GCC_MSG
 				}
 			}
 			$tarcommand = "/bin/pax -r${verbosity}"; # Use pax for extracting with the renaming feature
-			$tar_is_pax=1; # Flag denoting that we're using pax
+			$tar_is_pax = 1; # Flag denoting that we're using pax
 		} elsif ( -e "$basepath/bin/tar" ) {
 			$tarcommand = "env LANG=C LC_ALL=C $basepath/bin/tar $permissionflags $tarflags"; # Use Fink's GNU Tar if available
+			$tar_is_pax=0;
+		} elsif ( -e "/usr/bin/gnutar" ) {
+			$tarcommand = "/usr/bin/gnutar $permissionflags $tarflags"; # Apple's GNU tar
+			$tar_is_pax=0;
+		} else {
+			$tarcommand = "/usr/bin/tar $permissionflags $tarflags"; # probably BSD tar
+			$tar_is_pax=0;
 		}
+
 		$bzip2 = $config->param_default("Bzip2path", 'bzip2');
 		$bzip2 = 'bzip2' unless (-x $bzip2);
 		$alt_bzip2=1 if ($bzip2 ne 'bzip2');
@@ -3518,7 +3527,7 @@ GCC_MSG
 
 		# Determine unpack command
 		# print "\n$tar_is_pax\n";
-		$unpack_cmd = "cp $found_archive ."; # non-archive file
+		$unpack_cmd = "/bin/cp $found_archive ."; # non-archive file
 		# check for a tarball
 		if ($archive =~ /[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/ or $archive =~ /[\.\-]t[gbx]z$/) {
 			if (!$tar_is_pax) {  # No TarFilesRename
@@ -3563,8 +3572,6 @@ GCC_MSG
 		# unpack it
 		chdir $destdir;
 		$self->run_script($unpack_cmd, "unpacking '$archive'", 1, 1);
-
-		$tar_is_pax=0;
 	}
 }
 
@@ -3596,15 +3603,15 @@ sub phase_patch {
 
 	if ($self->param_boolean("UpdateConfigGuess")) {
 		$patch_script .=
-			"cp -f $libpath/update/config.guess .\n".
-			"cp -f $libpath/update/config.sub .\n";
+			"/bin/cp -f $libpath/update/config.guess .\n".
+			"/bin/cp -f $libpath/update/config.sub .\n";
 	}
 	if ($self->has_param("UpdateConfigGuessInDirs")) {
 		foreach $subdir (split(/\s+/, $self->param("UpdateConfigGuessInDirs"))) {
 			next unless $subdir;
 			$patch_script .=
-				"cp -f $libpath/update/config.guess $subdir\n".
-				"cp -f $libpath/update/config.sub $subdir\n";
+				"/bin/cp -f $libpath/update/config.guess $subdir\n".
+				"/bin/cp -f $libpath/update/config.sub $subdir\n";
 		}
 	}
 
@@ -3612,15 +3619,15 @@ sub phase_patch {
 
 	if ($self->param_boolean("UpdateLibtool")) {
 		$patch_script .=
-			"cp -f $libpath/update/ltconfig .\n".
-			"cp -f $libpath/update/ltmain.sh .\n";
+			"/bin/cp -f $libpath/update/ltconfig .\n".
+			"/bin/cp -f $libpath/update/ltmain.sh .\n";
 	}
 	if ($self->has_param("UpdateLibtoolInDirs")) {
 		foreach $subdir (split(/\s+/, $self->param("UpdateLibtoolInDirs"))) {
 			next unless $subdir;
 			$patch_script .=
-				"cp -f $libpath/update/ltconfig $subdir\n".
-				"cp -f $libpath/update/ltmain.sh $subdir\n";
+				"/bin/cp -f $libpath/update/ltconfig $subdir\n".
+				"/bin/cp -f $libpath/update/ltmain.sh $subdir\n";
 		}
 	}
 
@@ -3628,7 +3635,7 @@ sub phase_patch {
 
 	if ($self->param_boolean("UpdatePoMakefile")) {
 		$patch_script .=
-			"cp -f $libpath/update/Makefile.in.in po/\n";
+			"/bin/cp -f $libpath/update/Makefile.in.in po/\n";
 	}
 
 	### run what we have so far
@@ -3660,8 +3667,8 @@ sub phase_patch {
 			unless ($dir_checked) {
 				my ($status,$dir) = is_accessible(dirname($file),'01');
 				die "$dir and its contents need to have at least o+x permissions. Run:\n\n".
-					"sudo chmod -R o+x $dir\n\n" if $dir; 
-				$dir_checked=1; 
+					"sudo /bin/chmod -R o+x $dir\n\n" if $dir;
+				$dir_checked=1;
 			}
 
 			# make sure patchfile exists and can be read by the user (root
@@ -3719,7 +3726,7 @@ sub phase_compile {
 	$self->run_script($self->get_script("CompileScript"), "compiling", 1, 1);
 
 	if (Fink::Config::get_option("tests")) {
-		my $result = $self->run_script($self->get_script("TestScript"), "testing", 0, 1, 1);
+		my $result = $self->run_script($self->get_script("TestScript"), "testing", 1, 1, 1);
 
 		if ($result == 1) {
 			warn "phase test: warning\n";
@@ -3901,9 +3908,9 @@ sub phase_install {
 		# Read the set of variables (but don't change the keys to lowercase)
 		$properties = &read_properties_var(
 			'runtimevars of "'.$self->{_filename}.'"', $vars,
-			{ case_sensitive => 1});
+			{ case_sensitive => 1, preserve_order => 1 });
 
-		if (scalar keys %$properties > 0){
+		if (keys %$properties > 0) {
 			$install_script .= "\n/usr/bin/install -d -m 755 %i/etc/profile.d";
 			while (($var, $value) = each %$properties) {
 				$install_script .= "\necho \"setenv $var '$value'\" >> %i/etc/profile.d/%n.csh.env";
@@ -3927,10 +3934,10 @@ sub phase_install {
 		$install_script .= "\n/usr/bin/install -d -m 755 %i/Applications";
 		for my $bundle (split(/\s+/, $self->param("AppBundles"))) {
 			$bundle =~ s/\'/\\\'/gsi;
-			$install_script .= "\ncp -pR '$bundle' '%i/Applications/'";
+			$install_script .= "\n/bin/cp -pR '$bundle' '%i/Applications/'";
 		}
 		chomp (my $developer_dir=`xcode-select -print-path 2>/dev/null`);
-		$install_script .= "\nchmod -R o-w '%i/Applications/'" .
+		$install_script .= "\n/bin/chmod -R o-w '%i/Applications/'" .
 			"\nif test -x $developer_dir/Tools/SplitForks; then $developer_dir/Tools/SplitForks '%i/Applications/'; fi";
 	}
 
@@ -4453,11 +4460,11 @@ EOF
 	### policy and so that tools like debsums can check the consistancy
 	### of installed file, this will also help for trouble shooting, since
 	### we will know if a packages file has be changed
-	
+
 	require File::Find;
 	my $md5s="";
 	my $md5check=Fink::Checksum->new('MD5');
-	
+
 	File::Find::find({
 		preprocess => sub {
 			# Don't descend into the .deb control directory
@@ -4508,7 +4515,9 @@ EOF
 		Fink::Config::set_options(\%saved_options);
 	}
 
-	$cmd = "dpkg-deb -b $ddir ".$self->get_debpath();
+	# Set ENV so for tar on 10.9+, dpkg-deb calls tar and thus requires it
+	# as well.
+	$cmd = "env LANG=C LC_ALL=C dpkg-deb -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {
 		my $error = "can't create package ".$self->get_debname();
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
@@ -4804,6 +4813,64 @@ sub phase_purge_recursive {
 	Fink::PkgVersion->dpkg_changed;
 }
 
+=item ensure_libcxx_prefix
+
+	my $prefix_path = ensure_libcxx_prefix;
+
+Ensures that a path-prefix directory exists to use libcxx wrapper for the C++ compilers.
+Returns the path to the resulting directory.
+
+=cut
+
+sub ensure_libcxx_prefix {
+	my $dir = "$basepath/var/lib/fink/path-prefix-libcxx";
+	unless (-d $dir) {
+		mkdir_p $dir or die "Path-prefix dir $dir cannot be created!\n";
+	}
+
+	my $gpp = "$dir/compiler_wrapper";
+	unless (-x $gpp) {
+		open GPP, ">$gpp" or die "Path-prefix file $gpp cannot be created!\n";
+		print GPP <<EOF;
+#!/bin/sh
+compiler=\${0##*/}
+save_IFS="\$IFS"
+IFS=:
+newpath=
+for dir in \$PATH ; do
+  case \$dir in
+    *var/lib/fink/path-prefix*) ;;
+    *) newpath="\${newpath:+\${newpath}:}\$dir" ;;
+  esac
+done
+IFS="\$save_IFS"
+export PATH="\$newpath"
+# To avoid extra warning spew, don't add 
+# -Wno-error=unused-command-line-argument-hard-error-in-future
+# when clang doesn't support it .
+clang_version=`clang --version | head -n1 | cut -d- -f2 | cut -d'.' -f1`
+if [[ (\$clang_version -lt "503") || (\$clang_version -ge "600") ]]; then
+	suppress_hard_error=""
+else
+	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
+fi
+exec \$compiler -stdlib=libc++ "\$suppress_hard_error" "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_libcxx_prefix()
+EOF
+		close GPP;
+		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
+	}
+
+	foreach my $cpp ("$dir/c++", "$dir/g++", "$dir/clang++") {
+		unless (-l $cpp) {
+			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
+		}
+	}
+
+	return $dir;
+}
 
 =item ensure_clang_prefix
 
@@ -4843,7 +4910,19 @@ fi
 if [ "\$compiler" = "c++" -o "\$compiler" = "g++" ]; then
   compiler="clang++"
 fi
-exec \$compiler "\$@"
+# To avoid extra warning spew, don't add 
+# -Wno-error=unused-command-line-argument-hard-error-in-future
+# when clang doesn't support it .
+clang_version=`clang --version | head -n1 | cut -d- -f2 | cut -d'.' -f1`
+if [[ (\$clang_version -lt "503") || (\$clang_version -ge "600") ]]; then
+	suppress_hard_error=""
+else
+	suppress_hard_error="-Wno-error=unused-command-line-argument-hard-error-in-future"
+fi
+exec \$compiler "\$suppress_hard_error" "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_clang_prefix()
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
@@ -4893,12 +4972,21 @@ done
 IFS="\$save_IFS"
 export PATH="\$newpath"
 exec \$compiler "-arch" "$arch" "\$@"
+# strip path-prefix to avoid finding this wrapper again
+# $basepath/bin is needed to pick up ccache-default
+# This file was auto-generated via Fink::PkgVersion::ensure_gpp106_prefix()
 EOF
 		close GPP;
 		chmod 0755, $gpp or die "Path-prefix file $gpp cannot be made executable!\n";
 	}
 
-	foreach my $cpp ("$dir/cc", "$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2", "$dir/gcc", "$dir/gcc-4.0", "$dir/gcc-4.2", "$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2") {
+	foreach my $cpp (
+		"$dir/cc",
+		"$dir/c++", "$dir/c++-4.0", "$dir/c++-4.2",
+		"$dir/gcc", "$dir/gcc-4.0", "$dir/gcc-4.2",
+		"$dir/g++", "$dir/g++-4.0", "$dir/g++-4.2",
+		"$dir/clang", "$dir/clang++",
+	) {
 		unless (-l $cpp) {
 			symlink 'compiler_wrapper', $cpp or die "Path-prefix link $cpp cannot be created!\n";
 		}
@@ -4989,11 +5077,11 @@ sub get_env {
 
 # for building 64bit libraries, we change LDFLAGS:
 
-    if (exists $self->{_type_hash}->{"-64bit"}) {
-        if ($self->{_type_hash}->{"-64bit"} eq "-64bit") {
-            $defaults{"LDFLAGS"} = "-L\%p/\%lib -L\%p/lib";
-        }
-    }
+	if (exists $self->{_type_hash}->{"-64bit"}) {
+		if ($self->{_type_hash}->{"-64bit"} eq "-64bit") {
+			$defaults{"LDFLAGS"} = "-L\%p/\%lib -L\%p/lib";
+		}
+	}
 
 	# uncomment this to be able to use distcc -- not officially supported!
 	#$defaults{'MAKEFLAGS'} = $ENV{'MAKEFLAGS'} if (exists $ENV{'MAKEFLAGS'});
@@ -5014,7 +5102,7 @@ sub get_env {
 	$script_env{"HOME"} = tempdir( 'fink-build-HOME.XXXXXXXXXX', DIR => File::Spec->tmpdir, CLEANUP => 1 );
 	if ($< == 0) {
 		# we might be writing to ENV{HOME} during build, so fix ownership
-		my $build_as_user_group = $self->pkg_build_as_user_group(); 
+		my $build_as_user_group = $self->pkg_build_as_user_group();
 		chowname $build_as_user_group->{'user:group'}, $script_env{HOME} or
 			die "can't chown '" . $build_as_user_group->{'user:group'} . "' $script_env{HOME}\n";
 	}
@@ -5099,27 +5187,20 @@ sub get_env {
 
 # FIXME: (No)SetPATH is undocumented
 	unless ($self->has_param('NoSetPATH')) {
+		# Get distribution once for better readability 
+		# since we want to append a "v" for future-proofing.
+		my $distro = version->parse ('v'.$config->param("Distribution")); 
 		# use path-prefix-* to give magic to 'gcc' and related commands
-		my $pathprefix;
-		if  ($config->param("Distribution") lt "10.6") {
-			# Enforce g++-4.0 even for uncooperative packages, by making it the
-			# first 'g++' in the path (symbol-munging binary compatibility)
-			$pathprefix = ensure_gpp_prefix('4.0');
+		# Clang isn't the default compiler for Xcode 4.x, so wrapping mandatory on 10.7 and 10.8/Xcode 4.x .
+		# Includes unused argument error suppression for clang-5's C compiler for 10.8 and 10.9 .
+		$script_env{'PATH'} = ensure_clang_prefix() . ':' . $script_env{'PATH'}; 
+		if  ( $distro ge version->parse ("v10.9") ) {
+			# Use -stdlib=libc++ for c++/g++/clang++ on 10.9 and later.
+			# Also includes unused argument error suppression for clang-5's C++ compiler for 10.9.
+			$script_env{'PATH'} = ensure_libcxx_prefix() . ':' . $script_env{'PATH'};
 		}
-		if ($config->param("Distribution") eq "10.6" || $config->param("Architecture") eq "x86_64") {
-			# Use single-architecture compiler-wrapper on 10.6. Also
-			# override on older 10.x (gcc3.3 & 10.4T not supported)
-			$pathprefix = ensure_gpp106_prefix($config->param("Architecture"));
-		}
-		if  ($config->param("Distribution") gt "10.6") {
-			# Use clang for gcc/g++ on darwin11 and later. Only
-			# x86_64 supported so can override single-arch wrappers.
- 			$pathprefix = ensure_clang_prefix();
-		}
-		$script_env{'PATH'} = "$pathprefix:" . $script_env{'PATH'};
 	}
 
-# FIXME: (No)SetPATH is undocumented
 # FIXME: On the other hand, (No)SetJAVA_HOME *is* documented (but unused)
 	# special things for Type:java
 	if (not $self->has_param('SetJAVA_HOME') or not $self->has_param('SetPATH')) {
@@ -5233,7 +5314,7 @@ sub package_error {
 	}
 
 	$error .= ".\n\nPlease try to include the complete error message in your report.  This\n" .
-        	"generally consists of a compiler line starting with e.g. \"gcc\" or \"g++\"\n" .
+			"generally consists of a compiler line starting with e.g. \"gcc\" or \"g++\"\n" .
 			"followed by the actual error output from the compiler.\n\n".
 			"Also include the following system information:\n";
 
@@ -5274,8 +5355,8 @@ sub package_error {
 		}
 		if ($umbj) {
 			$error .= "Max. Fink build jobs:  ".$config->param('MaxBuildJobs')."\n";
-		} else {			
-			$error .= $self->get_fullname() ." is set to build with only one job.\n"; 
+		} else {
+			$error .= $self->get_fullname() ." is set to build with only one job.\n";
 		}
 	}
 
@@ -5300,22 +5381,42 @@ sub get_perl_dir_arch {
 
 	### PERL= needs a full path or you end up with
 	### perlmods trying to run ../perl$perlversion
-    ###
-    ### But when $perlversion is at least 5.10.0, we call it
-    ### with /usr/bin/arch instead, unless the architecture is powerpc
-    ###
+	###
+	### But when $perlversion is at least 5.10.0, we call it
+	### with /usr/bin/arch instead, unless the architecture is powerpc
+	###
 	my $perlcmd;
 	if ($perlversion) {
 		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
+			### FIXME: instead of hardcoded expectation of system-perl
+			### perl kernel, check if matches %v of system-perl, then
+			###   $perlversion =~ /(5\.\d+)\.*/;
+			###   $perlcmd = "/usr/bin/arch -%m perl$1";
 			if ($perlversion eq  "5.12.3" and Fink::Services::get_kernel_vers() eq '11') {
 				# 10.7 system-perl is 5.12.3, but the only supplied
-				# interp is /usr/bin/perl5.12 (not perl5.12.3)
-				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
+				# interpreter is /usr/bin/perl5.12 (not perl5.12.3).
+				$perlcmd = "/usr/bin/arch -%m perl5.12";
 			} elsif ($perlversion eq  "5.12.4" and Fink::Services::get_kernel_vers() eq '12') {
 				# 10.8 system-perl is 5.12.4, but the only supplied
-				# interp is /usr/bin/perl5.12 (not perl5.12.4)
-				$perlcmd = "/usr/bin/arch -%m perl5.12" ;
+				# interpreter is /usr/bin/perl5.12 (not perl5.12.4).
+				$perlcmd = "/usr/bin/arch -%m perl5.12";
+			} elsif ($perlversion eq  "5.16.2" and Fink::Services::get_kernel_vers() eq '13') {
+				# 10.9 system-perl is 5.16.2, but the only supplied
+				# interpreter is /usr/bin/perl5.16 (not perl5.16.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.16";
+			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '14') {
+				# 10.10 system-perl is 5.18.2, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '15') {
+				# 10.11 system-perl is 5.18.2, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '16') {
+				# 10.12 system-perl is 5.18.2, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);
@@ -5750,7 +5851,7 @@ sub scanpackages {
 
   $self->pkg_build_as_user_group();
 
-If BuildAsNobody: false is set, return 
+If BuildAsNobody: false is set, return
 {qw/ user root group admin user:group root:admin /}
 
 Otherwise, return the results from Fink::Config::build_as_user_group()

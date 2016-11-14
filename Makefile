@@ -1,6 +1,5 @@
 PREFIX=/sw
-ARCHITECTURE=i386
-DISTRIBUTION=10.6
+ARCHITECTURE=x86_64
 VERSION=`cat VERSION`
 TEST_BASEPATH=$(PWD)/t/basepath
 TESTS=.
@@ -8,18 +7,13 @@ TESTS=.
 all:
 	@echo    "usage: $(MAKE) <target>"
 	@echo    ""
-	@echo -e "\tcommit      commit your changes"
 	@echo -e "\tbootstrap   install a fresh fink installation"
 	@echo -e "\t            PREFIX can be set, defaults to /sw"   
-	@echo -e "              ARCHITECTURE can also be set, defaults to i386"   
-	@echo -e "              DISTRIBUTION can also be set, defaults to 10.6"   
+	@echo -e "              ARCHITECTURE can also be set, defaults to x86_64"   
 	@echo -e "\tinstall     install to an existing fink installation"
 	@echo -e "\ttest        perform tests on the fink code"
 	@echo -e "\tclean       remove all extraneous files"
 	@echo    ""
-
-commit: test
-	@cvs commit
 
 bootstrap: test
 	./bootstrap $(PREFIX)
@@ -38,21 +32,38 @@ test: manifest_check test_setup
 	@# (which also must be coded into t/Services/execute_nonroot_okay.t)
 	cd t && ./testmore.pl && find ${TESTS} -name '*.t' | sort | PREFIX="$(PREFIX)" xargs /usr/bin/perl -I`pwd`/../perlmod -MTest::Harness -e 'runtests(@ARGV)'
 
-# remove all files that are ignored by CVS
+# remove various generated files
 clean:
-	@# BUG: this for...`find` breaks if any dirname relative to the
-	@# current one contains whitespace
-	@for ignorefile in `find . -name .cvsignore`; do \
-		echo "cleaning $$ignorefile"; \
-		( cd `dirname $$ignorefile` && rm -f `cat .cvsignore` ); \
-	done
+	rm -f compiler_wrapper 
+	rm -f compiler_wrapper-10.7
+	rm -f compiler_wrapper-10.9
+	rm -f config*
+	rm -f fink
+	rm -f fink-dpkg-status-cleanup
+	rm -f fink-virtual-pkgs
+	rm -f fink-instscripts
+	rm -f fink-scanpackages
+	rm -f fink.8
+	rm -f fink.conf.5
+	rm -f pathsetup.command
+	rm -f pathsetup.sh
+	rm -f postinstall.pl
+	rm -f shlibs.default
+	rm -f dpkg-lockwait
+	rm -f apt-get-lockwait
+	rm -f g++-wrapper-3.3
+	rm -f g++-wrapper-4.0
+	rm -f perlmod/Fink.pm
+	rm -f perlmod/Fink/FinkVersion.pm
+	rm -f t/basepath/etc/apt/sources.list
+	rm -f t/basepath/etc/apt/sources.list.finkbak
 
 # maybe we should clean or ./setup.sh before this, to eliminate dups?
 podcheck:
-	@find . -name '.svn' -prune -o \! -name '.#*' -type f -print | \
+	@find . -name '.git' -prune -o \! -name '.#*' -type f -print | \
 		xargs grep -l '[=]head' | xargs podchecker
 
-.PHONY: all test install
+.PHONY: all bootstrap install test test_setup manifest_check clean podcheck
 
 .SUFFIXES:
 
