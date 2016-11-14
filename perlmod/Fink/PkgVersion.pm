@@ -4801,9 +4801,13 @@ EOF
 		Fink::Config::set_options(\%saved_options);
 	}
 
+	# make sure fink and dpkg use gz compression for bindist upgrades
+	my $dpkgdebextra = ($parentpkgname eq 'fink' || $parentpkgname eq 'dpkg')
+		? ' -Zgzip'
+		: '';
 	# Set ENV so for tar on 10.9+, dpkg-deb calls tar and thus requires it
 	# as well.
-	$cmd = "env LANG=C LC_ALL=C dpkg-deb -b $ddir ".$self->get_debpath();
+	$cmd = "env LANG=C LC_ALL=C dpkg-deb".$dpkgdebextra." -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {
 		my $error = "can't create package ".$self->get_debname();
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
