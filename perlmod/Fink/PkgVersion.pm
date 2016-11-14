@@ -4098,13 +4098,26 @@ EOF
 
 	my $has_kernel_dep;
 	my $deps = $self->get_depends(0, 0); # get runtime dependencies
+	my $predeps = $self->pkglist('Pre-Depends');
 
-	foreach (@$deps) {
+	foreach (@$predeps) {
 		foreach (@$_) {
 			$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
 		}
 	}
-	push @$deps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
+	if (not $has_kernel_dep) {
+		foreach (@$deps) {
+			foreach (@$_) {
+				$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
+			}
+		}
+	}
+	push @$predeps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
+
+	$control .= "Pre-Depends: " . &lol2pkglist($predeps) . "\n";
+	if (Fink::Config::get_option("maintainermode")) {
+		print "- Pre-Depends line is: " . &lol2pkglist($predeps) . "\n";
+	}
 
 	$control .= "Depends: " . &lol2pkglist($deps) . "\n";
 	if (Fink::Config::get_option("maintainermode")) {
@@ -4112,8 +4125,8 @@ EOF
 	}
 
 	### Look at other pkglists
-	foreach $field (qw(Provides Replaces Conflicts Pre-Depends
-										 Recommends Suggests Enhances)) {
+	foreach $field (qw(Provides Replaces Conflicts
+			 Recommends Suggests Enhances)) {
 		if ($self->has_pkglist($field)) {
 			$control .= "$field: ".&collapse_space($self->pkglist($field))."\n";
 		}
