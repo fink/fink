@@ -1,8 +1,11 @@
 Package: tar
-Version: 1.26
-Revision: 4
+Version: 1.29
+Revision: 1
 Essential: yes
+Conflicts: dpkg (<= 1.10.21-1244)
+#Breaks: dpkg (<= 1.10.21-1244)
 Depends: <<
+	dpkg (>> 1.10.21-1244) | dpkg-bootstrap,
 	base-files,
 	bzip2,
 	gzip,
@@ -10,10 +13,15 @@ Depends: <<
 	libiconv (>= 1.14-5)
 <<
 BuildAsNobody: false
-Source: mirror:sourceforge:fink/%n-%v.tar.bz2
-#Source: mirror:gnu:%n/%n-%v.tar.bz2
-Source-MD5: 2cee42a2ff4f1cd4f9298eeeb2264519
-PatchScript: perl -pi -e "s/(textdomain \(PACKAGE\)\;)/\1\ngettext\(\"\"\)\;/" src/tar.c
+#Source: mirror:sourceforge:fink/%n-%v.tar.bz2
+Source: mirror:gnu:%n/%n-%v.tar.bz2
+Source-MD5: 955cd533955acb1804b83fd70218da51
+PatchFile: %n.patch
+PatchFile-MD5: fd284f3664c905dab6f522c9465c0170
+PatchScript: <<
+	%{default_script}
+	perl -pi -e "s/(textdomain \(PACKAGE\)\;)/\1\ngettext\(\"\"\)\;/" src/tar.c
+<<
 ConfigureParams: <<
 	--program-transform-name=s/tar/gtar/ \
 	--infodir=%p/share/info \
