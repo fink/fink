@@ -2,8 +2,8 @@ Info2: <<
 Package: texinfo
 Version: 6.3
 Revision: 103.1
-Distribution: 10.10, 10.11, 10.12
-Type: systemperl (5.18.2)
+Distribution: 10.7
+Type: systemperl (5.12.3)
 Source: gnu
 Source-MD5: 9b08daca9bf8eccae9b0f884aba41f9e
 SourceDirectory: %n-%v
@@ -31,7 +31,7 @@ RuntimeDepends: <<
 Replaces: <<
 	tetex-base (<< 3.0-1)
 <<
-PatchFile: %n.patch
+PatchFile: texinfo.patch
 PatchFile-MD5: 982205174c44668fa2642904193f3845
 PatchScript: <<
 #chmod a+x build-aux/install-sh
