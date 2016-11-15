@@ -78,8 +78,8 @@ find %i -type f -name dir | xargs rm -f
 # clean out .la files as they contain references to libperl 
 # which is not necessary
 for i in `find %i -name '*.la'`; do \
-	sed -i "/dependency_libs/ s/'.*'/''/" $i; \
-#
+	sed -i -e "/dependency_libs/ s/'.*'/''/" $i; \
+done
 #
 # epsf.tex is in texlive
 rm -rf %i/share/texmf/tex/generic
@@ -110,6 +110,7 @@ install -d -m 0755 %i/lib/mime/packages
 install -m 0644 fink/info.mime %i/lib/mime/packages/info
 <<
 DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt doc/refcard/txirefcard*.pdf
+#
 Description: GNU documentation system
 DescDetail: <<
 Texinfo is a documentation system that uses a single source file to
@@ -329,8 +330,6 @@ fi
 <<
 SplitOff2: <<
 	Package: install-info
-	# Comment out for bootstrap version
-	Depends: dpkg (>= 1.15)
 	Replaces: texinfo (<< 4.13-1002)
 	Essential: true
 	Files: <<
@@ -341,13 +340,10 @@ SplitOff2: <<
 		share/man/man1/install-info.1
 		share/man/man8
 	<<
-	DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
-	Triggers: <<
-		Interest-noawait: <<
-			%p/share/info
-			%p/info
-		<<
+	InstallScript: <<
+		cp fink/%n.triggers %i/../DEBIAN/triggers
 	<<
+	DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
 	Description: Manage installed documentation in info format
 	DescDetail: <<
 The install-info utility creates the index of all installed documentation
