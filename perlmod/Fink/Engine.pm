@@ -217,7 +217,7 @@ sub process {
 		# check if 'apt-get --ignore-breakage' is implemented
 		if ($aptgetflag == 2 and not $apt_problem) {
 			# only for the commands that needs them
-			if (&execute("$basepath/bin/apt-get --ignore-breakage 1>/dev/null 2>/dev/null", quiet=>1)) {
+			if (&execute("$basepath/bin/apt-get --ignore-breakage --print-uris install 1>/dev/null 2>/dev/null", quiet=>1)) {
 				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but the ".
 				   "'apt-get' tool installed on this system doesn't support it. Please ".
 				   "update your Fink installation (with e.g. 'fink selfupdate').");
