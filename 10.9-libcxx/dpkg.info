@@ -18,6 +18,7 @@ Depends: <<
 <<
 ## debianutils is a runtime dep for the cron job with calls savelog
 RuntimeDepends: <<
+	tar,
 	install-info,
 	debianutils,
 	sensible-utils
