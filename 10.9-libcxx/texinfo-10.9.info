@@ -9,7 +9,6 @@ Source-MD5: 9b08daca9bf8eccae9b0f884aba41f9e
 SourceDirectory: %n-%v
 BuildDepends: <<
 	fink (>= 0.32),
-	fink-package-precedence (>= 0.30-1),
 	libiconv-dev,
 	libncurses5,
 	libgettext8-dev,
@@ -62,7 +61,6 @@ cp man/texi2dvi.1 fink
 make
 mv fink/texi2dvi.1 man/
 touch man/texi2dvi.1
-fink-package-precedence .
 <<
 InfoTest: <<
 	TestConflicts: <<
@@ -79,7 +77,9 @@ find %i -type f -name dir | xargs rm -f
 #
 # clean out .la files as they contain references to libperl 
 # which is not necessary
-sed -i "/dependency_libs/ s/'.*'/''/" `find %i -name '*.la'`
+for i in `find %i -name '*.la'`; do \
+	sed -i "/dependency_libs/ s/'.*'/''/" $i; \
+done
 #
 # epsf.tex is in texlive
 rm -rf %i/share/texmf/tex/generic
