@@ -4149,7 +4149,9 @@ EOF
 			}
 		}
 	}
-	push @$predeps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
+	# Move to Pre-Depends once bootstrapping can statisfy it.
+	# dpkg-bootstrap needs to be fvp aware for this to happen.
+	push @$deps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
 
 	$control .= "Pre-Depends: " . &lol2pkglist($predeps) . "\n";
 	if (Fink::Config::get_option("maintainermode")) {
