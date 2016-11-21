@@ -5,6 +5,12 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.41.x
 \-------------
 
+
+0.41.1 "Jigsaw" (2017-11-13)
+	* Support 10.12.1
+	* Change system-xfree86* versioning to 3:<XQuartz version from receipt>-3, with 
+	  fallback to the current 2:7.2-2 if the receipt is missing.
+	
 0.41.0 "Backsaw" (2017-09-20)
 	* Support 10.12 (Sierra)
 
