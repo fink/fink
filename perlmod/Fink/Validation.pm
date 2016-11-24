@@ -1327,6 +1327,12 @@ sub validate_info_component {
 			$looks_good = 0;
 		}
 
+		# Check for %i/.. (%p could be multilevel)
+		if ($value =~ /\%i\/\.\.([\s\/]|\Z)/) {
+			print "Warning: Field \"$field\"$splitoff_field appears to contain \%p/.. (did you mean \%d instead?). ($filename)\n";
+			$looks_good = 0;
+		}
+
 		# warn for non-plain-text chars
 		# this doesn't work for unicode; is there a good way to accept unicode without just ignoring validation?
 		if ($value =~ /[^[:ascii:]]/) {
