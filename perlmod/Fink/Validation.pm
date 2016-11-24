@@ -1315,14 +1315,14 @@ sub validate_info_component {
 		next if $field =~ /^splitoff/;   # we don't do recursive stuff here
 		$value = $properties->{$field};
 
-		# Check for hardcoded /sw
+		# Check for hardcoded /sw (fink can be installed at other prefixes)
 		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|\Z)/) {
 			print "Warning: Field \"$field\"$splitoff_field appears to contain a hardcoded /sw. ($filename)\n";
 			$looks_good = 0;
 		}
 
-		# Check for %p/src
-		if ($value =~ /\%p\\?\/src\\?\//) {
+		# Check for %p/src (user can set alt or additional srcdirs)
+		if ($value =~ /\%p\/src([\s\/]|\Z)/) {
 			print "Warning: Field \"$field\"$splitoff_field appears to contain \%p/src. ($filename)\n";
 			$looks_good = 0;
 		}
