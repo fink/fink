@@ -1327,9 +1327,13 @@ sub validate_info_component {
 			$looks_good = 0;
 		}
 
-		# Check for %i/.. (%p could be multilevel)
+		# Checks for relative pathnames that break if %p is multilevel
 		if ($value =~ /\%i\/\.\.([\s\/]|\Z)/) {
 			print "Warning: Field \"$field\"$splitoff_field appears to contain \%p/.. (did you mean \%d instead?). ($filename)\n";
+			$looks_good = 0;
+		}
+		if ($value =~ /\.\.\/DEBIAN([\s\/]|\Z)/) {
+			print "Warning: Field \"$field\"$splitoff_field appears to contain ../DEBIAN (did you mean \%d/DEBIAN instead?). ($filename)\n";
 			$looks_good = 0;
 		}
 
