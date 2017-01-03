@@ -1783,34 +1783,40 @@ sub get_custom_mirror {
 
 sub get_build_directory {
 	my $self = shift;
-	my ($dir);
 
-	if (exists $self->{_builddir}) {
-		return $self->{_builddir};
-	}
+	if (!exists $self->{_builddir}) {
+		my $builddir;
 
-	if ($self->is_type('bundle') || $self->is_type('nosource')
-			|| lc $self->get_source() eq "none"
-			|| $self->param_boolean("NoSourceDirectory")) {
-		$self->{_builddir} = $self->get_fullname();
-	}
-	elsif ($self->has_param("SourceDirectory")) {
-		$self->{_builddir} = $self->get_fullname()."/".
-			$self->param_expanded("SourceDirectory");
-	}
-	else {
-		$dir = $self->get_tarball(); # never undef b/c never get here if no source
-		if ($dir =~ /^(.*)[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/) {
-			$dir = $1;
+		if ($self->has_parent()) {
+			# building is a main-package feature, so %b
+			# is based on data there
+			$builddir = $self->get_parent()->get_build_directory();
+		} else {
+			$builddir = $self->get_fullname();  # start with %f
+			if ($self->is_type('bundle') || $self->is_type('nosource')
+					|| lc $self->get_source() eq "none"
+					|| $self->param_boolean("NoSourceDirectory")) {
+				# just %f
+			} elsif ($self->has_param("SourceDirectory")) {
+				# subdir is explicit source directory
+				$builddir .= "/".$self->param_expanded("SourceDirectory");
+			} else {
+				# subdir is derived from tarball filename
+				my $dir = $self->get_tarball(); # never undef b/c never get here if no source
+				if ($dir =~ /^(.*)[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/) {
+					$dir = $1;
+				}
+				if ($dir =~ /^(.*)[\.\-](t[gbx]z|zip|ZIP)$/) {
+					$dir = $1;
+				}
+				$builddir .= "/".$dir;
+			}
 		}
-		if ($dir =~ /^(.*)[\.\-](t[gbx]z|zip|ZIP)$/) {
-			$dir = $1;
-		}
 
-		$self->{_builddir} = $self->get_fullname()."/".$dir;
+		$self->{_builddir} = $builddir;
+		$self->{_expand}->{b} = "$buildpath/$builddir";
 	}
 
-	$self->{_expand}->{b} = "$buildpath/".$self->{_builddir};
 	return $self->{_builddir};
 }
 
