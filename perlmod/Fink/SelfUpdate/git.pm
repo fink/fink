@@ -212,7 +212,7 @@ sub setup_direct_git {
 			chomp($repository);
 		}
 	} else {
-		$repository = 'git@github.com:danielj7/fink-dists.git';
+		$repository = 'ssh://git@github.com/danielj7/fink-dists.git';
 		if (-f "$basepath/lib/fink/URL/developer-git") {
 			$repository = cat "$basepath/lib/fink/URL/developer-git";
 			chomp($repository);
