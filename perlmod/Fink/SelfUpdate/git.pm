@@ -152,12 +152,14 @@ sub setup_direct_git {
 	print "\n";
 	$vcsuser =
 		&prompt_selection("For Fink developers only: ".
-				"Do you wish to use full read/write $vcs access ".
-				"(requires GitHub SSH keys to be set up on your system) ".
-				"or anonymous read-only access? Just press return ".
-				"if you're not sure.",
-				choices => [ "anonymous read-only" => "anonymous",
-							 "read/write" => "developer" ]);
+				"Do you wish to use SSH for $vcs access ".
+				"(Requires GitHub SSH keys to be set up on your system. ".
+				"See https://help.github.com/articles/generating-ssh-keys/) ".
+				"or HTTPS access? (Requires GitHub username and password. ".
+				"See https://help.github.com/articles/caching-your-github-password-in-git/). ".
+				"Just press return if you're not sure.",
+				choices => [ "HTTPS" => "anonymous",
+							 "SSH" => "developer" ]);
 	print "\n";
 
 	# start by creating a temporary directory with the right permissions
