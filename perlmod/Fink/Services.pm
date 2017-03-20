@@ -594,6 +594,8 @@ EOSCRIPT
 		@wrap = map "$_=$ENV{$_}", sort keys %ENV;
 		push @wrap, "__CFPREFERENCES_AVOID_DAEMON=1";
 		unshift @wrap, 'env' if @wrap;
+		my $sandbox = "$Fink::Config::basepath/etc/fink.sb";
+		@wrap = (qw| sandbox-exec -f |, $sandbox, @wrap) if -f $sandbox;
 		my $sudo_cmd = "sudo -u " . Fink::Config::build_as_user_group()->{'user'};
 		@wrap = (split(' ', $sudo_cmd), @wrap, qw/ sh -c /);
 		$wrap_token = "$sudo_cmd [ENV] sh -c ";
