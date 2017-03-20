@@ -76,6 +76,9 @@ BEGIN {
 }
 our @EXPORT_OK;
 
+# Hold status of x11-dev BuildDepends
+our $BD_on_x11_dev = 0;
+
 our %perl_archname_cache;
 
 # Hold the trees of packages that we've built, so we can scan them
@@ -2570,6 +2573,11 @@ sub resolve_depends {
 
 		# Loop over all specifiers and try to resolve each.
 		SPECLOOP: foreach $altspecs (@speclist) {
+
+			if ($altspecs eq "x11-dev") {
+				$BD_on_x11_dev = 1;
+			}
+
 			# A package spec(ification) may consist of multiple alternatives, e.g. "foo | quux (>= 1.0.0-1)"
 			# So we need to break this down into pieces (this is done by get_altspec),
 			# and then try to satisfy at least one of them.
@@ -5067,6 +5075,19 @@ sub get_env {
 		"CPPFLAGS"                 => "-I\%p/include",
 		"LDFLAGS"                  => "-L\%p/lib",
 	);
+
+# if BuildDepends contains x11-dev, append appropriate flags
+
+	if ( $BD_on_x11_dev eq "1" ) {
+		my $osxversion = Fink::Services::get_kernel_vers();
+		if ( $osxversion < 12 ) {
+			$defaults{"CPPFLAGS"} = $defaults{"CPPFLAGS"} . " -I/usr/X11/lib";
+			$defaults{"LDFLAGS"} = $defaults{"LDFLAGS"} . " -L/usr/X11/lib";
+		} else {
+			$defaults{"CPPFLAGS"} = $defaults{"CPPFLAGS"} . " -I/opt/X11/lib";
+			$defaults{"LDFLAGS"} = $defaults{"LDFLAGS"} . " -L/opt/X11/lib";
+		}
+	}
 
 # for building 64bit libraries, we change LDFLAGS:
 
