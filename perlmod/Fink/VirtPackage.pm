@@ -47,7 +47,8 @@ our $VERSION = 1.00;
 # you must not print to STDOUT.
 
 use Fink::Config qw($config $basepath $distribution);
-use POSIX qw(uname tmpnam);
+use POSIX qw(uname);
+use File::Temp qw(:POSIX);
 use Fink::Status;
 use File::Basename;
 use Fink::FinkVersion;
