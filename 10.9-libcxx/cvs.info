@@ -1,7 +1,7 @@
 # -*- coding: ascii; tab-width: 4; x-counterpart: cvs.patch -*-
 Package: cvs
 Version: 1.12.13
-Revision: 18
+Revision: 19
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 #
 Conflicts: cvs-stable, cvs-proxy
@@ -10,6 +10,8 @@ Source: mirror:gnu:non-gnu/%n/source/feature/%v/%n-%v.tar.bz2
 Source-MD5: 956ab476ce276c2d19d583e227dbdbea
 PatchFile: %n.patch
 PatchFile-MD5: c8f480b3d01d9ff1e980044274e1d192
+PatchFile2: %n-snprintf.patch
+PatchFile2-MD5: 25ace918b244283705e796d722cf2092
 ConfigureParams: <<
 --mandir=%p/share/man\
 --infodir=%p/share/info\
@@ -24,7 +26,7 @@ ac_cv_func_working_mktime=no
 SetCFLAGS: -D_DARWIN_NO_64_BIT_INODE -O2 -g -Wall
 BuildDepends: libgettext8-dev, libiconv-dev, fink (>= 0.30.0)
 Depends: libgettext8-shlibs, libiconv
-PatchScript: cat %{PatchFile} | patch -p0
+PatchScript: cat %{PatchFile} | patch -p0; cat %{PatchFile2} | patch -p1
 # Tests take a REALLY long time and I did get a failure.
 #InfoTest: <<
 # TestDepends: coreutils, gawk
@@ -79,6 +81,9 @@ DescPackaging: <<
  Added FreeBSD patch-64bit_crashfix, restore -O2 -g and add -Wall.
  Fixed K&R function parameter issue and uninitialized variables
  detected by clang.
+ With format string strictness, High Sierra also enforces that
+ %n isn't used in dynamic format strings, but we should just
+ disable its use on darwin in general.
 <<
 DescPort: <<
 
