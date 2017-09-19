@@ -1,0 +1,12 @@
+diff -uNr cvs-1.12.13.orig/lib/vasnprintf.c cvs-1.12.13/lib/vasnprintf.c
+--- cvs-1.12.13.orig/lib/vasnprintf.c	2005-05-23 13:44:33.000000000 -0400
++++ cvs-1.12.13/lib/vasnprintf.c	2017-08-12 07:35:35.000000000 -0400
+@@ -557,7 +557,7 @@
+ 		    break;
+ 		  }
+ 		*p = dp->conversion;
+-#if USE_SNPRINTF
++#if USE_SNPRINTF && !defined(__APPLE__)
+ 		p[1] = '%';
+ 		p[2] = 'n';
+ 		p[3] = '\0';
