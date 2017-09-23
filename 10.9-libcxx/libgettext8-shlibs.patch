@@ -1,7 +1,19 @@
-diff -ruNp gettext-0.19.8.1-orig/gettext-runtime/libasprintf/Makefile.in gettext-0.19.8.1/gettext-runtime/libasprintf/Makefile.in
---- gettext-0.19.8.1-orig/gettext-runtime/libasprintf/Makefile.in	2016-06-11 08:00:49.000000000 -0500
-+++ gettext-0.19.8.1/gettext-runtime/libasprintf/Makefile.in	2016-06-12 14:57:08.000000000 -0500
-@@ -545,7 +545,7 @@ lib_asprintf_EXTRASOURCES = \
+diff -uNr gettext-0.19.8.1,orig/gettext-runtime/intl/vasnprintf.c gettext-0.19.8.1/gettext-runtime/intl/vasnprintf.c
+--- gettext-0.19.8.1,orig/gettext-runtime/intl/vasnprintf.c	2016-03-20 03:37:53.000000000 -0400
++++ gettext-0.19.8.1/gettext-runtime/intl/vasnprintf.c	2017-08-12 10:06:12.000000000 -0400
+@@ -4858,7 +4858,7 @@
+ #endif
+                   *fbp = dp->conversion;
+ #if USE_SNPRINTF
+-# if !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
++# if !defined(__APPLE__) && !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
+                 fbp[1] = '%';
+                 fbp[2] = 'n';
+                 fbp[3] = '\0';
+diff -uNr gettext-0.19.8.1,orig/gettext-runtime/libasprintf/Makefile.in gettext-0.19.8.1/gettext-runtime/libasprintf/Makefile.in
+--- gettext-0.19.8.1,orig/gettext-runtime/libasprintf/Makefile.in	2016-06-11 09:00:49.000000000 -0400
++++ gettext-0.19.8.1/gettext-runtime/libasprintf/Makefile.in	2017-08-12 10:07:54.000000000 -0400
+@@ -545,7 +545,7 @@
  # How to build libasprintf.
  # With libtool 1.5.14, on some platforms, like BeOS, "libtool --tag=CXX" fails
  # to create a shared library, however "libtool --tag=CC" succeeds.
@@ -10,10 +22,46 @@ diff -ruNp gettext-0.19.8.1-orig/gettext-runtime/libasprintf/Makefile.in gettext
  libgnu_la_SOURCES = size_max.h xsize.h xsize.c
  libgnu_la_LIBADD = $(gl_LTLIBOBJS) @LTALLOCA@
  libgnu_la_DEPENDENCIES = $(gl_LTLIBOBJS) @LTALLOCA@
-diff -ruNp gettext-0.19.8.1-orig/gettext-tools/src/Makefile.in gettext-0.19.8.1/gettext-tools/src/Makefile.in
---- gettext-0.19.8.1-orig/gettext-tools/src/Makefile.in	2016-06-11 08:01:14.000000000 -0500
-+++ gettext-0.19.8.1/gettext-tools/src/Makefile.in	2016-06-12 14:57:08.000000000 -0500
-@@ -3291,10 +3291,10 @@ urlget-urlget.obj: urlget.c
+diff -uNr gettext-0.19.8.1,orig/gettext-runtime/libasprintf/vasnprintf.c gettext-0.19.8.1/gettext-runtime/libasprintf/vasnprintf.c
+--- gettext-0.19.8.1,orig/gettext-runtime/libasprintf/vasnprintf.c	2016-03-20 03:37:53.000000000 -0400
++++ gettext-0.19.8.1/gettext-runtime/libasprintf/vasnprintf.c	2017-08-12 10:05:39.000000000 -0400
+@@ -4858,7 +4858,7 @@
+ #endif
+                   *fbp = dp->conversion;
+ #if USE_SNPRINTF
+-# if !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
++# if !defined(__APPLE__) && !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
+                 fbp[1] = '%';
+                 fbp[2] = 'n';
+                 fbp[3] = '\0';
+diff -uNr gettext-0.19.8.1,orig/gettext-tools/gnulib-lib/vasnprintf.c gettext-0.19.8.1/gettext-tools/gnulib-lib/vasnprintf.c
+--- gettext-0.19.8.1,orig/gettext-tools/gnulib-lib/vasnprintf.c	2016-06-11 09:00:02.000000000 -0400
++++ gettext-0.19.8.1/gettext-tools/gnulib-lib/vasnprintf.c	2017-08-12 10:06:28.000000000 -0400
+@@ -4858,7 +4858,7 @@
+ #endif
+                   *fbp = dp->conversion;
+ #if USE_SNPRINTF
+-# if !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
++# if !defined(__APPLE__) && !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
+                 fbp[1] = '%';
+                 fbp[2] = 'n';
+                 fbp[3] = '\0';
+diff -uNr gettext-0.19.8.1,orig/gettext-tools/libgettextpo/vasnprintf.c gettext-0.19.8.1/gettext-tools/libgettextpo/vasnprintf.c
+--- gettext-0.19.8.1,orig/gettext-tools/libgettextpo/vasnprintf.c	2016-06-11 09:00:34.000000000 -0400
++++ gettext-0.19.8.1/gettext-tools/libgettextpo/vasnprintf.c	2017-08-12 10:06:49.000000000 -0400
+@@ -4858,7 +4858,7 @@
+ #endif
+                   *fbp = dp->conversion;
+ #if USE_SNPRINTF
+-# if !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
++# if !defined(__APPLE__) && !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
+                 fbp[1] = '%';
+                 fbp[2] = 'n';
+                 fbp[3] = '\0';
+diff -uNr gettext-0.19.8.1,orig/gettext-tools/src/Makefile.in gettext-0.19.8.1/gettext-tools/src/Makefile.in
+--- gettext-0.19.8.1,orig/gettext-tools/src/Makefile.in	2016-06-11 09:01:14.000000000 -0400
++++ gettext-0.19.8.1/gettext-tools/src/Makefile.in	2017-08-12 10:07:54.000000000 -0400
+@@ -3291,10 +3291,10 @@
  	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(urlget_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o urlget-urlget.obj `if test -f 'urlget.c'; then $(CYGPATH_W) 'urlget.c'; else $(CYGPATH_W) '$(srcdir)/urlget.c'; fi`
  
  xgettext-xgettext.o: xgettext.c
