@@ -1,6 +1,20 @@
-diff -Nurd libiconv-1.14/lib/aliases.gperf libiconv-1.14/lib/aliases.gperf
---- libiconv-1.14/lib/aliases.gperf	2007-11-11 11:47:01.000000000 -0500
-+++ libiconv-1.14/lib/aliases.gperf	2008-01-24 10:49:22.000000000 -0500
+diff -Nurd libiconv-1.15.orig/Makefile.devel libiconv-1.15/Makefile.devel
+--- libiconv-1.15.orig/Makefile.devel	2017-01-01 18:00:24.000000000 -0500
++++ libiconv-1.15/Makefile.devel	2017-09-14 06:33:41.000000000 -0400
+@@ -19,9 +19,7 @@
+ all : srclib/Makefile.gnulib srclib/Makefile.in \
+       configures config.h.in \
+       include/iconv.h.build.in \
+-      lib/aliases.h lib/aliases_sysaix.h lib/aliases_syshpux.h lib/aliases_sysosf1.h lib/aliases_syssolaris.h \
+-      lib/aliases_aix.h lib/aliases_aix_sysaix.h \
+-      lib/aliases_osf1.h lib/aliases_osf1_sysosf1.h \
++      lib/aliases.h \
+       lib/aliases_dos.h \
+       lib/aliases_extra.h \
+       lib/flags.h lib/translit.h \
+diff -Nurd libiconv-1.15.orig/lib/aliases.gperf libiconv-1.15/lib/aliases.gperf
+--- libiconv-1.15.orig/lib/aliases.gperf	2017-01-01 18:02:56.000000000 -0500
++++ libiconv-1.15/lib/aliases.gperf	2017-09-14 06:33:41.000000000 -0400
 @@ -21,6 +21,9 @@
  US, ei_ascii
  CSASCII, ei_ascii
@@ -11,10 +25,10 @@ diff -Nurd libiconv-1.14/lib/aliases.gperf libiconv-1.14/lib/aliases.gperf
  UCS-2, ei_ucs2
  ISO-10646-UCS-2, ei_ucs2
  CSUNICODE, ei_ucs2
-diff -Nurd libiconv-1.14/lib/converters.h libiconv-1.14/lib/converters.h
---- libiconv-1.14/lib/converters.h	2007-05-25 19:18:25.000000000 -0400
-+++ libiconv-1.14/lib/converters.h	2008-01-24 10:49:22.000000000 -0500
-@@ -119,6 +119,7 @@
+diff -Nurd libiconv-1.15.orig/lib/converters.h libiconv-1.15/lib/converters.h
+--- libiconv-1.15.orig/lib/converters.h	2016-10-13 20:31:28.000000000 -0400
++++ libiconv-1.15/lib/converters.h	2017-09-14 06:33:41.000000000 -0400
+@@ -122,6 +122,7 @@
  /* General multi-byte encodings */
  #include "utf8.h"
  #include "ucs2.h"
@@ -22,10 +36,10 @@ diff -Nurd libiconv-1.14/lib/converters.h libiconv-1.14/lib/converters.h
  #include "ucs2be.h"
  #include "ucs2le.h"
  #include "ucs4.h"
-diff -Nurd libiconv-1.14/lib/encodings.def libiconv-1.14/lib/encodings.def
---- libiconv-1.14/lib/encodings.def	2007-05-25 19:17:48.000000000 -0400
-+++ libiconv-1.14/lib/encodings.def	2008-01-24 10:49:22.000000000 -0500
-@@ -69,6 +69,12 @@
+diff -Nurd libiconv-1.15.orig/lib/encodings.def libiconv-1.15/lib/encodings.def
+--- libiconv-1.15.orig/lib/encodings.def	2014-01-02 17:23:02.000000000 -0500
++++ libiconv-1.15/lib/encodings.def	2017-09-14 06:33:41.000000000 -0400
+@@ -68,6 +68,12 @@
              utf8)
  #endif
  
@@ -38,9 +52,9 @@ diff -Nurd libiconv-1.14/lib/encodings.def libiconv-1.14/lib/encodings.def
  DEFENCODING(( "UCS-2",                  /* glibc */
                "ISO-10646-UCS-2",        /* IANA */
                "csUnicode",              /* IANA */
-diff -Nurd libiconv-1.14/lib/flags.h libiconv-1.14/lib/flags.h
---- libiconv-1.14/lib/flags.h	2007-11-11 11:47:36.000000000 -0500
-+++ libiconv-1.14/lib/flags.h	2008-01-24 10:49:22.000000000 -0500
+diff -Nurd libiconv-1.15.orig/lib/flags.h libiconv-1.15/lib/flags.h
+--- libiconv-1.15.orig/lib/flags.h	2017-01-01 18:03:24.000000000 -0500
++++ libiconv-1.15/lib/flags.h	2017-09-14 06:33:41.000000000 -0400
 @@ -14,6 +14,7 @@
  
  #define ei_ascii_oflags (0)
@@ -49,10 +63,10 @@ diff -Nurd libiconv-1.14/lib/flags.h libiconv-1.14/lib/flags.h
  #define ei_ucs2_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
  #define ei_ucs2be_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
  #define ei_ucs2le_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
-diff -Nurd libiconv-1.14/lib/iconv.c libiconv-1.14/lib/iconv.c
---- libiconv-1.14/lib/iconv.c	2007-04-23 17:24:57.000000000 -0400
-+++ libiconv-1.14/lib/iconv.c	2008-01-24 10:49:22.000000000 -0500
-@@ -605,6 +605,29 @@
+diff -Nurd libiconv-1.15.orig/lib/iconv.c libiconv-1.15/lib/iconv.c
+--- libiconv-1.15.orig/lib/iconv.c	2016-11-19 11:09:28.000000000 -0500
++++ libiconv-1.15/lib/iconv.c	2017-09-14 06:33:41.000000000 -0400
+@@ -609,6 +609,29 @@
  strong_alias (libiconv_open, iconv_open)
  strong_alias (libiconv, iconv)
  strong_alias (libiconv_close, iconv_close)
@@ -82,9 +96,9 @@ diff -Nurd libiconv-1.14/lib/iconv.c libiconv-1.14/lib/iconv.c
  #endif
  
  #endif
-diff -Nurd libiconv-1.14/lib/utf8mac.h libiconv-1.14/lib/utf8mac.h
---- libiconv-1.14/lib/utf8mac.h	1969-12-31 19:00:00.000000000 -0500
-+++ libiconv-1.14/lib/utf8mac.h	2008-01-24 10:49:22.000000000 -0500
+diff -Nurd libiconv-1.15.orig/lib/utf8mac.h libiconv-1.15/lib/utf8mac.h
+--- libiconv-1.15.orig/lib/utf8mac.h	1969-12-31 19:00:00.000000000 -0500
++++ libiconv-1.15/lib/utf8mac.h	2017-09-14 06:50:33.000000000 -0400
 @@ -0,0 +1,1608 @@
 +/*
 + * Copyright (C) 2003 Apple Computer, Inc. All rights reserved.
@@ -246,7 +260,7 @@ diff -Nurd libiconv-1.14/lib/utf8mac.h libiconv-1.14/lib/utf8mac.h
 +	0x1E08, 0xA32C,   0x1E09, 0xA32E,   0x1E0A, 0x2330,   0x1E0B, 0x2332,
 +	0x1E0C, 0x2334,   0x1E0D, 0x2336,   0x1E0E, 0x2338,   0x1E0F, 0x233A,
 +	0x1E10, 0x233C,   0x1E11, 0x233E,   0x1E12, 0x2340,   0x1E13, 0x2342,
-+	0x1E14, 0xA344,   0x1E15, 0xA346,   0x1E16, 0xA348,   0x1E17, 0xA34A,
++	0x1.15p0f, 0xA344,   0x1E15, 0xA346,   0x1E16, 0xA348,   0x1E17, 0xA34A,
 +	0x1E18, 0x234C,   0x1E19, 0x234E,   0x1E1A, 0x2350,   0x1E1B, 0x2352,
 +	0x1E1C, 0xA354,   0x1E1D, 0xA356,   0x1E1E, 0x2358,   0x1E1F, 0x235A,
 +	0x1E20, 0x235C,   0x1E21, 0x235E,   0x1E22, 0x2360,   0x1E23, 0x2362,
@@ -307,7 +321,7 @@ diff -Nurd libiconv-1.14/lib/utf8mac.h libiconv-1.14/lib/utf8mac.h
 +	0x1F07, 0xA514,   0x1F08, 0x2516,   0x1F09, 0x2518,   0x1F0A, 0xA51A,
 +	0x1F0B, 0xA51C,   0x1F0C, 0xA51E,   0x1F0D, 0xA520,   0x1F0E, 0xA522,
 +	0x1F0F, 0xA524,   0x1F10, 0x2526,   0x1F11, 0x2528,   0x1F12, 0xA52A,
-+	0x1F13, 0xA52C,   0x1F14, 0xA52E,   0x1F15, 0xA530,   0x1F18, 0x2532,
++	0x1F13, 0xA52C,   0x1.15p0f, 0xA52E,   0x1F15, 0xA530,   0x1F18, 0x2532,
 +	0x1F19, 0x2534,   0x1F1A, 0xA536,   0x1F1B, 0xA538,   0x1F1C, 0xA53A,
 +	0x1F1D, 0xA53C,   0x1F20, 0x253E,   0x1F21, 0x2540,   0x1F22, 0xA542,
 +	0x1F23, 0xA544,   0x1F24, 0xA546,   0x1F25, 0xA548,   0x1F26, 0xA54A,
@@ -781,7 +795,7 @@ diff -Nurd libiconv-1.14/lib/utf8mac.h libiconv-1.14/lib/utf8mac.h
 +	0x006F, 0x00F2, 0x0075, 0x00F9, 0x0077, 0x1E81, 0x0079, 0x1EF3,
 +	0x00A8, 0x1FED, 0x00C2, 0x1EA6, 0x00CA, 0x1EC0, 0x00D4, 0x1ED2,
 +	0x00DC, 0x01DB, 0x00E2, 0x1EA7, 0x00EA, 0x1EC1, 0x00F4, 0x1ED3,
-+	0x00FC, 0x01DC, 0x0102, 0x1EB0, 0x0103, 0x1EB1, 0x0112, 0x1E14,
++	0x00FC, 0x01DC, 0x0102, 0x1EB0, 0x0103, 0x1EB1, 0x0112, 0x1.15p0f,
 +	0x0113, 0x1E15, 0x014C, 0x1E50, 0x014D, 0x1E51, 0x01A0, 0x1EDC,
 +	0x01A1, 0x1EDD, 0x01AF, 0x1EEA, 0x01B0, 0x1EEB, 0x0391, 0x1FBA,
 +	0x0395, 0x1FC8, 0x0397, 0x1FCA, 0x0399, 0x1FDA, 0x039F, 0x1FF8,
@@ -819,7 +833,7 @@ diff -Nurd libiconv-1.14/lib/utf8mac.h libiconv-1.14/lib/utf8mac.h
 +	0x03C9, 0x03CE, 0x03CA, 0x0390, 0x03CB, 0x03B0, 0x03D2, 0x03D3,
 +	0x0413, 0x0403, 0x041A, 0x040C, 0x0433, 0x0453, 0x043A, 0x045C,
 +	0x1F00, 0x1F04, 0x1F01, 0x1F05, 0x1F08, 0x1F0C, 0x1F09, 0x1F0D,
-+	0x1F10, 0x1F14, 0x1F11, 0x1F15, 0x1F18, 0x1F1C, 0x1F19, 0x1F1D,
++	0x1F10, 0x1.15p0f, 0x1F11, 0x1F15, 0x1F18, 0x1F1C, 0x1F19, 0x1F1D,
 +	0x1F20, 0x1F24, 0x1F21, 0x1F25, 0x1F28, 0x1F2C, 0x1F29, 0x1F2D,
 +	0x1F30, 0x1F34, 0x1F31, 0x1F35, 0x1F38, 0x1F3C, 0x1F39, 0x1F3D,
 +	0x1F40, 0x1F44, 0x1F41, 0x1F45, 0x1F48, 0x1F4C, 0x1F49, 0x1F4D,
@@ -1694,9 +1708,9 @@ diff -Nurd libiconv-1.14/lib/utf8mac.h libiconv-1.14/lib/utf8mac.h
 +
 +    return len;
 +}
-diff -Nurd libiconv-1.14/man/iconv.1 libiconv-1.14/man/iconv.1
---- libiconv-1.14/man/iconv.1	2007-10-07 14:23:11.000000000 -0400
-+++ libiconv-1.14/man/iconv.1	2008-01-24 10:50:02.000000000 -0500
+diff -Nurd libiconv-1.15.orig/man/iconv.1 libiconv-1.15/man/iconv.1
+--- libiconv-1.15.orig/man/iconv.1	2014-01-02 17:23:02.000000000 -0500
++++ libiconv-1.15/man/iconv.1	2017-09-14 06:33:41.000000000 -0400
 @@ -104,5 +104,4 @@
  .SH "CONFORMING TO"
  POSIX:2001
@@ -1704,9 +1718,9 @@ diff -Nurd libiconv-1.14/man/iconv.1 libiconv-1.14/man/iconv.1
 -.BR iconv_open (3),
 -.BR locale (7)
 +.BR iconv_open (3)
-diff -Nurd libiconv-1.14/src/Makefile.in libiconv-1.14/src/Makefile.in
---- libiconv-1.14/src/Makefile.in	2007-05-27 18:15:52.000000000 -0400
-+++ libiconv-1.14/src/Makefile.in	2008-01-24 10:51:45.000000000 -0500
+diff -Nurd libiconv-1.15.orig/src/Makefile.in libiconv-1.15/src/Makefile.in
+--- libiconv-1.15.orig/src/Makefile.in	2016-12-04 12:12:21.000000000 -0500
++++ libiconv-1.15/src/Makefile.in	2017-09-14 06:33:41.000000000 -0400
 @@ -113,7 +113,7 @@
  	if [ ! -d $(DESTDIR)$(bindir) ] ; then $(mkinstalldirs) $(DESTDIR)$(bindir) ; fi
  	case "@host_os@" in \
@@ -1716,10 +1730,10 @@ diff -Nurd libiconv-1.14/src/Makefile.in libiconv-1.14/src/Makefile.in
  	esac
  	$(INSTALL_PROGRAM_ENV) $(LIBTOOL_INSTALL) $(INSTALL_PROGRAM) iconv$(EXEEXT) $(DESTDIR)$(bindir)/iconv$(EXEEXT)
  
-diff -Nurd libiconv-1.14/src/iconv.c libiconv-1.14/src/iconv.c
---- libiconv-1.14/src/iconv.c	2007-07-07 13:07:36.000000000 -0400
-+++ libiconv-1.14/src/iconv.c	2008-01-24 10:49:22.000000000 -0500
-@@ -981,6 +981,10 @@
+diff -Nurd libiconv-1.15.orig/src/iconv.c libiconv-1.15/src/iconv.c
+--- libiconv-1.15.orig/src/iconv.c	2017-01-30 17:46:41.000000000 -0500
++++ libiconv-1.15/src/iconv.c	2017-09-14 06:33:41.000000000 -0400
+@@ -982,6 +982,10 @@
        const char *option = argv[i] + 1;
        if (*option == '\0')
          usage(1);
@@ -1730,16 +1744,3 @@ diff -Nurd libiconv-1.14/src/iconv.c libiconv-1.14/src/iconv.c
        for (; *option; option++)
          switch (*option) {
            case 'c': discard_unconvertible = 1; break;
---- libiconv-1.14/Makefile.devel	2011-07-03 10:05:11.000000000 -0400
-+++ libiconv-1.14/Makefile.devel	2012-11-29 12:37:45.000000000 -0500
-@@ -19,9 +19,7 @@
- all : configures config.h.in \
-       srclib/Makefile.gnulib srclib/Makefile.in \
-       include/iconv.h.build.in \
--      lib/aliases.h lib/aliases_sysaix.h lib/aliases_syshpux.h lib/aliases_sysosf1.h lib/aliases_syssolaris.h \
--      lib/aliases_aix.h lib/aliases_aix_sysaix.h \
--      lib/aliases_osf1.h lib/aliases_osf1_sysosf1.h \
-+      lib/aliases.h \
-       lib/aliases_dos.h \
-       lib/aliases_extra.h \
-       lib/flags.h lib/translit.h \

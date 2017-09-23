@@ -1,24 +1,24 @@
 Package: libiconv
-Version: 1.14
-Revision: 8
+Version: 1.15
+Revision: 1
 Description: Character set conversion library
 License: LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Depends: base-files
-BuildDepends: fink (>= 0.24.12)
+BuildDepends: fink (>= 0.30.0)
 Essential: yes
-#Source: mirror:sourceforge:fink/%n-%v.tar.gz
 Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
-Source-MD5: e34509b1623cec449dfeb73d7ce9c6c6
+Source-MD5: ace8b5f2db42f7b3b3057585e80d9808
 Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
-#Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
 Source2-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 Source3: mirror:gnu:gperf/gperf-3.0.4.tar.gz
 Source3-MD5: c1f1db32fb6598d6a93e6e88796a8632
 PatchFile: %n.patch
-PatchFile-MD5: 93f202f6f6e27a9707ad8a21fc15aef4
+PatchFile-MD5: df5031bae867ed716e5e3637ebe0ca62
+PatchFile2: %n-gettext.patch
+PatchFile2-MD5: e1def8d245425bc51f604ce05dbe9542 
 PatchScript: <<
-	cd %b/..; patch -p0 < %{PatchFile}
+	cd %b/..; patch -p0 < %{PatchFile}; patch -p0 < %{PatchFile2}
 <<
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
@@ -82,7 +82,7 @@ rm -f %i/lib/charset.alias
 DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
 Shlibs: <<
 	%p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
-	%p/lib/libiconv.2.dylib 8.0.0 %n (>= 1.14-1)
+	%p/lib/libiconv.2.dylib 9.0.0 %n (>= 1.15-1)
 <<
 #
 PostInstScript: <<
@@ -150,5 +150,21 @@ our build system.
 * On 10.7+, modernize compiler wrapper
 * Don't build genaliases headers for systems that we will not even use.
   Build is -jN safe afterwards.
+
+2017-08-23 Jack Howarth
+ With format string strictness, High Sierra also enforces that
+ %n isn't used in dynamic format strings, but we should just
+ disable its use on darwin in general. (libiconv-gettext.patch)
+ 
+ PatchFile updated to solve build failure:
+ In file included from ./iconv.c:71:
+ In file included from ./converters.h:125:
+ ./utf8mac.h:161:8: error: hexadecimal floating constant requires an exponent
+        0x1.15, 0xA344,   0x1E15, 0xA346,   0x1E16, 0xA348,   0x1E17, 0xA34A,
+ 
+ Patching solution for exponent described at 
+ 
+ https://stackoverflow.com/questions/24288691/
+ why-does-hexadecimal-floating-point-need-to-have-a-specified-exponent
 <<
 Homepage: http://www.gnu.org/software/libiconv/
