@@ -1,36 +1,30 @@
-From: Pavel Raiskup <address@hidden>
-Date: Thu, 2 Jun 2016 07:28:01 +0200
-Subject: [PATCH] tests: fix numeric.at for BSD
-
-While creating file, BSD kernels inherit the group ownership from
-parent directory.
-http://lists.gnu.org/archive/html/bug-tar/2016-06/msg00000.html
-
-* tests/numeric.at: Attempt to 'chown' the newly created directory
-to proper group (at least on affected machines that command is
-expected to succeed).
----
- THANKS           | 1 +
- tests/numeric.at | 9 ++++++---
- 2 files changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/THANKS b/THANKS
-index f1def93..8d00396 100644
---- a/THANKS
-+++ b/THANKS
-@@ -94,6 +94,7 @@ Christian Laubscher	christian.laubscher@tiscalinet.ch
+diff -uNr tar-1.29.orig/THANKS tar-1.29/THANKS
+--- tar-1.29.orig/THANKS	2016-03-24 01:29:55.000000000 -0400
++++ tar-1.29/THANKS	2017-08-13 09:33:19.000000000 -0400
+@@ -94,6 +94,7 @@
  Christian T. Dum	ctd@mpe-garching.mpg.de
  Christian von Roques	roques@pond.sub.org
  Christian Wetzel	wetzel@phoenix-pacs.de
 +Christian Weisgerber	christophe.kalt@kbcfp.com
  Christoph Litauer	litauer@mailhost.uni-koblenz.de
  Christophe Colle	colle@krtkg1.rug.ac.be
- Christophe Kalt	Christophe.Kalt@kbcfp.com
-diff --git a/tests/numeric.at b/tests/numeric.at
-index 2fcd7ea..7a97248 100644
---- a/tests/numeric.at
-+++ b/tests/numeric.at
-@@ -27,14 +27,17 @@ tar $1 -vvf a dir |dnl
+ Christophe Kalt		Christophe.Kalt@kbcfp.com
+diff -uNr tar-1.29.orig/gnu/vasnprintf.c tar-1.29/gnu/vasnprintf.c
+--- tar-1.29.orig/gnu/vasnprintf.c	2015-08-24 06:08:26.000000000 -0400
++++ tar-1.29/gnu/vasnprintf.c	2017-08-13 09:32:52.000000000 -0400
+@@ -4858,7 +4858,7 @@
+ #endif
+                   *fbp = dp->conversion;
+ #if USE_SNPRINTF
+-# if !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
++# if !defined(__APPLE__) && !(((__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined __UCLIBC__) || ((defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__))
+                 fbp[1] = '%';
+                 fbp[2] = 'n';
+                 fbp[3] = '\0';
+diff -uNr tar-1.29.orig/tests/numeric.at tar-1.29/tests/numeric.at
+--- tar-1.29.orig/tests/numeric.at	2016-03-18 13:23:55.000000000 -0400
++++ tar-1.29/tests/numeric.at	2017-08-13 09:33:19.000000000 -0400
+@@ -27,14 +27,17 @@
  ])
  
  AT_TAR_CHECK([
@@ -51,6 +45,3 @@ index 2fcd7ea..7a97248 100644
  TESTOP([--create])
  TESTOP([--list])
  TESTOP([--diff])
--- 
-2.5.5
-

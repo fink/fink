@@ -1,6 +1,6 @@
 Package: tar
 Version: 1.29
-Revision: 1
+Revision: 2
 Essential: yes
 Conflicts: dpkg (<= 1.10.21-1244)
 #Breaks: dpkg (<= 1.10.21-1244)
@@ -17,7 +17,7 @@ BuildAsNobody: false
 Source: mirror:gnu:%n/%n-%v.tar.bz2
 Source-MD5: 955cd533955acb1804b83fd70218da51
 PatchFile: %n.patch
-PatchFile-MD5: fd284f3664c905dab6f522c9465c0170
+PatchFile-MD5: 1de48773d822a8716a742ce0b4bba96e
 PatchScript: <<
 	%{default_script}
 	perl -pi -e "s/(textdomain \(PACKAGE\)\;)/\1\ngettext\(\"\"\)\;/" src/tar.c
@@ -76,6 +76,10 @@ DescPackaging: <<
  on 10.11+, and is harmless for other OS X.
 
  Previous versions by Christoph Pfisterer.
+
+ With format string strictness, High Sierra also enforces that
+ %n isn't used in dynamic format strings, but we should just
+ disable its use on darwin in general.
 <<
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
