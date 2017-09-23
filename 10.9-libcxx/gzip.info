@@ -1,9 +1,11 @@
 Package: gzip
 Version: 1.6
-Revision: 1
+Revision: 2
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 #Source: mirror:gnu:%n/%n-%v.tar.gz
 Source-MD5: 38603cb2843bf5681ff41aab3bcd6a20
+PatchFile: %n.patch
+PatchFile-MD5: f4c32d5450ed676d05e5efe4c9ed7c30
 Essential: yes
 Depends: base-files
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man
@@ -26,6 +28,10 @@ DescPackaging: <<
 We also add some alternate names for the commands.
 
 Previous versions by Christoph Pfisterer.
+
+With format string strictness, High Sierra also enforces that
+%n isn't used in dynamic format strings, but we should just
+disable its use on darwin in general.
 <<
 License: GPL
 #Homepage: http://www.gzip.org/
