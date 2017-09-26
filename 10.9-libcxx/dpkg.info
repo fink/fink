@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1245
+Revision: 1246
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
 Depends: <<
@@ -22,7 +22,7 @@ Source2-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 PatchFile: %n.patch
 PatchFile-MD5: 912dae1e60c3ccde9a7875e0c0eb3840
 PatchFile2: libgettext8-shlibs.patch
-PatchFile2-MD5: d4667d68ebe55562d5b443550c60c6f8
+PatchFile2-MD5: 9a702c97d1c95d216f0908e368e7ad42
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p0
@@ -100,11 +100,14 @@ DescPackaging: <<
  We now build gettext-tools during the build of dpkg, but don't install it;
  it is built only so that msgfmt and xgettext are available during the
  dpkg build.  The only alternative would be to make gettext-tools an essential
- pakcages, since essential packages cannot depend or builddepend on
+ package, since essential packages cannot depend or builddepend on
  non-essential packages. Only build this gettext static, since don't need the
  actual libs themselves.
 <<
 DescPort: <<
+1.10.21-1246
+- Sync libgettext8-shlibs.patch with that from libgettext8-shlibs-0.19.8.1-2
+
 1.10.21-1245
 - Patch for tar > 1.28 (https://anonscm.debian.org/cgit/dpkg/dpkg.git/commit/?h=1.16.x&id=9c2795a5ff8668353f8497c3ae3d2aac099902da)
 
