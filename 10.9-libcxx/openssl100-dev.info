@@ -1,6 +1,6 @@
 # -*- coding: ascii; tab-width: 4; x-counterpart: openssl100-dev.patch -*-
 Package: openssl100-dev
-Version: 1.0.2h
+Version: 1.0.2k
 Revision: 1
 Description: Secure Sockets Layer and Crypto Library
 License: OSI-Approved
@@ -17,6 +17,7 @@ Conflicts: <<
 	libressl-libssl32,
 	libressl-libssl33,
 	openssl100-dev,
+	openssl110-dev,
 	system-openssl-dev
 <<
 Replaces: <<
@@ -29,6 +30,7 @@ Replaces: <<
 	libressl-libssl32,
 	libressl-libssl33,
 	openssl100-dev,
+	openssl110-dev,
 	system-openssl-dev
 <<
 BuildDependsOnly: True
@@ -38,7 +40,7 @@ CustomMirror: <<
   Primary:   http://www.openssl.org/
   Secondary: ftp://ftp.openssl.org/
 <<
-Source-MD5: 9392e65072ce4b614c1392eefc1f23d0
+Source-MD5: f965fc0bf01bf882b31314b61391ae65
 
 PatchFile: %{ni}.patch
 PatchFile-MD5: 8d86d626da439dd15dfb515193d4d573 
