@@ -42,30 +42,32 @@ CompileScript: <<
 	%p/bin/fink -y install gettext-bin libgettext8-dev libiconv-dev libncurses5
 	cd %b/../gettext-0.19.8.1/gettext-tools
 	env EMACS=no JAVA=/usr/bin/java GCJ=/usr/bin/javac ./configure \
-	--prefix="%b/../_inst%p" \
-	--infodir='${prefix}/share/info' \
-	--mandir='${prefix}/share/man' \
-	--with-included-gettext \
-	--disable-csharp \
-	--disable-rpath \
-	--disable-libasprintf \
-	--disable-shared \
-	--with-included-glib \
-	--with-included-libcroco \
-	--with-included-libxml \
-	--with-included-libunistring \
-	--without-git \
-	--without-cvs \
-	ac_cv_prog_AWK=/usr/bin/awk \
-	ac_cv_path_GREP=/usr/bin/grep \
-	ac_cv_path_SED=/usr/bin/sed
-	make
+		--prefix="%b/../_inst%p" \
+		--infodir='${prefix}/share/info' \
+		--mandir='${prefix}/share/man' \
+		--with-included-gettext \
+		--disable-csharp \
+		--disable-rpath \
+		--disable-libasprintf \
+		--disable-shared \
+		--with-included-glib \
+		--with-included-libcroco \
+		--with-included-libxml \
+		--with-included-libunistring \
+		--without-git \
+		--without-cvs \
+		ac_cv_prog_AWK=/usr/bin/awk \
+		ac_cv_path_GREP=/usr/bin/grep \
+		ac_cv_path_SED=/usr/bin/sed
+	/usr/bin/make -w
 	rm -rf %b/../_inst
-	make install
+	/usr/bin/make -w install
 	### Now actually build dpkg using msgfmt and xgettext we just compiled
 	cd %b
-	PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure --build=%m-apple-darwin %c
-	/usr/bin/make
+	PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure \
+		--build=%m-apple-darwin %c \
+		ac_cv_prog_SED=/usr/bin/sed
+	/usr/bin/make -w
 <<
 ConfigureParams: <<
 	--without-start-stop-daemon \
