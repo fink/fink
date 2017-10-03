@@ -2,6 +2,16 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.42.x
+\-------------
+
+0.42.0 "Hello Whitney" (2017-10-03)
+	* Support 10.13.0
+	* Add official support for 10.12.2-6
+	* Add %p/Library/Launch{Agents, Daemons}
+	* Other fixes and enhancements (see the commits)
+
+/-------------
 | fink 0.41.x
 \-------------
 
