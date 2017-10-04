@@ -360,7 +360,7 @@ sub do_direct_git {
 
 	# then attempt to merge remote changes
 
-	$cmd = "$gitpath merge $verbosity origin/master";
+	$cmd = "$gitpath merge --only-ff $verbosity origin/master";
 	$cmd = "/usr/bin/su $username -c '$cmd'" if ($username);
 	if (&execute($cmd)) {
 		$errors++;
