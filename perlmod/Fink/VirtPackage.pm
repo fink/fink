@@ -429,23 +429,26 @@ directories exist.
 					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home',
 					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
 					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
+					'9, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home'
 					);
 	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
 		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
+		my $testver; # for later
 		# Tweak $javadir to point to where stuff actually lives for JDK 1.6 and earlier.
 		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/ or $ver =~ /1.6.0/) ;
 		if (opendir(DIR, $javadir)) {
 			chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
 			for my $dir (reverse(sort(@dirs))) {
-				if ($javadir =~ /System/) { # 1.6 and earlier
+				if ($javadir =~ /System/) { # Java 6 and earlier
 					$ver = $dir;
 					$java_test_dir = "$javadir/$dir/Commands";
 					$java_cmd_dir = "$dir/Commands";
-				} else { # 1.7 and later, including older formats
-					($dir) = ($javadir =~ m|(\d+\.\d+\.\d+).*jdk|) ;
+				} else { # Java 7 and later, including older formats
+					($dir) = ($javadir =~ /jdk-(\d+).*jdk/) if $javadir =~ /jdk-/  ;
+					($dir) = ($javadir =~ /(\d+\.\d+\.\d+).*jdk/) if $javadir =~ /jdk1\./;
 					if (not defined $dir) {
 						print STDERR "  - warning, unsure how to handle Java directory $dir\n" if ($options{debug});
 						next;
@@ -459,10 +462,14 @@ directories exist.
 					$java_inc_dir = $java_cmd_dir;
 					$java_inc_dir =~ s/bin/include/;
 				}
+				
+				
 				# chop the version down to major/minor without dots
-				$ver =~ s/[^\d]+//g;
+				$ver =~ s/$arch//g ; #strip architecture
+				$ver =~ s/[^\d]+//g ;
 				$ver =~ s/^(..).*$/$1/;
 				next if ($ver eq ""); # directories that aren't versioned;
+				$testver = $ver % 10; # Thanks for the directory renumber, oracle.
 				print STDERR "  - $dir... " if ($options{debug});
 
 				$hash = {};
@@ -471,7 +478,7 @@ directories exist.
 				$hash->{description} = "[virtual package representing Java $dir]";
 				$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 				$hash->{provides}    = 'system-java';
-				if ($ver >= 14) {
+				if ($testver >= 4) {
 					$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
 				}
 				$hash->{descdetail}  = <<END;
@@ -502,7 +509,7 @@ directories exist.
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-					if ($ver <= 16) {
+					if ($testver <= 6) {
 						$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
@@ -528,10 +535,10 @@ END
 					if (-r "$javadir/$dir/Headers/jni.h") {
 						print STDERR "$dir/Headers/jni.h " if ($options{debug});
 						$latest_javadev = $dir unless (defined $latest_javadev);
-					} elsif ($ver >= 14 && $ver < 17 && -r "$javadir/Current/Headers/jni.h") {
+					} elsif ($testver >= 4 && $testver < 7 && -r "$javadir/Current/Headers/jni.h") {
 						print STDERR "Current/Headers/jni.h " if ($options{debug});
 						$latest_javadev = $dir unless (defined $latest_javadev);
-					} elsif ($ver >= 17 && -r "$javadir/include/jni.h") {
+					} elsif ($testver >= 7 && -r "$javadir/include/jni.h") {
 						print STDERR "$java_inc_dir " if ($options{debug});
 						$latest_javadev = $dir unless (defined $latest_javadev);
 					} else {
@@ -620,6 +627,42 @@ END
 			$hash->{compilescript} = &gen_compile_script($hash);
 			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 		
+		} elsif ($ver =~ /^(\d+)$/ ) {  # 9 and later
+			my $real_ver = "$1";
+			my $short_ver = $1; 
+			my $oracle_boilerplate = <<END;
+This package represents the currently installed version
+of Java $real_ver.  If this package shows as not being installed,
+you must download the corresponding Java JDK from Oracle at:
+
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  
+(registration required).  
+
+END
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java, jdbc, jdbc2, jdbc3, jdbc-optional';
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			unless (exists $self->{$hash->{package}}) {
+				$self->{$hash->{package}} = $hash ;
+				print STDERR "  - $real_ver... not present on system\n" if ($options{debug});	
+			}
+			
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver-dev";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver development headers]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 		} else {
 			print STDERR "  - $ver isn't recognized.  Contact the Fink Core Developers at fink-core\@lists.sourceforge.net .\n" if ($options{debug});
 		}
