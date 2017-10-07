@@ -2,6 +2,17 @@ For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
 /-------------
+| fink 0.42.x
+\-------------
+
+0.42.0 "Hello Whitney" (2017-10-07)
+	* Support 10.13.0
+	* Retroactively add official support for 10.12.2-6
+	* Support Java 9
+	* Add %p/Library/Launch{Agents, Daemons} to legal directories
+	* Other fixes and enhancements (see the commits)
+
+/-------------
 | fink 0.41.x
 \-------------
 
