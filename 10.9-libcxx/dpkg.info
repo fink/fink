@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1246
+Revision: 1247
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
 Depends: <<
@@ -171,8 +171,8 @@ function, so remove AIX-bug-specific hack
 PostInstScript: <<
 for file in diversions statoverride; do
 	if [ ! -f %p/var/lib/dpkg/$file ]; then
-  		touch %p/var/lib/dpkg/$file
-  		chmod 644 %p/var/lib/dpkg/$file
+  		/usr/bin/touch %p/var/lib/dpkg/$file
+  		/bin/chmod 644 %p/var/lib/dpkg/$file
 	fi
 done
 <<
