@@ -23,8 +23,9 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &file_MD5_checksum &pkglist2lol &version_cmp);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
+use Fink::CLI qw(&print_breaking);
 use Fink::PkgVersion;
 use Fink::Tie::IxHash;
 use Cwd qw(getcwd);
@@ -185,6 +186,7 @@ our %valid_fields = map {$_, 1}
 		 'updatepomakefile',
 		 'patch',
 		 'patchfile',
+		 'patchfile-checksum',
 		 'patchfile-md5',
 		 'patchscript'
 #  compile phase:
@@ -386,6 +388,7 @@ sub validate_info_file {
 	my ($properties, $info_level, $test_properties);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgepoch, $pkgfullname, $pkgdestdir, $pkgpatchpath);
 	my $value;
+	my $checksum;
 	my ($basepath, $buildpath);
 	my ($type, $type_hash);
 	my $expand = {};
@@ -827,7 +830,7 @@ sub validate_info_file {
 				print "Error: '$1' in RuntimeVars will break many shared libraries. ($filename)\n";
 				$looks_good = 0;
 			# error for PYTHONPATH as it is version agnostic and will break other pymods
-        	} elsif ($line =~ m,^\s*PYTHONPATH:.*$,) {
+			} elsif ($line =~ m,^\s*PYTHONPATH:.*$,) {
 				print "Error: 'PYTHONPATH' in RuntimeVars can break other Python scripts. ($filename)\n";
 				$looks_good = 0;
 			}
@@ -835,6 +838,7 @@ sub validate_info_file {
 	}
 
 	my %patchfile_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)$/ } keys %$properties;
+	my %patchfile_checksum_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)-checksum$/ } keys %$properties;
 	my %patchfile_md5_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)-md5$/ } keys %$properties;
 
 	for my $field (keys %patchfile_fields) {
@@ -917,8 +921,9 @@ sub validate_info_file {
 		my $pretty_field = $field;
 		$pretty_field =~ s/patchfile/PatchFile/i;
 
-		if (not exists $patchfile_md5_fields{$field.'-md5'}) {
-			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";
+		# must have PatchFileN-Checksum or PatchFileN-MD5 field
+		if (not exists $patchfile_checksum_fields{$field.'-checksum'} and not exists $patchfile_md5_fields{$field.'-md5'}) {
+			print "Error: No $pretty_field-MD5 or $pretty_field-checksum given for $pretty_field. ($filename)\n";
 			$looks_good = 0;
 		}
 
@@ -937,17 +942,27 @@ sub validate_info_file {
 			$looks_good = 0;
 		}
 
-		# must have PatchFileN-MD5 field that matches file's checksum
-		if (defined ($value = $properties->{"$field-md5"})) {
-			my $file = &expand_percent("\%{$field}", $expand, $filename.' '.$pretty_field);
-			my $file_md5 = file_MD5_checksum($file);
-			if ($value ne $file_md5) {
-				print "Error: $pretty_field-MD5 does not match $pretty_field checksum. ($filename)\n\tActual: $file_md5\n\tExpected: $value\n";
+		# PatchFileN-Checksum and PatchFileN-MD5 fields must match file's checksum
+		my $file = &expand_percent("\%{$field}", $expand, $filename.' '.$pretty_field);
+		if (defined ($checksum = $properties->{"$field-checksum"})) {
+			if (not Fink::Checksum->validate($file, $checksum)) {
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
+				&print_breaking("Error: $pretty_field-Checksum does not match $pretty_field checksum. ($filename)\n".
+								"Expected: $checksum\nActual: " .
+								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums));
+
 				$looks_good = 0;
 			}
-		} else {
-			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";
-			$looks_good = 0;
+		}
+		if (defined ($checksum = $properties->{"$field-md5"})) {
+			if (not Fink::Checksum->validate($file, $checksum, "MD5")) {
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
+				&print_breaking("Error: $pretty_field-Checksum does not match $pretty_field checksum. ($filename)\n".
+								"Expected: $checksum\nActual: " .
+								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums));
+
+				$looks_good = 0;
+			}
 		}
 
 		# must actually be used
@@ -956,6 +971,16 @@ sub validate_info_file {
 				print "Warning: $pretty_field does not appear to be used in PatchScript. ($filename)\n";
 				$looks_good = 0;
 			}
+		}
+	}
+
+	for my $field (keys %patchfile_checksum_fields) {
+		$field =~ s/-checksum$//;
+		my $pretty_field = $field; $pretty_field =~ s/patchfile/PatchFile/;
+
+		if (not exists $patchfile_fields{$field}) {
+			print "Warning: No $pretty_field given for $pretty_field-Checksum. ($filename)\n";
+			$looks_good = 0;
 		}
 	}
 
@@ -1348,7 +1373,7 @@ sub validate_info_component {
 		unless ($pkg_valid_fields{$field}) {
 			unless (!$is_splitoff and
 					( $field =~ m/^(test)?source([2-9]|[1-9]\d+)(|extractdir|rename|-md5|-checksum)$/
-					  or $field =~ m/^patchfile([2-9]|[1-9]\d+)(|-md5)$/
+					  or $field =~ m/^patchfile([2-9]|[1-9]\d+)(|-md5|-checksum)$/
 					  or $field =~ m/^(test)?tar([2-9]|[1-9]\d+)filesrename$/
 					  ) ) {
 				my $test = "";
