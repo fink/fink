@@ -603,12 +603,8 @@ sub _prefix {
 #### Deal with different versions of Fink
 
 # Get MD5 of a file
-if (eval { require Fink::Checksum }) {
-	my $chksum = Fink::Checksum->new('MD5');
-	*_md5 = sub { $chksum->get_checksum($_[0]) };
-} else {
-	*_md5 = sub { Fink::Services::file_MD5_checksum($_[0]) };
-}
+my $chksum = Fink::Checksum->new('MD5');
+*_md5 = sub { $chksum->get_checksum($_[0]) };
 
 # Initialize Fink
 if (eval { require Fink }) {
