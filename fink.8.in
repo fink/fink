@@ -38,15 +38,19 @@ distribution, everything else is downloaded off the Internet.
 .Bl -tag -width flag
 .It Cm -h, --help
 Display help text.
+.It Cm -V, --version
+Display
+.Nm
+version information and exit.
+.It Cm --prefix
+Display
+.Nm
+installation prefix and exit.
 .It Cm -q, --quiet
 Causes
 .Nm
 to be less verbose, opposite of
 .Cm --verbose
-.It Cm -V, --version
-Display
-.Nm
-version information.
 .It Cm -v, --verbose
 Causes
 .Nm
