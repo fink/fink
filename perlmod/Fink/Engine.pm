@@ -2481,20 +2481,21 @@ HELPFORMAT
 			foreach ($pkg->get_source_suffixes) {
 				if ($_ eq "") {
 					push @fields, (qw/
-								   source sourcerename source-md5
+								   source sourcerename
+								   source-checksum source-md5
 								   nosourcedirectory sourcedirectory
 								   tarfilesrename
 								   /);
 				} else {
 					push @fields, ("source${_}", "source${_}rename",
-								   "source${_}-md5",
+								   "source${_}-checksum", "source${_}-md5",
 								   "source${_}extractdir",
 								   "tar${_}filesrename"
 								  );
 				}
 			}
 			foreach ($pkg->get_patchfile_suffixes) {
-				push @fields, ( "patchfile${_}", "patchfile${_}-md5" );
+				push @fields, ( "patchfile${_}", "patchfile${_}-checksum", "patchfile${_}-md5" );
 			}
 			push @fields, (qw/
 						   updateconfigguess updateconfigguessindirs
@@ -2622,7 +2623,7 @@ HELPFORMAT
 			} elsif ($_ =~ /^source(\d*)$/) {
 				my $src = $pkg->get_source($1);
 				printf "%s: %s\n", $_, $src if defined $src && $src ne "none";
-			} elsif ($_ eq 'gcc' or $_ =~ /^source\d*-md5$/) {
+			} elsif ($_ eq 'gcc' or $_ =~ /^source\d*-md5$/ or $_ =~ /^source\d*-checksum$/) {
 				printf "%s: %s\n", $_, $pkg->param($_) if $pkg->has_param($_);
 			} elsif ($_ eq 'configureparams') {
 				my $cparams = &expand_percent(
@@ -2635,7 +2636,7 @@ HELPFORMAT
 					 $_ =~ /^tar\d*filesrename$/ or
 					 $_ =~ /^update(configguess|libtool)indirs$/ or
 					 $_ =~ /^set/ or $_ =~ /^jarfiles$/ or
-					 $_ =~ /^patch(|file\d*|file\d*-md5)$/ or $_ eq 'appbundles' or
+					 $_ =~ /^patch(|file\d*|file\d*-md5|file\d*-checksum)$/ or $_ eq 'appbundles' or
  					 $_ eq 'infodocs' or $_ =~ /^daemonicname$/
 					) {
 				# singleline fields start on the same line, have
