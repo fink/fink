@@ -52,6 +52,7 @@ use File::Temp qw(:POSIX);
 use Fink::Status;
 use File::Basename;
 use Fink::FinkVersion;
+use version 0.77;
 
 use constant STATUS_PRESENT => "install ok installed";
 use constant STATUS_ABSENT  => "purge ok not-installed";
@@ -429,7 +430,8 @@ directories exist.
 					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home',
 					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
 					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
-					'9, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home'
+					'9, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home',
+					'9.0.1, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.0.1.jdk/Contents/Home',
 					);
 	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
@@ -463,22 +465,27 @@ directories exist.
 					$java_inc_dir =~ s/bin/include/;
 				}
 				
-				
 				# chop the version down to major/minor without dots
 				$ver =~ s/$arch//g ; #strip architecture
-				$ver =~ s/[^\d]+//g ;
-				$ver =~ s/^(..).*$/$1/;
-				next if ($ver eq ""); # directories that aren't versioned;
-				$testver = $ver % 10; # Thanks for the directory renumber, oracle.
+			    $ver =~ s/,\s+//; #strip comma
+				next if $ver =~ /[a-zA-z]/ ; # bail out for unversioned dirs;
+				my $dotless_ver;
+			    if ( version->declare($ver)->normal lt version->declare("v9.0.0") ) {
+					($testver = version->declare($ver)->normal) =~ s/v1\./v/  ; # strip leading 1
+					$dotless_ver = (split /\./, $ver)[0].(split /\./, $ver)[1];
+				} else {
+					$testver = version->declare($ver)->normal; 
+					$dotless_ver = (split /\./, $ver)[0];
+				}
 				print STDERR "  - $dir... " if ($options{debug});
 
 				$hash = {};
-				$hash->{package}     = "system-java${ver}";
+				$hash->{package}     = "system-java${dotless_ver}";
 				$hash->{version}     = $dir . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
 				$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 				$hash->{provides}    = 'system-java';
-				if ($testver >= 4) {
+				if ($testver ge version->declare("4")->normal ) {
 					$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
 				}
 				$hash->{descdetail}  = <<END;
@@ -504,12 +511,12 @@ directories exist.
 =cut
 
 					$hash = {};
-					$hash->{package}     = "system-java${ver}-dev";
+					$hash->{package}     = "system-java${dotless_ver}-dev";
 					$hash->{status}      = STATUS_PRESENT;
 					$hash->{version}     = $dir . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-					if ($testver <= 6) {
+					if ($testver le version->declare("6")->normal ) {
 						$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
@@ -535,10 +542,10 @@ END
 					if (-r "$javadir/$dir/Headers/jni.h") {
 						print STDERR "$dir/Headers/jni.h " if ($options{debug});
 						$latest_javadev = $dir unless (defined $latest_javadev);
-					} elsif ($testver >= 4 && $testver < 7 && -r "$javadir/Current/Headers/jni.h") {
+					} elsif ($testver ge version->declare("4")->normal && $testver lt version->declare("7")->normal && -r "$javadir/Current/Headers/jni.h") {
 						print STDERR "Current/Headers/jni.h " if ($options{debug});
 						$latest_javadev = $dir unless (defined $latest_javadev);
-					} elsif ($testver >= 7 && -r "$javadir/include/jni.h") {
+					} elsif ($testver ge version->declare("7")->normal && -r "$javadir/include/jni.h") {
 						print STDERR "$java_inc_dir " if ($options{debug});
 						$latest_javadev = $dir unless (defined $latest_javadev);
 					} else {
