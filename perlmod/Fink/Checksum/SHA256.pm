@@ -45,17 +45,21 @@ sub new {
 
 	$match = '(\S*)\s*(:?\S*)';
 
-	if (-e "$basepath/bin/sha256deep") {
+	if (-x "$basepath/bin/sha256deep") {
 		$sha256cmd = "$basepath/bin/sha256deep";
-		} elsif (-x "/usr/bin/openssl") {
-			$sha256cmd = '/usr/bin/openssl dgst -sha256';
-			$match   = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
-		} elsif (-e "$basepath/lib/coreutils/bin/sha256sum") {
-			$sha256cmd = "$basepath/lib/coreutils/bin/sha256sum";
-
+    } elsif (-x "/usr/bin/openssl") {
+        $sha256cmd = '/usr/bin/openssl dgst -sha256';
+        $match   = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
+    } elsif (-x "$basepath/openssl") {
+        $sha256cmd = '$basepath/openssl dgst -sha256';
+        $match   = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
+    } elsif (-x "$basepath/lib/coreutils/bin/sha256sum") {
+        $sha256cmd = "$basepath/lib/coreutils/bin/sha256sum";
+    } elsif (-x "/usr/bin/shasum") {
+        $sha256cmd = "/usr/bin/shasum -a 256 -b";
 	}
 
-	if (!defined $sha256cmd or not -x $sha256cmd) {
+	if (!defined $sha256cmd) {
 		die "unable to find sha256 implementation. Try installing md5deep or coreutils\n";
 	}
 
