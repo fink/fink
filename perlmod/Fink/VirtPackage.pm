@@ -467,11 +467,11 @@ directories exist.
 				}
 				# chop the version down to major/minor without dots				
 				$ver =~ s/$arch//g ; # strip architecture
-			    $ver =~ s/,\s+//; # strip comma
+				$ver =~ s/,\s+//; # strip comma
 				$ver =~ s/[-_].*//; # strip suffixes on versions
 				next if $ver =~ /^[^\d]/  ; # bail out for unversioned dirs 
 				my $dotless_ver;
-			    if ( version->declare("$ver")->normal lt version->declare("v9.0.0") ) { # Pre Java 9
+				if ( version->declare("$ver")->normal lt version->declare("v9.0.0") ) { # Pre Java 9
 					($testver = version->declare($ver)->normal) =~ s/v1\./v/  ; # strip leading 1
 					$dotless_ver = (split /\./, $ver)[0].(split /\./, $ver)[1];
 				} else { # Java 9 and later
