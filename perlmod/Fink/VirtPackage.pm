@@ -571,7 +571,7 @@ This package represents the currently installed version
 of Java 1.6.0.  If this package shows as not being installed,
 you must download and install Java for OS X 2017-001 from Apple:
 
-  http://support.apple.com/downloads/DL1572/en_US/javaforosx.dmg
+  https://support.apple.com/downloads/DL1572/en_US/javaforosx.dmg
 
 END
 			$hash = {};
