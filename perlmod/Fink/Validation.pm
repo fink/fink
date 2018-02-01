@@ -1999,17 +1999,21 @@ sub _validate_dpkg {
 			}
 		}
 
-		# libtool and pkg-config files don't link to temp locations
-		if ($filename =~ /\.(pc|la)$/) {
-			my $filetype = ($1 eq 'pc' ? 'pkg-config' : 'libtool');
+		# data published for others' use leaking compile-time paths
+		if ($filename =~ /\.(pc|la|prl)$/) {
+			my $filetype = {
+				'pc' => 'pkg-config',
+				'la' => 'libtool',
+				'prl' => 'qmake',
+				}->{$1};
 			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
 				while (<$datafile>) {
 					chomp;
 					if (/$pkgbuilddir/) {
-						&stack_msg($msgs, "Published compiler flag points to fink build dir.", $filename);
+						&stack_msg($msgs, "Published $filetype compiler information points to fink build dir.", $filename);
 						last;
 					} elsif (/$pkginstdirs/) {
-						&stack_msg($msgs, "Published compiler flag points to fink install dir.", $filename);
+						&stack_msg($msgs, "Published $filetype compiler information points to fink install dir.", $filename);
 						last;
 					}
 				}
