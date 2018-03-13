@@ -44,10 +44,12 @@ sub new {
 
 	my $self = bless({}, $class);
 
-	eval "require Digest::MD5";
+	eval "require Digest::MD5";  # fink's "digest-sha1-pmXXX" pkg
 	if (!$@) {
 		$md5pm = 1;
 	} else {
+		# external commands definitely needed (especially
+		# apple-supplied) to avoid needing BuildDepends
 		if (-e "/sbin/md5") {
 			$md5cmd = "/sbin/md5";
 			$match = '= ([^\s]+)$';
@@ -63,11 +65,11 @@ sub new {
 	return ($md5pm || $md5cmd) ? $self : undef;
 }
 
-# Returns the MD5 checksum of the given $filename. Uses /sbin/md5 if it
-# is available, otherwise uses the first md5sum in PATH. The output of
-# the chosen command is read via an open() pipe and matched against the
-# appropriate regexp. If the command returns failure or its output was
-# not in the expected format, the program dies with an error message.
+# Returns the MD5 checksum of the given $filename. Uses a perl module
+# if it is available, otherwise uses a piped command (with output
+# parsed against a regexp tailored to the specific command). If the
+# command returns failure or its output was not in the expected
+# format, the program dies with an error message.
 
 sub get_checksum {
 	my $class = shift;

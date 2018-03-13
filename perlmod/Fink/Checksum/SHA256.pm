@@ -45,6 +45,8 @@ sub new {
 
 	$match = '(\S*)\s*(:?\S*)';
 
+	# external commands definitely needed (especially
+	# apple-supplied) because no perl implementation
 	if (-x "$basepath/bin/sha256deep") {
 		$sha256cmd = "$basepath/bin/sha256deep";
     } elsif (-x "/usr/bin/openssl") {
@@ -66,10 +68,11 @@ sub new {
 	return $self;
 }
 
-# Returns the SHA256 checksum of the given $filename.  The output of
-# the chosen command is read via an open() pipe and matched against the
-# appropriate regexp. If the command returns failure or its output was
-# not in the expected format, the program dies with an error message.
+# Returns the MD5 checksum of the given $filename.
+# Uses a piped command (with output
+# parsed against a regexp tailored to the specific command). If the
+# command returns failure or its output was not in the expected
+# format, the program dies with an error message.
 
 sub get_checksum {
 	my $class = shift;
