@@ -6,12 +6,14 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.43.x
 \-------------
 
-0.43.0 TBD (EST. 2018-02-03)
+0.43.0 "Obvious Allegory" (2018-03-24)
 	* selfupdate-git 
 	* selfupdate-svn
 	* --prefix flag
 	* Support 10.13.1-4
 	* Support Java 9.0.x
+	* Support 2017 version of Java 1.6
+	* Better checksum support.-
 	* Other fixes and enhancements (see the commits)
 
 
