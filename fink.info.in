@@ -11,7 +11,7 @@ Replaces: gcc3.1 (= 1175-6)
 Essential: yes
 Source: @SOURCE@
 Source-MD5: @MD5@
-Source-Checksum: SHA256(@SHA@)
+Source-Checksum: SHA256(@SHA256@)
 NoSetPATH: true
 BuildAsNobody: false
 CompileScript: <<
