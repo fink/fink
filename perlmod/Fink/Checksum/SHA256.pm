@@ -52,8 +52,8 @@ sub new {
 	} elsif (-x "/usr/bin/openssl") {
 		$sha256cmd = '/usr/bin/openssl dgst -sha256';
 		$match     = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
-	} elsif (-x "$basepath/openssl") {
-		$sha256cmd = '$basepath/openssl dgst -sha256';
+	} elsif (-x "$basepath/bin/openssl") {
+		$sha256cmd = '$basepath/bin/openssl dgst -sha256';
 		$match     = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
 	} elsif (-x "$basepath/lib/coreutils/bin/sha256sum") {
 		$sha256cmd = "$basepath/lib/coreutils/bin/sha256sum";
@@ -68,7 +68,7 @@ sub new {
 	return $self;
 }
 
-# Returns the MD5 checksum of the given $filename.
+# Returns the SHA256 checksum of the given $filename.
 # Uses a piped command (with output
 # parsed against a regexp tailored to the specific command). If the
 # command returns failure or its output was not in the expected
