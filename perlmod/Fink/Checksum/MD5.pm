@@ -3,7 +3,7 @@
 # Fink::Checksum::MD5 module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2005-2016 The Fink Package Manager Team
+# Copyright (c) 2005-2018 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -52,13 +52,13 @@ sub new {
 		# apple-supplied) to avoid needing BuildDepends
 		if (-e "/sbin/md5") {
 			$md5cmd = "/sbin/md5";
-			$match = '= ([^\s]+)$';
+			$match  = '= ([^\s]+)$';
 		} elsif (-e "$basepath/bin/md5deep") {
 			$md5cmd = "$basepath/bin/md5deep";
-			$match = '([^\s]*)\s*(:?[^\s]*)';
+			$match  = '([^\s]*)\s*(:?[^\s]*)';
 		} else {
 			$md5cmd = "md5sum";
-			$match = '([^\s]*)\s*(:?[^\s]*)';
+			$match  = '([^\s]*)\s*(:?[^\s]*)';
 		}
 	}
 
