@@ -52,13 +52,13 @@ sub new {
 		# apple-supplied) to avoid needing BuildDepends
 		if (-e "/sbin/md5") {
 			$md5cmd = "/sbin/md5";
-			$match = '= ([^\s]+)$';
+			$match  = '= ([^\s]+)$';
 		} elsif (-e "$basepath/bin/md5deep") {
 			$md5cmd = "$basepath/bin/md5deep";
-			$match = '([^\s]*)\s*(:?[^\s]*)';
+			$match  = '([^\s]*)\s*(:?[^\s]*)';
 		} else {
 			$md5cmd = "md5sum";
-			$match = '([^\s]*)\s*(:?[^\s]*)';
+			$match  = '([^\s]*)\s*(:?[^\s]*)';
 		}
 	}
 

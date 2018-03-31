@@ -61,8 +61,8 @@ sub new {
 			$match   = 'SHA1\([^\)]+\)\s*=\s*(\S+)';
 		} elsif (-x "$basepath/lib/coreutils/bin/sha1sum") {
 			$sha1cmd = "$basepath/lib/coreutils/bin/sha1sum";
-        } elsif (-x "/usr/bin/shasum") {
-            $sha256cmd = "/usr/bin/shasum -a 1 -b";
+		} elsif (-x "/usr/bin/shasum") {
+			$sha256cmd = "/usr/bin/shasum -a 1 -b";
 		}
 	}
 
