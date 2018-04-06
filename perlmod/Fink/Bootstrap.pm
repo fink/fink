@@ -180,7 +180,11 @@ GCC_MSG
 	if ($host_vendor ne "apple" or $host_os ne "darwin") {
 		&print_breaking("The vendor-OS '$host_vendor-$host_os' is not ".
 			"supported by this version of Fink.");
-	} elsif ($host_vers[0] <= 5 and $host_cpu eq 'powerpc') {
+	} elsif ($host_vers[0] == 1 and $host_cpu eq 'powerpc') {
+		&print_breaking("This system is no longer supported " .
+			"for current versions of fink.  Please use fink 0.12.1 or earlier.");
+		$distribution = "10.1";
+	} elsif ($host_vers[0] == 5 and $host_cpu eq 'powerpc') {
 		&print_breaking("This system is no longer supported " .
 			"for current versions of fink.  Please use fink 0.12.1 or earlier.");
 		$distribution = "10.1";
