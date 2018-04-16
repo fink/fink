@@ -6,6 +6,12 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.43.x
 \-------------
 
+0.43.0 "Political Balderdash" (2018-04-16)
+	* Bugfix:  fink.info (and other base packages) can't use SHA256 because of upgrade
+	  deadlocks 
+	* Support Darwin 17.5
+	* Other fixes and enhancements (see the commits)
+
 0.43.0 "Obvious Allegory" (2018-03-24)
 	* selfupdate-git 
 	* selfupdate-svn
@@ -13,7 +19,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Support 10.13.1-4
 	* Support Java 9.0.x
 	* Support 2017 version of Java 1.6
-	* Better checksum support.-
+	* Better checksum support
 	* Other fixes and enhancements (see the commits)
 
 
