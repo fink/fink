@@ -1,7 +1,6 @@
-Timestamp: 2016-02-12
+Timestamp: 2018-04-17
 Primary: rsync://distfiles.master.finkmirrors.net/finkinfo/
 
-asi-JP: rsync://hnd.jp.asi.finkmirrors.net/finkinfo/
+# asi-JP: rsync://hnd.jp.asi.finkmirrors.net/finkinfo/
 eur-DE: rsync://ber.de.eu.finkmirrors.net/finkinfo/
-# eur-IE: rsync://dub.ie.eu.finkmirrors.net/finkinfo/
 nam-CA: rsync://yeg.ab.ca.finkmirrors.net/finkinfo/
