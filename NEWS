@@ -6,7 +6,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.43.x
 \-------------
 
-0.43.0 "Political Balderdash" (2018-04-16)
+0.43.1 "Political Balderdash" (2018-04-18)
 	* Bugfix:  fink.info (and other base packages) can't use SHA256 because of upgrade
 	  deadlocks 
 	* Support Darwin 17.5
