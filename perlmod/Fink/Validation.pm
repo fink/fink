@@ -82,6 +82,7 @@ our %check_hardcode_fields = map {$_, 1}
 		 patchscript
 		 configureparams
 		 compilescript
+		 testscript
 		 installscript
 		 shlibs
 		 preinstscript
