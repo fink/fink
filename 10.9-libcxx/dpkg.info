@@ -24,11 +24,17 @@ PatchFile-MD5: c8e538b0f3346b62fa4464bfc698947d
 PatchFile2: libgettext8-shlibs.patch
 PatchFile2-MD5: 9a702c97d1c95d216f0908e368e7ad42
 PatchScript: <<
+	#!/bin/sh -ev
 	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 	echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> archtable
-	cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
-	cd ../gettext-0.19.8.1; sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p1
-	cd ../gettext-0.19.8.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
+	pushd optlib
+		perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in
+		rm getopt*
+	popd
+	pushd ../gettext-0.19.8.1
+		sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p1
+		perl -pi -e 's/.*chmod.*777.*$//g' build-aux/ltmain.sh
+	popd
 <<
 SetCFLAGS: -I%p/include
 CompileScript: <<

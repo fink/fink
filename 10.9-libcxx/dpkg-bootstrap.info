@@ -8,9 +8,13 @@ Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchFile: dpkg.patch
 PatchFile-MD5: c8e538b0f3346b62fa4464bfc698947d
 PatchScript: <<
+	#!/bin/sh -ev
 	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 	echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> archtable
-	cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
+	pushd optlib
+		perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in
+		rm getopt*
+	popd
 <<
 SetCFLAGS: -I%p/include
 NoSetMAKEFLAGS: true
