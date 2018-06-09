@@ -34,6 +34,7 @@ PatchScript: <<
 	pushd ../gettext-0.19.8.1
 		sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p1
 		perl -pi -e 's/.*chmod.*777.*$//g' build-aux/ltmain.sh
+		perl -pi -e 's/ examples / / if /^SUBDIRS/' 	gettext-tools/Makefile.in
 	popd
 <<
 # not sure we want to haul in fink-package-precedence but may as well
