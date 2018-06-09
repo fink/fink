@@ -24,11 +24,11 @@ PatchFile-MD5: 912dae1e60c3ccde9a7875e0c0eb3840
 PatchFile2: libgettext8-shlibs.patch
 PatchFile2-MD5: 9a702c97d1c95d216f0908e368e7ad42
 PatchScript: <<
- cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
- cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p0
- cd %b/../gettext-0.19.8.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
- cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
- echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
+	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+	echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> archtable
+	cd optlib; perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in; rm getopt*
+	cd ../gettext-0.19.8.1; sed 's|@PREFIX@|%p|g' < %{PatchFile2} | patch -p1
+	cd ../gettext-0.19.8.1/build-aux; perl -pi -e 's/.*chmod.*777.*$//g' ltmain.sh
 <<
 SetCFLAGS: -I%p/include
 CompileScript: <<
@@ -40,7 +40,7 @@ CompileScript: <<
 	### match the new package parameters (except build static only here).
 	### Not necessary, but will avoid unforeseen consequences.
 	%p/bin/fink -y install gettext-bin libgettext8-dev libiconv-dev libncurses5
-	cd %b/../gettext-0.19.8.1/gettext-tools
+	pushd %b/../gettext-0.19.8.1/gettext-tools
 	env EMACS=no JAVA=/usr/bin/java GCJ=/usr/bin/javac ./configure \
 		--prefix="%b/../_inst%p" \
 		--infodir='${prefix}/share/info' \
@@ -60,29 +60,40 @@ CompileScript: <<
 		ac_cv_path_GREP=/usr/bin/grep \
 		ac_cv_path_SED=/usr/bin/sed
 	/usr/bin/make -w
-	rm -rf %b/../_inst
+	rm -rf "%b/../_inst"
 	/usr/bin/make -w install
+	popd
 	### Now actually build dpkg using msgfmt and xgettext we just compiled
-	cd %b
-	PERL=/usr/bin/perl ac_cv_path_MSGFMT="%b/../_inst%p/bin/msgfmt" ac_cv_path_XGETTEXT="%b/../_inst%p/bin/xgettext" ./configure \
-		--build=%m-apple-darwin %c \
-		ac_cv_prog_SED=/usr/bin/sed
+	./configure %c
 	/usr/bin/make -w
 <<
 ConfigureParams: <<
+	--build=%m-apple-darwin \
 	--without-start-stop-daemon \
 	--without-sgml-doc \
 	--with-admindir=%p/var/lib/dpkg \
 	--mandir=%p/share/man \
 	--infodir=%p/share/info \
-	--srcdir=%b
+	--srcdir=%b \
+	MSGFMT="%b/../_inst%p/bin/msgfmt" \
+	XGETTEXT="%b/../_inst%p/bin/xgettext" \
+	PERL=/usr/bin/perl \
+	SED=/usr/bin/sed
 <<
 InstallScript: <<
- mkdir -p %i/share/doc/dpkg
- /usr/bin/make install DESTDIR=%d
- install -c -p -m 644 origin.fink %i/etc/dpkg/origins/fink
- rm -rf %i/lib/dpkg/methods/*
- mkdir -p -m0755 %i/lib/fink/dpkg-base-files
+	mkdir -p %i/share/doc/dpkg
+	/usr/bin/make install DESTDIR=%d
+	install -c -p -m 644 origin.fink %i/etc/dpkg/origins/fink
+	rm -rf %i/lib/dpkg/methods/*
+	mkdir -p -m0755 %i/lib/fink/dpkg-base-files
+<<
+PostInstScript: <<
+for file in diversions statoverride; do
+	if [ ! -f %p/var/lib/dpkg/$file ]; then
+  		/usr/bin/touch %p/var/lib/dpkg/$file
+  		/bin/chmod 644 %p/var/lib/dpkg/$file
+	fi
+done
 <<
 Description: The Debian package manager
 DescDetail: <<
@@ -166,15 +177,6 @@ NB: wrapper runs even if no .deb script.
 
 stpncpy test may fail due to wrong prototype even if we have the
 function, so remove AIX-bug-specific hack
-<<
-#
-PostInstScript: <<
-for file in diversions statoverride; do
-	if [ ! -f %p/var/lib/dpkg/$file ]; then
-  		/usr/bin/touch %p/var/lib/dpkg/$file
-  		/bin/chmod 644 %p/var/lib/dpkg/$file
-	fi
-done
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html

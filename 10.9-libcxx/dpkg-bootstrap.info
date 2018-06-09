@@ -8,20 +8,34 @@ Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchFile: dpkg.patch
 PatchFile-MD5: 912dae1e60c3ccde9a7875e0c0eb3840
 PatchScript: <<
- sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
- echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
+	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+	echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> archtable
 <<
 SetCFLAGS: -I%p/include
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
- PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
- make
+	./configure %c
+	/usr/bin/make -w
 <<
-ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b  --without-libintl-prefix --without-libiconv-prefix --disable-nls
+ConfigureParams: <<
+	--build=%m-apple-darwin \
+	--without-zlib \
+	--without-dselect \
+	--without-start-stop-daemon \
+	--without-sgml-doc \
+	--with-admindir=%P/var/lib/dpkg \
+	--mandir=%p/share/man \
+	--infodir=%p/share/info \
+	--srcdir=%b \
+	--without-libintl-prefix \
+	--without-libiconv-prefix \
+	--disable-nls
+	PERL=/usr/bin/perl
+<<
 InstallScript: <<
- mkdir -p %i/share/doc/dpkg
- make install DESTDIR=%d
+	mkdir -p %i/share/doc/dpkg
+	/usr/bin/make install DESTDIR=%d
 <<
 Description: The Debian package manager (bootstrap only)
 DescDetail: <<
@@ -29,6 +43,14 @@ dpkg installs and removes binary packages; it is the base of the
 distribution. This package also contains some helper programs. This
 package does not build dselect and thus doesn't require ncurses. It is
 intended to be used during bootstrap.
+<<
+DescPackaging: <<
+  admindir goes in %P (eventual live basedir) not %p (bootstrap
+  basedir): dpkg-bootstrap needs to set up the initial live dpkg
+  status database.
+
+  removed Depends and BuildDepends since this is built during phase two
+  of bootstrap and those fields are not relevant there
 <<
 DescPort: <<
 1.10.9 
@@ -57,14 +79,6 @@ instead of relying on PATH
 
 stpncpy test may fail due to wrong prototype even if we have the
 function, so remove AIX-bug-specific hack
-<<
-DescPackaging: <<
-  admindir goes in %P (eventual live basedir) not %p (bootstrap
-  basedir): dpkg-bootstrap needs to set up the initial live dpkg
-  status database.
-
-  removed Depends and BuildDepends since this is built during phase two
-  of bootstrap and those fields are not relevant there
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
