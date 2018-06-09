@@ -1,7 +1,7 @@
 diff -urN dpkg-1.10.21.orig/Makefile.conf.in dpkg-1.10.21/Makefile.conf.in
 --- dpkg-1.10.21.orig/Makefile.conf.in	2012-07-13 02:12:44.000000000 +0200
-+++ dpkg-1.10.21/Makefile.conf.in	2018-06-09 02:14:15.000000000 -0400
-@@ -60,13 +60,13 @@
++++ dpkg-1.10.21/Makefile.conf.in	2018-06-09 16:17:30.000000000 -0400
+@@ -60,15 +60,15 @@
  
  CPPFLAGS		= @CPPFLAGS@
  LD			= @LD@
@@ -16,8 +16,11 @@ diff -urN dpkg-1.10.21.orig/Makefile.conf.in dpkg-1.10.21/Makefile.conf.in
 -INCLUDE_CFLAGS		= -I$(top_srcdir)/include -I$(top_srcdir) -I$(srcdir) -I../include -I.. -I. -I$(top_srcdir)/optlib
 +INCLUDE_CFLAGS		= -I$(top_srcdir)/include -I$(top_srcdir) -I$(srcdir) -I../include -I.. -I. -I$(top_srcdir)/optlib -F/System/Library/Frameworks/CoreFoundation.framework
  
- NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir)/intl -I../intl
+-NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir)/intl -I../intl
++NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\"
  NLS_LIBS		= @INTLLIBS@ 
+ 
+ SSD_LIBS		= @SSD_LIBS@
 @@ -79,7 +79,7 @@
  ZLIB_LIBS		= @ZLIB_LIBS@
  ZLIB_LIBS_ALSO_STATIC	= @ZLIB_LIBS_ALSO_STATIC@

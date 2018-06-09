@@ -6,7 +6,7 @@ Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchFile: dpkg.patch
-PatchFile-MD5: 5166e45568d16d662b895e43697b3659
+PatchFile-MD5: 9c3d590be2403102773cce89556443e7
 PatchScript: <<
 	#!/bin/sh -ev
 	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
