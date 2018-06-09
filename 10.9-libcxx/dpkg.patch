@@ -3442,6 +3442,18 @@ diff -urN dpkg-1.10.21.orig/origin.fink dpkg-1.10.21/origin.fink
 +Vendor: Fink
 +Vendor-URL: http://fink.sourceforge.net/
 +Bugs: http://fink.sourceforge.net/
+diff -urN dpkg-1.10.21.orig/scripts/Makefile.in dpkg-1.10.21/scripts/Makefile.in
+--- dpkg-1.10.21.orig/scripts/Makefile.in	2018-06-09 01:49:44.000000000 -0400
++++ dpkg-1.10.21/scripts/Makefile.in	2018-06-09 01:50:14.000000000 -0400
+@@ -99,7 +99,7 @@
+ 	pod2man --section=1 $^ > $@
+ 
+ %: %.pl
+-	$(SED) -e "s:^#![:space:]*/usr/bin/perl:#! $(PERL):; \
++	$(SED) -e "s:^#![[:space:]]*/usr/bin/perl:#! $(PERL):; \
+ 		s:\$$dpkglibdir[[:space:]]*=[[:space:]]*['\"][^'\"]*['\"]:\$$dpkglibdir=\"$(dpkglibdir)\":; \
+ 		s:\$$admindir[[:space:]]*=[[:space:]]*['\"][^'\"]*['\"]:\$$admindir=\"$(admindir)\":; \
+ 		s:\$$version[[:space:]]*=[[:space:]]*['\"][^'\"]*[\"']:\$$version=\"$(VERSION)\":" \
 diff -urN dpkg-1.10.21.orig/scripts/cleanup-info.8 dpkg-1.10.21/scripts/cleanup-info.8
 --- dpkg-1.10.21.orig/scripts/cleanup-info.8	2012-07-13 02:12:44.000000000 +0200
 +++ dpkg-1.10.21/scripts/cleanup-info.8	2012-07-13 02:13:27.000000000 +0200

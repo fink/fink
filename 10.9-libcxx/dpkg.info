@@ -20,7 +20,7 @@ Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
 #Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
 Source2-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 PatchFile: %n.patch
-PatchFile-MD5: 912dae1e60c3ccde9a7875e0c0eb3840
+PatchFile-MD5: c8e538b0f3346b62fa4464bfc698947d
 PatchFile2: libgettext8-shlibs.patch
 PatchFile2-MD5: 9a702c97d1c95d216f0908e368e7ad42
 PatchScript: <<
@@ -155,7 +155,7 @@ instead of relying on PATH
 Patch 'dpkg -b' tar invocation to avoid warning under tar>=1.16
 See: http://permalink.gmane.org/gmane.os.apple.fink.core/1281
 
-Patch 'dpkg -b' tar invocation to not die if tar returns exit code 1.  
+Patch 'dpkg -b' tar invocation to not die if tar returns exit code 1.
 (Exit 1 is a non-fatal error for tar; exit 2 is fatal.)  patch written by vasi
 
 Fink's make-3.81-1 breaks compiling so use Apple's to be safe.
@@ -177,6 +177,9 @@ NB: wrapper runs even if no .deb script.
 
 stpncpy test may fail due to wrong prototype even if we have the
 function, so remove AIX-bug-specific hack
+
+Protect build against increasingly strict character-class regex in
+sed. See: https://github.com/fink/scripts/issues/45
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
