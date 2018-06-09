@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.10.21
-Revision: 1247
+Revision: 1248
 GCC: 4.0
 BuildDepends: fink (>= 0.30.0)
 Depends: <<
@@ -20,7 +20,7 @@ Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
 #Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
 Source2-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 PatchFile: %n.patch
-PatchFile-MD5: c8e538b0f3346b62fa4464bfc698947d
+PatchFile-MD5: 5166e45568d16d662b895e43697b3659
 PatchFile2: libgettext8-shlibs.patch
 PatchFile2-MD5: 9a702c97d1c95d216f0908e368e7ad42
 PatchScript: <<
@@ -36,7 +36,9 @@ PatchScript: <<
 		perl -pi -e 's/.*chmod.*777.*$//g' build-aux/ltmain.sh
 	popd
 <<
-SetCFLAGS: -I%p/include
+# not sure we want to haul in fink-package-precedence but may as well
+# stash the data for possible manual analysis
+SetCPPFLAGS: -MD
 CompileScript: <<
 	#!/bin/sh -ev
 	if [ $UID -ne 0 ]; then echo "dpkg cannot be built with --build-as-nobody"; exit 1; fi
@@ -186,6 +188,9 @@ function, so remove AIX-bug-specific hack
 
 Protect build against increasingly strict character-class regex in
 sed. See: https://github.com/fink/scripts/issues/45
+
+Link build-dir libs directly and pass all local -I flags early (avoid
+masking by external/globally installed other packages).
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html

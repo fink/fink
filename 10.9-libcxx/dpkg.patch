@@ -1,13 +1,14 @@
 diff -urN dpkg-1.10.21.orig/Makefile.conf.in dpkg-1.10.21/Makefile.conf.in
 --- dpkg-1.10.21.orig/Makefile.conf.in	2012-07-13 02:12:44.000000000 +0200
-+++ dpkg-1.10.21/Makefile.conf.in	2012-07-13 02:13:27.000000000 +0200
++++ dpkg-1.10.21/Makefile.conf.in	2018-06-09 02:14:15.000000000 -0400
 @@ -60,13 +60,13 @@
  
  CPPFLAGS		= @CPPFLAGS@
  LD			= @LD@
 -LDFLAGS			= @LDFLAGS@ -L../lib -L../optlib
-+LDFLAGS			= @LDFLAGS@ -L../lib -L../optlib -framework CoreFoundation
- LIBS			= @LIBS@ -ldpkg -lopt $(ZLIB_LIBS)
+-LIBS			= @LIBS@ -ldpkg -lopt $(ZLIB_LIBS)
++LDFLAGS			= @LDFLAGS@ -framework CoreFoundation
++LIBS			= @LIBS@ ../lib/libdpkg.a ../optlib/libopt.a $(ZLIB_LIBS)
  
  RANLIB			= @RANLIB@
  
@@ -17,6 +18,15 @@ diff -urN dpkg-1.10.21.orig/Makefile.conf.in dpkg-1.10.21/Makefile.conf.in
  
  NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir)/intl -I../intl
  NLS_LIBS		= @INTLLIBS@ 
+@@ -79,7 +79,7 @@
+ ZLIB_LIBS		= @ZLIB_LIBS@
+ ZLIB_LIBS_ALSO_STATIC	= @ZLIB_LIBS_ALSO_STATIC@
+ 
+-ALL_CFLAGS		= $(CPPFLAGS) $(CFLAGS) $(DEFS) $(NLS_CFLAGS) $(INCLUDE_CFLAGS) $(ZLIB_CFLAGS)
++ALL_CFLAGS		= $(CFLAGS) $(DEFS) $(NLS_CFLAGS) $(INCLUDE_CFLAGS) $(ZLIB_CFLAGS) $(CPPFLAGS)
+ ALL_CXXFLAGS		= $(ALL_CFLAGS) $(CXXFLAGS)
+ 
+ ALSO_STATIC		= @ALSO_STATIC@
 diff -urN dpkg-1.10.21.orig/dpkg-deb/Makefile.in dpkg-1.10.21/dpkg-deb/Makefile.in
 --- dpkg-1.10.21.orig/dpkg-deb/Makefile.in	2012-07-13 02:12:44.000000000 +0200
 +++ dpkg-1.10.21/dpkg-deb/Makefile.in	2012-07-13 02:13:27.000000000 +0200
