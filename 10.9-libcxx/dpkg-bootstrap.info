@@ -6,22 +6,44 @@ Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchFile: dpkg.patch
-PatchFile-MD5: 912dae1e60c3ccde9a7875e0c0eb3840
+PatchFile-MD5: 9c3d590be2403102773cce89556443e7
 PatchScript: <<
- sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
- echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> %b/archtable
+	#!/bin/sh -ev
+	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+	echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> archtable
+	pushd optlib
+		perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in
+		rm getopt*
+	popd
 <<
-SetCFLAGS: -I%p/include
+# not sure we want to haul in fink-package-precedence but may as well
+# stash the data for possible manual analysis
+SetCPPFLAGS: -MD
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 CompileScript: <<
- PERL=/usr/bin/perl ./configure --build=%m-apple-darwin %c
- make
+	./configure %c
+	/usr/bin/make -w
 <<
-ConfigureParams: --without-zlib --without-dselect --without-start-stop-daemon --without-sgml-doc --with-admindir=%P/var/lib/dpkg --mandir=%p/share/man --infodir=%p/share/info --srcdir=%b  --without-libintl-prefix --without-libiconv-prefix --disable-nls
+ConfigureParams: <<
+	--build=%m-apple-darwin \
+	--without-zlib \
+	--without-dselect \
+	--without-start-stop-daemon \
+	--without-sgml-doc \
+	--with-admindir=%P/var/lib/dpkg \
+	--mandir=%p/share/man \
+	--infodir=%p/share/info \
+	--srcdir=%b \
+	--without-libintl-prefix \
+	--without-libiconv-prefix \
+	--disable-nls
+	PERL=/usr/bin/perl \
+	SED=/usr/bin/sed
+<<
 InstallScript: <<
- mkdir -p %i/share/doc/dpkg
- make install DESTDIR=%d
+	mkdir -p %i/share/doc/dpkg
+	/usr/bin/make install DESTDIR=%d
 <<
 Description: The Debian package manager (bootstrap only)
 DescDetail: <<
@@ -29,6 +51,14 @@ dpkg installs and removes binary packages; it is the base of the
 distribution. This package also contains some helper programs. This
 package does not build dselect and thus doesn't require ncurses. It is
 intended to be used during bootstrap.
+<<
+DescPackaging: <<
+  admindir goes in %P (eventual live basedir) not %p (bootstrap
+  basedir): dpkg-bootstrap needs to set up the initial live dpkg
+  status database.
+
+  removed Depends and BuildDepends since this is built during phase two
+  of bootstrap and those fields are not relevant there
 <<
 DescPort: <<
 1.10.9 
@@ -55,16 +85,37 @@ Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
 Patched to hardcode complete paths to our component executables
 instead of relying on PATH
 
+Patch 'dpkg -b' tar invocation to avoid warning under tar>=1.16
+See: http://permalink.gmane.org/gmane.os.apple.fink.core/1281
+
+Patch 'dpkg -b' tar invocation to not die if tar returns exit code 1.
+(Exit 1 is a non-fatal error for tar; exit 2 is fatal.)  patch written by vasi
+
+Fink's make-3.81-1 breaks compiling so use Apple's to be safe.
+
+The on-board getopt needs tweaking for darwin, but isn't needed at all
+because libSystem has what dpkg needs, so just scrap it.
+
+Remove un/misused variable in dpkg enquiry.c (solve bus error in --architecture)
+
+Filesystem may be case-insensitive, so do case-insensitive check for
+"dpkg -i" replacing files in an already-installed other package
+
+Patched off-by-one bug in main/help.c:preexecscript argv processing
+(backported from upstream dpkg-1.13.16)
+
+Patched to use %p/lib/fink/dpkg-base-files/ wrappers for .deb scripts
+(for use with the dpkg-base-files module)
+NB: wrapper runs even if no .deb script.
+
 stpncpy test may fail due to wrong prototype even if we have the
 function, so remove AIX-bug-specific hack
-<<
-DescPackaging: <<
-  admindir goes in %P (eventual live basedir) not %p (bootstrap
-  basedir): dpkg-bootstrap needs to set up the initial live dpkg
-  status database.
 
-  removed Depends and BuildDepends since this is built during phase two
-  of bootstrap and those fields are not relevant there
+Protect build against increasingly strict character-class regex in
+sed. See: https://github.com/fink/scripts/issues/45
+
+Link build-dir libs directly and pass all local -I flags early (avoid
+masking by external/globally installed other packages).
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
