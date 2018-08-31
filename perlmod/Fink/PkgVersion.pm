@@ -1172,7 +1172,7 @@ sub get_script {
 			# path-prefix-*wraps gcc and g++, system-perl configure hardcodes
 			# gcc-4.x, which is not wrapped or necessarily even present.
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
+			my $archflags = 'ARCHFLAGS="-I`xcrun --sdk macosx --show-sdk-path`/System/Library/Perl/`perl -e \'print substr($^V, 1)\' | cut -d. -f1 -f2`/darwin-thread-multi-2level/CORE"'; # prevent Apple's perl from building fat
 			$default_script =
 				"$archflags $perlcmd Makefile.PL \%c\n".
 				"/usr/bin/make CC=gcc CXX=g++\n";
