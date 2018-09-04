@@ -1468,10 +1468,13 @@ END
 		$options{debug} && printf STDERR " - program %s... %s\n", $file, -x $file ? "found" : "missing!";
 		$hash->{status} = STATUS_ABSENT if not -x $file;
 	}
-	foreach my $file (qw| /usr/include |) {
-		$options{debug} && printf STDERR " - directory %s... %s\n", $file, -d $file ? "found" : "missing!";
-		$hash->{status} = STATUS_ABSENT if not -d $file;
+	my $sdkdir = '';
+	if ($osxversion >= 18) {
+		chomp($sdkdir = `xcrun --sdk macosx --show-sdk-path 2>/dev/null`);
 	}
+	my $includedir = $sdkdir . '/usr/include';
+	$options{debug} && printf STDERR " - directory %s... %s\n", $includedir, -d $includedir ? "found" : "missing!";
+	$hash->{status} = STATUS_ABSENT if not -d $includedir;
 
 	$hash->{compilescript} = &gen_compile_script($hash);
 
