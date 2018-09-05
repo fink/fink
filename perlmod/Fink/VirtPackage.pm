@@ -432,6 +432,7 @@ directories exist.
 					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
 					'9, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home',
 					'9.0.Z, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.0.Z.jdk/Contents/Home',
+					'10.0.Z, x86_64:	"Java SE 10"	/Library/Java/JavaVirtualMachines/jdk-10.0.Z.jdk/Contents/Home',
 					);
 	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
@@ -543,10 +544,10 @@ END
 					if (-r "$javadir/$dir/Headers/jni.h") {
 						print STDERR "$dir/Headers/jni.h " if ($options{debug});
 						$latest_javadev = version->parse($ver)->stringify unless (defined $latest_javadev);
-					} elsif ($testver ge version->declare("4")->normal && $testver lt version->declare("7")->normal && -r "$javadir/Current/Headers/jni.h") {
+					} elsif ($testver >= version->parse("v4") && $testver < version->parse("v7") && -r "$javadir/Current/Headers/jni.h") {
 						print STDERR "Current/Headers/jni.h " if ($options{debug});
 						$latest_javadev = version->parse($ver)->stringify unless (defined $latest_javadev);
-					} elsif ($testver ge version->declare("7")->normal && -r "$javadir/include/jni.h") {
+					} elsif ($testver >= version->parse("v7") && -r "$javadir/include/jni.h") {
 						print STDERR "$java_inc_dir " if ($options{debug});
 						$latest_javadev = version->parse($ver)->stringify unless (defined $latest_javadev);
 					} else {
