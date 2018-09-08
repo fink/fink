@@ -67,21 +67,21 @@ chdir "/tmp";         # set local dir to where user="nobody" can start shells
 
 # 6
 Fink::Config::set_options( {'build_as_nobody' => 0} );
-cmp_ok( &execute("touch $tmpdir/f1", nonroot_okay=>1),
+cmp_ok( &execute("/usr/bin/touch $tmpdir/f1", nonroot_okay=>1),
 	'==', 0,
 	'disabling build_as_nobody causes normal execution'
       );
 
 # 7
 Fink::Config::set_options( {'build_as_nobody' => 1} );
-cmp_ok( &execute("touch $tmpdir/f2"),
+cmp_ok( &execute("/usr/bin/touch $tmpdir/f2"),
 	'==', 0,
 	'omitting nonroot_okay option causes normal execution'
       );
 
 # 8
 Fink::Config::set_options( {'build_as_nobody' => 1} );
-cmp_ok( &execute("touch $tmpdir/f3", nonroot_okay=>0),
+cmp_ok( &execute("/usr/bin/touch $tmpdir/f3", nonroot_okay=>0),
       '==', 0,
 	'false nonroot_okay option causes normal execution'
       );
@@ -91,7 +91,7 @@ cmp_ok( &execute("touch $tmpdir/f3", nonroot_okay=>0),
      Fink::Config::set_options( {'build_as_nobody' => 1} );
      skip "You must be non-root for this test", 1 if $> == 0;
      # this touch should fail noisily, so redirect
-     cmp_ok( &execute("touch $tmpdir/f4 > /dev/null 2>&1", nonroot_okay=>1),
+     cmp_ok( &execute("/usr/bin/touch $tmpdir/f4 > /dev/null 2>&1", nonroot_okay=>1),
 	     '!=', 0,
 	     'try to switch users when not root'
 	   );
@@ -102,7 +102,7 @@ cmp_ok( &execute("touch $tmpdir/f3", nonroot_okay=>0),
      Fink::Config::set_options( {'build_as_nobody' => 1} );
      skip "You must be root for this test", 1 if $> != 0;
      # this touch should fail noisily, so redirect
-     cmp_ok( &execute("touch $tmpdir/f5 > /dev/null 2>&1", nonroot_okay=>1, delete_tempfile=>1),
+     cmp_ok( &execute("/usr/bin/touch $tmpdir/f5 > /dev/null 2>&1", nonroot_okay=>1, delete_tempfile=>1),
 	     '!=', 0,
 	     'requires normal user but build_as_nobody enabled'
 	   );
@@ -116,7 +116,7 @@ cmp_ok( &execute("touch $tmpdir/f3", nonroot_okay=>0),
      open FOO, ">$file";
      close FOO;
      chmod 0666, $file;  # create a file that all users can touch
-     cmp_ok( &execute("touch $file", nonroot_okay=>1),
+     cmp_ok( &execute("/usr/bin/touch $file", nonroot_okay=>1),
 	     '==', 0,
 	     'user "nobody" can do this and build_as_nobody enabled'
 	   );

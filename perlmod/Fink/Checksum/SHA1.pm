@@ -3,7 +3,7 @@
 # Fink::Checksum::SHA1 module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2005-2016 The Fink Package Manager Team
+# Copyright (c) 2005-2018 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -46,28 +46,34 @@ sub new {
 
 	$match = '(\S*)\s*(:?\S*)';
 
-	eval "require Digest::SHA1";
+	eval "require Digest::SHA1";  # in perl core since 5.7.3
 	if (not defined $@) {
 		$sha1pm = 1;
 	} else {
+		# external commands in case perl itself is really broken
 		if (-x "$basepath/bin/sha1deep") {
 			$sha1cmd = "$basepath/bin/sha1deep";
 		} elsif (-x "/usr/bin/openssl") {
 			$sha1cmd = '/usr/bin/openssl sha1';
 			$match   = 'SHA1\([^\)]+\)\s*=\s*(\S+)';
-		} elsif (-e "$basepath/lib/coreutils/bin/sha1sum") {
+		} elsif (-x "$basepath/bin/openssl") {
+			$sha1cmd = '$basepath/bin/openssl sha1';
+			$match   = 'SHA1\([^\)]+\)\s*=\s*(\S+)';
+		} elsif (-x "$basepath/lib/coreutils/bin/sha1sum") {
 			$sha1cmd = "$basepath/lib/coreutils/bin/sha1sum";
+		} elsif (-x "/usr/bin/shasum") {
+			$sha256cmd = "/usr/bin/shasum -a 1 -b";
 		}
 	}
 
 	return ($sha1pm || $sha1cmd) ? $self : undef;
 }
 
-# Returns the SHA1 checksum of the given $filename. Uses $basepath/bin/sha1deep
-# if it is available, otherwise uses uses $basepath/bin/sha1sum. The output of
-# the chosen command is read via an open() pipe and matched against the
-# appropriate regexp. If the command returns failure or its output was
-# not in the expected format, the program dies with an error message.
+# Returns the SHA1 checksum of the given $filename. Uses a perl module
+# if it is available, otherwise uses a piped command (with output
+# parsed against a regexp tailored to the specific command). If the
+# command returns failure or its output was not in the expected
+# format, the program dies with an error message.
 
 sub get_checksum {
 	my $class = shift;

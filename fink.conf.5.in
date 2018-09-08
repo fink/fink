@@ -494,6 +494,16 @@ licenses. If this option is present and false, then
 .Nm fink
 will omit those
 packages when scanning.
+.It Cm GitPath: Ar the path to your git binary
+The GitPath option lets you override the default path for the git command-line
+tool used by the selfupdate-git command. It is set automatically when
+you first use the selfupdate-git but can be overridden if you wish to specify
+an alternate location to your git executable.
+.It Cm SvnPath: Ar the path to your svn binary
+The SvnPath option lets you override the default path for the svn command-line
+tool used by the selfupdate-svn command. It is set automatically when
+you first use the selfupdate-svn but can be overridden if you wish to specify
+an alternate location to your svn executable.
 .El
 .\"
 .\"

@@ -217,7 +217,7 @@ Parse the global command-line options for Fink.
 
 my %option_defaults = (
 	map( { $_ => 0 } qw(dontask interactive verbosity keep_build keep_root
-		maintainermode showversion use_binary) ),
+		maintainermode showversion showprefix use_binary) ),
 	map( { $_ => 1 } qw(build_as_nobody) ),
 	map( { $_ => "" } qw(tests validate) ),
 	map ( { $_ => [] } qw(include_trees exclude_trees) ),
@@ -282,6 +282,7 @@ sub parse_options {
 #		[ 'interactive|i'      => \$opts{interactive}, 'see man page'		],
 		[ 'version|V'          => \$opts{showversion},
 			'display version information'									],
+		[ 'prefix'             => \$opts{showprefix}, 'display installation prefix' ],
 	], \@args, helpformat => <<HELPFORMAT, optwidth => 23, # lines up better with 23
 %intro{[options] command [package...],install pkg1 [pkg2 ...]}
 Common commands:
@@ -302,7 +303,7 @@ Common commands:
 %align{show-deps,list run-time and compile-time package dependencies,$comlen}
 
 Common options:
-%opts{help,quiet,version,verbose,yes,use-binary-dist}
+%opts{help,quiet,version,verbose,yes,use-binary-dist,prefix}
 
 See the fink(8) manual page for a complete list of commands and options.
 Visit http://www.finkproject.org for further information.
@@ -310,8 +311,13 @@ Visit http://www.finkproject.org for further information.
 HELPFORMAT
 		# Err if no command
 		validate => sub {
-			!scalar(@args) && !$opts{showversion} && $VALIDATE_HELP }
+			!scalar(@args) && !$opts{showprefix} && !$opts{showversion} && $VALIDATE_HELP }
 	);
+
+	if ($opts{showprefix}) {
+		print "$basepath\n";
+		exit 0;
+	}
 
 	if ($opts{showversion}) {
 		require Fink::FinkVersion;

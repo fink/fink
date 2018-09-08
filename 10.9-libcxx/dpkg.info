@@ -199,6 +199,16 @@ Perl on OSX, does not have any dependencies apart from the 'md5' executable
 installed on every OS X system.
 <<
 DescPort: <<
+1.10.21-1246
+- Sync libgettext8-shlibs.patch with that from libgettext8-shlibs-0.19.8.1-2
+
+1.10.21-1245
+- Patch for tar > 1.28 (https://anonscm.debian.org/cgit/dpkg/dpkg.git/commit/?h=1.16.x&id=9c2795a5ff8668353f8497c3ae3d2aac099902da)
+
+1.10.21-1239
+- Patch to avoid invoking gettext and thus CoreFoundation between fork() and exec()
+  which is fatal on 10.9.
+
 1.10.9 
 - Removed --without-zlib flag
 - Gets confused about top_srcdir without the --srcdir arg.
@@ -226,7 +236,7 @@ instead of relying on PATH
 Patch 'dpkg -b' tar invocation to avoid warning under tar>=1.16
 See: http://permalink.gmane.org/gmane.os.apple.fink.core/1281
 
-Patch 'dpkg -b' tar invocation to not die if tar returns exit code 1.  
+Patch 'dpkg -b' tar invocation to not die if tar returns exit code 1.
 (Exit 1 is a non-fatal error for tar; exit 2 is fatal.)  patch written by vasi
 
 Fink's make-3.81-1 breaks compiling so use Apple's to be safe.

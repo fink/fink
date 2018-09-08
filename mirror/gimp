@@ -1,13 +1,13 @@
 # Official mirror list: http://www.gimp.org/downloads
-Timestamp: 2016-08-13
+Timestamp: 2018-04-17
 
 Primary: http://download.gimp.org/mirror/pub/gimp
 
 eur-DE: ftp://ftp.fau.de/gimp/gimp
+eur-DE: http://artfiles.org/gimp.org/pub/gimp
 eur-DE: https://ftp.fau.de/gimp/gimp
 eur-UK: ftp://ftp.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
 eur-UK: http://www.mirrorservice.org/sites/ftp.gimp.org/pub/gimp
 nam-US: http://download.gimp.org/mirror/pub/gimp
-nam-US: http://gimp.mirrors.hoobly.com/pub/gimp
-nam-US: http://go-parts.com/mirrors-usa/gimp/gimp
-sam-BR: http://mirror.nbtelecom.com.br/gimp
+nam-US: http://pirbot.com/mirrors/gimp/gimp
+nam-US: http://pirbot.com/mirrors/gimp/gimp

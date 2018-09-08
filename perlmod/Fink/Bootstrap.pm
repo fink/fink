@@ -227,7 +227,7 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.11";
-	} elsif ($host =~ /^i386-apple-darwin16\.[0-1]/) {
+	} elsif ($host =~ /^i386-apple-darwin16\.[0-7]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.12";
 	} elsif ($host =~ /^i386-apple-darwin16\./) {
@@ -236,6 +236,15 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.12";
+	} elsif ($host =~ /^i386-apple-darwin17\.[0-5]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "10.13";
+	} elsif ($host =~ /^i386-apple-darwin17\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of Mac OS X might work with Fink, but there are no " .
+			"guarantees.");
+		$distribution = "10.13";
 	} elsif ($host =~ /^i386-apple-darwin(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
@@ -820,7 +829,7 @@ $bpath/fink/dists/$destination/$target_file if it already exists.
 
 Next, copy $template_file (from the current directory) to
 $bpath/fink/dists/$destination/$target_file, supplying the correct
-$packageversion and $packagerevision as well as an MD5 sum calculated from
+$packageversion and $packagerevision as well as the MD5 and SHA256 sums calculated from
 $bpath/src/$package-$packageversion.tar.  Ensure that the created file
 has mode 644.
 
@@ -902,7 +911,7 @@ sub copy_description {
 
 Copy the file $original to $target, supplying the correct version, revision,
 and distribution (from get_version_revision($package_source,$distribution))
-as well as $source_location and an MD5 sum calculated from $tarball.
+as well as $source_location and the MD5 and SHA256 sums calculated from $tarball.
 Pre-evaluate any conditionals containing %{Distribution}, using
 $distribution as the value of %{Distribution}.  Append $coda to the end
 of the file.
@@ -930,6 +939,8 @@ sub modify_description {
 	print "Modifying package description...\n";
 	my $md5obj = Fink::Checksum->new('MD5');
 	my $md5 = $md5obj->get_checksum($tarball);
+	my $sha256obj = Fink::Checksum->new('SHA256');
+	my $sha256 = $sha256obj->get_checksum($tarball);
 
 	my $result = 0;
 
@@ -942,6 +953,7 @@ sub modify_description {
 		$_ =~ s/\@REVISION\@/$revision/;
 		$_ =~ s/\@SOURCE\@/$source_location/;
 		$_ =~ s/\@MD5\@/$md5/;
+		$_ =~ s/\@SHA256\@/$sha256/;
 		$_ =~ s/\@DISTRIBUTION\@/$distribution/;
 # only remove conditionals which match "%{Distribution}" (and we will
 # remove the entire line if the condition fails)
@@ -1071,6 +1083,7 @@ sub get_selfupdatetrees {
 		"10.10" => "10.9-libcxx",
 		"10.11" => "10.9-libcxx",
 		"10.12" => "10.9-libcxx",
+		"10.13" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};

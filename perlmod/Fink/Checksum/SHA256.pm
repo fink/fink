@@ -3,7 +3,7 @@
 # Fink::Checksum::SHA256 module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2005-2016 The Fink Package Manager Team
+# Copyright (c) 2005-2018 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -45,27 +45,34 @@ sub new {
 
 	$match = '(\S*)\s*(:?\S*)';
 
-	if (-e "$basepath/bin/sha256deep") {
+	# external commands definitely needed (especially
+	# apple-supplied) because no perl implementation
+	if (-x "$basepath/bin/sha256deep") {
 		$sha256cmd = "$basepath/bin/sha256deep";
-		} elsif (-x "/usr/bin/openssl") {
-			$sha256cmd = '/usr/bin/openssl dgst -sha256';
-			$match   = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
-		} elsif (-e "$basepath/lib/coreutils/bin/sha256sum") {
-			$sha256cmd = "$basepath/lib/coreutils/bin/sha256sum";
-
+	} elsif (-x "/usr/bin/openssl") {
+		$sha256cmd = '/usr/bin/openssl dgst -sha256';
+		$match     = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
+	} elsif (-x "$basepath/bin/openssl") {
+		$sha256cmd = '$basepath/bin/openssl dgst -sha256';
+		$match     = 'SHA256\([^\)]+\)\s*=\s*(\S+)';
+	} elsif (-x "$basepath/lib/coreutils/bin/sha256sum") {
+		$sha256cmd = "$basepath/lib/coreutils/bin/sha256sum";
+	} elsif (-x "/usr/bin/shasum") {
+		$sha256cmd = "/usr/bin/shasum -a 256 -b";
 	}
 
-	if (!defined $sha256cmd or not -x $sha256cmd) {
+	if (!defined $sha256cmd) {
 		die "unable to find sha256 implementation. Try installing md5deep or coreutils\n";
 	}
 
 	return $self;
 }
 
-# Returns the SHA256 checksum of the given $filename.  The output of
-# the chosen command is read via an open() pipe and matched against the
-# appropriate regexp. If the command returns failure or its output was
-# not in the expected format, the program dies with an error message.
+# Returns the SHA256 checksum of the given $filename.
+# Uses a piped command (with output
+# parsed against a regexp tailored to the specific command). If the
+# command returns failure or its output was not in the expected
+# format, the program dies with an error message.
 
 sub get_checksum {
 	my $class = shift;

@@ -38,15 +38,19 @@ distribution, everything else is downloaded off the Internet.
 .Bl -tag -width flag
 .It Cm -h, --help
 Display help text.
+.It Cm -V, --version
+Display
+.Nm
+version information and exit.
+.It Cm --prefix
+Display
+.Nm
+installation prefix and exit.
 .It Cm -q, --quiet
 Causes
 .Nm
 to be less verbose, opposite of
 .Cm --verbose
-.It Cm -V, --version
-Display
-.Nm
-version information.
 .It Cm -v, --verbose
 Causes
 .Nm
@@ -624,6 +628,12 @@ Synonym for
 .It Cm selfupdate-cvs
 Synonym for
 .Cm selfupdate --method=cvs
+.It Cm selfupdate-git
+Synonym for
+.Cm selfupdate --method=git
+.It Cm selfupdate-svn
+Synonym for
+.Cm selfupdate --method=svn
 .It Cm index
 Rebuilds the package cache. You should not normally need to execute this manually,
 .Nm

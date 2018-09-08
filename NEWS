@@ -1,6 +1,39 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
+
+/-------------
+| fink 0.43.x
+\-------------
+
+0.43.1 "Political Balderdash" (2018-04-18)
+	* Bugfix:  fink.info (and other base packages) can't use SHA256 because of upgrade
+	  deadlocks 
+	* Support Darwin 17.5
+	* Other fixes and enhancements (see the commits)
+
+0.43.0 "Obvious Allegory" (2018-03-24)
+	* selfupdate-git 
+	* selfupdate-svn
+	* --prefix flag
+	* Support 10.13.1-4
+	* Support Java 9.0.x
+	* Support 2017 version of Java 1.6
+	* Better checksum support
+	* Other fixes and enhancements (see the commits)
+
+
+/-------------
+| fink 0.42.x
+\-------------
+
+0.42.0 "Hello Whitney" (2017-10-07)
+	* Support 10.13.0
+	* Retroactively add official support for 10.12.2-6
+	* Support Java 9
+	* Add %p/Library/Launch{Agents, Daemons} to legal directories
+	* Other fixes and enhancements (see the commits)
+
 /-------------
 | fink 0.41.x
 \-------------

@@ -166,6 +166,14 @@ installation and removal of Debian software packages.
 .
 For Debian package development tools, install dpkg-dev.
 <<
+DescPackaging: <<
+  admindir goes in %P (eventual live basedir) not %p (bootstrap
+  basedir): dpkg-bootstrap needs to set up the initial live dpkg
+  status database.
+
+  removed Depends and BuildDepends since this is built during phase two
+  of bootstrap and those fields are not relevant there
+<<
 DescPort: <<
 See dpkg DescPort
 <<

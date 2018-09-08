@@ -2,7 +2,7 @@ Info2: <<
 Package: texinfo
 Version: 6.3
 Revision: 103.1
-Distribution: 10.10, 10.11, 10.12
+Distribution: 10.10, 10.11, 10.12, 10.13, 10.14
 Type: systemperl (5.18.2)
 Source: gnu
 Source-MD5: 9b08daca9bf8eccae9b0f884aba41f9e

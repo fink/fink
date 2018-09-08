@@ -60,7 +60,7 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
-					  &file_MD5_checksum &get_osx_vers &enforce_gcc
+					  &get_osx_vers &enforce_gcc
 					  &get_system_perl_version &get_path
 					  &eval_conditional &count_files
 					  &get_osx_vers_long &get_kernel_vers
@@ -1236,28 +1236,6 @@ sub cleanup_lol {
 	@$struct = @clusters;
 }
 
-=item file_MD5_checksum (deprecated)
-
-    my $md5 = file_MD5_checksum $filename;
-
-Returns the MD5 checksum of the given $filename. Uses /sbin/md5 if it
-is available, otherwise uses the first md5sum in PATH. The output of
-the chosen command is read via an open() pipe and matched against the
-appropriate regexp. If the command returns failure or its output was
-not in the expected format, the program dies with an error message.
-
-Note: this method is deprecated; use Fink::Checksum->new('MD5') instead.
-
-=cut
-
-sub file_MD5_checksum {
-	my $filename = shift;
-
-	my $checksum = Fink::Checksum->new('MD5');
-	return $checksum->get_checksum($filename);
-}
-
-
 =item gcc_selected
 
   my $selected = gcc_selected;
@@ -1333,7 +1311,8 @@ sub enforce_gcc {
 		'10.9' => '4.2',
 		'10.10' => '4.2',
 		'10.11' => '4.2',
-		'10.12' => '4.2'
+		'10.12' => '4.2',
+		'10.13' => '4.2',
 	);
 	my %gcc_abi_default = (
 		'2.95' => '2.95',

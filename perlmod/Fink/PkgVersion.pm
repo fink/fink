@@ -27,7 +27,7 @@ use Fink::Services qw(&filename &execute
 					  &expand_percent &expand_percent2 &latest_version
 					  &collapse_space &read_properties &read_properties_var
 					  &pkglist2lol &lol2pkglist &cleanup_lol
-					  &file_MD5_checksum &version_cmp
+					  &version_cmp
 					  &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
@@ -1813,34 +1813,40 @@ sub get_custom_mirror {
 
 sub get_build_directory {
 	my $self = shift;
-	my ($dir);
 
-	if (exists $self->{_builddir}) {
-		return $self->{_builddir};
-	}
+	if (!exists $self->{_builddir}) {
+		my $builddir;
 
-	if ($self->is_type('bundle') || $self->is_type('nosource')
-			|| lc $self->get_source() eq "none"
-			|| $self->param_boolean("NoSourceDirectory")) {
-		$self->{_builddir} = $self->get_fullname();
-	}
-	elsif ($self->has_param("SourceDirectory")) {
-		$self->{_builddir} = $self->get_fullname()."/".
-			$self->param_expanded("SourceDirectory");
-	}
-	else {
-		$dir = $self->get_tarball(); # never undef b/c never get here if no source
-		if ($dir =~ /^(.*)[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/) {
-			$dir = $1;
+		if ($self->has_parent()) {
+			# building is a main-package feature, so %b
+			# is based on data there
+			$builddir = $self->get_parent()->get_build_directory();
+		} else {
+			$builddir = $self->get_fullname();  # start with %f
+			if ($self->is_type('bundle') || $self->is_type('nosource')
+					|| lc $self->get_source() eq "none"
+					|| $self->param_boolean("NoSourceDirectory")) {
+				# just %f
+			} elsif ($self->has_param("SourceDirectory")) {
+				# subdir is explicit source directory
+				$builddir .= "/".$self->param_expanded("SourceDirectory");
+			} else {
+				# subdir is derived from tarball filename
+				my $dir = $self->get_tarball(); # never undef b/c never get here if no source
+				if ($dir =~ /^(.*)[\.\-]tar(\.(gz|z|Z|bz2|xz))?$/) {
+					$dir = $1;
+				}
+				if ($dir =~ /^(.*)[\.\-](t[gbx]z|zip|ZIP)$/) {
+					$dir = $1;
+				}
+				$builddir .= "/".$dir;
+			}
 		}
-		if ($dir =~ /^(.*)[\.\-](t[gbx]z|zip|ZIP)$/) {
-			$dir = $1;
-		}
 
-		$self->{_builddir} = $self->get_fullname()."/".$dir;
+		$self->{_builddir} = $builddir;
+		$self->{_expand}->{b} = "$buildpath/$builddir";
 	}
 
-	$self->{_expand}->{b} = "$buildpath/".$self->{_builddir};
 	return $self->{_builddir};
 }
 
@@ -3686,11 +3692,27 @@ sub phase_patch {
 			# file exists
 			die "Cannot read PatchFile$suffix \"$file\"\n" unless -r $file;
 
-			# verify that MD5 matches
-			my $md5 = $self->param_default("PatchFile$suffix-MD5", '');
-			my $file_md5 = file_MD5_checksum($file);  # old API so we are back-portable to branch_0-24
-			if ($md5 ne $file_md5) {
-				die "PatchFile$suffix \"$file\" checksum does not match!\nActual: $file_md5\nExpected: $md5\n";
+			# verify the checksum matches (at least one of -Checksum or -MD5 must be present)
+			if (not $self->has_param("PatchFile$suffix-MD5") and not $self->has_param("PatchFile$suffix-Checksum")) {
+				die "No checksum specified for PatchFile$suffix \"$file\"!\n";
+			}
+			if ($self->has_param("PatchFile$suffix-Checksum")) {
+				my $checksum = $self->param("PatchFile$suffix-Checksum");
+				if (not Fink::Checksum->validate($file, $checksum)) {
+					my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
+					die "PatchFile$suffix \"$file\" checksum does not match!\n".
+						"Expected: $checksum\nActual: " .
+						join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
+				}
+			}
+			if ($self->has_param("PatchFile$suffix-MD5")) {
+				my $checksum = "MD5(" . $self->param("PatchFile$suffix-MD5") . ")";
+				if (not Fink::Checksum->validate($file, $checksum)) {
+					my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
+					die "PatchFile$suffix \"$file\" checksum does not match!\n".
+						"Expected: $checksum\nActual: " .
+						join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums);
+				}
 			}
 
 			# check that we're contained in a world-executable directory
@@ -4162,7 +4184,7 @@ sub phase_build {
 			for my $suffix ($build_pkg->get_patchfile_suffixes()) {
 				my $patchfile = &expand_percent("\%{PatchFile$suffix}", $build_pkg->{_expand}, $self->get_info_filename." \"PatchFile$suffix\"");
 				# only get here after successful build, so we know
-				# patchfile was present, readable, and matched MD5
+				# patchfile was present, readable, and matched checksum
 				cp($patchfile, "$destdir/DEBIAN/package.patch$suffix");
 			}
 		}
@@ -5710,6 +5732,10 @@ sub get_perl_dir_arch {
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '16') {
 				# 10.12 system-perl is 5.18.2, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '17') {
+				# 10.13 system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			}

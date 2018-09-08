@@ -47,10 +47,12 @@ our $VERSION = 1.00;
 # you must not print to STDOUT.
 
 use Fink::Config qw($config $basepath $distribution);
-use POSIX qw(uname tmpnam);
+use POSIX qw(uname);
+use File::Temp qw(:POSIX);
 use Fink::Status;
 use File::Basename;
 use Fink::FinkVersion;
+use version 0.77;
 
 use constant STATUS_PRESENT => "install ok virtual";
 use constant STATUS_ABSENT  => "purge ok not-installed";
@@ -425,26 +427,32 @@ directories exist.
 	my @jdktest = ( split (/\n/, `/usr/libexec/java_home -V 2>&1`),
 					'1.4.2_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.4.2.jdk/Contents/Home',
 					'1.5.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.5.0.jdk/Contents/Home',
-					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home',
+					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home', # legacy location
 					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
 					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
+					'9, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home',
+					'9.0.Z, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.0.Z.jdk/Contents/Home',
+					'10.0.Z, x86_64:	"Java SE 10"	/Library/Java/JavaVirtualMachines/jdk-10.0.Z.jdk/Contents/Home',
 					);
 	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
 		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
+		my $testver; # for later
 		# Tweak $javadir to point to where stuff actually lives for JDK 1.6 and earlier.
-		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/ or $ver =~ /1.6.0/) ;
+		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/ or $ver =~ '1\.6\.0') ;
 		if (opendir(DIR, $javadir)) {
 			chomp(my @dirs = grep(!/^\.\.?$/, readdir(DIR)));
 			for my $dir (reverse(sort(@dirs))) {
-				if ($javadir =~ /System/) { # 1.6 and earlier
-					$ver = $dir;
+				next if $dir =~ 'Current' ;
+				if ($javadir =~ /System/) { # Java 6 and earlier
 					$java_test_dir = "$javadir/$dir/Commands";
 					$java_cmd_dir = "$dir/Commands";
-				} else { # 1.7 and later, including older formats
-					($dir) = ($javadir =~ m|(\d+\.\d+\.\d+).*jdk|) ;
+					$java_inc_dir = "$dir/Headers" ; 
+				} else { # Java 7 and later, including older formats
+					($dir) = ($javadir =~ /jdk-(\d+).*jdk/) if $javadir =~ /jdk-/  ;
+					($dir) = ($javadir =~ /(\d+\.\d+\.\d+).*jdk/) if $javadir =~ /jdk1\./;
 					if (not defined $dir) {
 						print STDERR "  - warning, unsure how to handle Java directory $dir\n" if ($options{debug});
 						next;
@@ -458,19 +466,28 @@ directories exist.
 					$java_inc_dir = $java_cmd_dir;
 					$java_inc_dir =~ s/bin/include/;
 				}
-				# chop the version down to major/minor without dots
-				$ver =~ s/[^\d]+//g;
-				$ver =~ s/^(..).*$/$1/;
-				next if ($ver eq ""); # directories that aren't versioned;
+				# chop the version down to major/minor without dots				
+				$ver =~ s/$arch//g ; # strip architecture
+				$ver =~ s/,\s+//; # strip comma
+				$ver =~ s/[-_].*//; # strip suffixes on versions
+				next if $ver =~ /^[^\d]/  ; # bail out for unversioned dirs 
+				my $dotless_ver;
+				if ( version->declare("$ver")->normal lt version->declare("v9.0.0") ) { # Pre Java 9
+					($testver = version->declare($ver)->normal) =~ s/v1\./v/  ; # strip leading 1
+					$dotless_ver = (split /\./, $ver)[0].(split /\./, $ver)[1];
+				} else { # Java 9 and later
+					$testver = version->declare($ver)->normal; 
+					$dotless_ver = (split /\./, $ver)[0];
+				}
 				print STDERR "  - $dir... " if ($options{debug});
 
 				$hash = {};
-				$hash->{package}     = "system-java${ver}";
-				$hash->{version}     = $dir . "-1";
+				$hash->{package}     = "system-java${dotless_ver}";
+				$hash->{version}     = version->parse($ver)->stringify . "-1";
 				$hash->{description} = "[virtual package representing Java $dir]";
 				$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 				$hash->{provides}    = 'system-java';
-				if ($ver >= 14) {
+				if ($testver ge version->declare("4")->normal ) {
 					$hash->{provides} .= ', jdbc, jdbc2, jdbc3, jdbc-optional';
 				}
 				$hash->{descdetail}  = <<END;
@@ -479,11 +496,11 @@ of Java $dir.
 END
 				$hash->{compilescript} = &gen_compile_script($hash);
 
-				if ($dir =~ /^\d[\d\.]*$/ and -d $java_test_dir) {
+				if (-d $java_test_dir) {
 					print STDERR "$java_cmd_dir " if ($options{debug});
 					$hash->{status}      = STATUS_PRESENT;
 					$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
-					$latest_java = $dir unless (defined $latest_java);
+					$latest_java = version->parse($ver)->stringify unless (defined $latest_java);
 
 =item "system-javaI<XX>-dev"
 
@@ -496,12 +513,12 @@ directories exist.
 =cut
 
 					$hash = {};
-					$hash->{package}     = "system-java${ver}-dev";
+					$hash->{package}     = "system-java${dotless_ver}-dev";
 					$hash->{status}      = STATUS_PRESENT;
-					$hash->{version}     = $dir . "-1";
+					$hash->{version}     = version->parse($ver)->stringify . "-1";
 					$hash->{description} = "[virtual package representing Java $dir development headers]";
 					$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
-					if ($ver <= 16) {
+					if ($testver le version->declare("6")->normal ) {
 						$hash->{descdetail}  = <<END;
 This package represents the development headers for
 Java $dir.  If this package shows as not being installed,
@@ -526,13 +543,13 @@ END
 
 					if (-r "$javadir/$dir/Headers/jni.h") {
 						print STDERR "$dir/Headers/jni.h " if ($options{debug});
-						$latest_javadev = $dir unless (defined $latest_javadev);
-					} elsif ($ver >= 14 && $ver < 17 && -r "$javadir/Current/Headers/jni.h") {
+						$latest_javadev = version->parse($ver)->stringify unless (defined $latest_javadev);
+					} elsif ($testver >= version->parse("v4") && $testver < version->parse("v7") && -r "$javadir/Current/Headers/jni.h") {
 						print STDERR "Current/Headers/jni.h " if ($options{debug});
-						$latest_javadev = $dir unless (defined $latest_javadev);
-					} elsif ($ver >= 17 && -r "$javadir/include/jni.h") {
+						$latest_javadev = version->parse($ver)->stringify unless (defined $latest_javadev);
+					} elsif ($testver >= version->parse("v7") && -r "$javadir/include/jni.h") {
 						print STDERR "$java_inc_dir " if ($options{debug});
-						$latest_javadev = $dir unless (defined $latest_javadev);
+						$latest_javadev = version->parse($ver)->stringify unless (defined $latest_javadev);
 					} else {
 						print STDERR "$javadir/$dir/Headers/jni.h missing " if ($options{debug});
 						$hash->{status} = STATUS_ABSENT;
@@ -553,9 +570,9 @@ END
 			my $legacy_boilerplate = <<END;
 This package represents the currently installed version
 of Java 1.6.0.  If this package shows as not being installed,
-you must download and install Java for OS X 2014-001 from Apple:
+you must download and install Java for OS X 2017-001 from Apple:
 
-  http://support.apple.com/downloads/DL1572/en_US/JavaForOSX2014-001.dmg
+  https://support.apple.com/downloads/DL1572/en_US/javaforosx.dmg
 
 END
 			$hash = {};
@@ -619,6 +636,42 @@ END
 			$hash->{compilescript} = &gen_compile_script($hash);
 			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 		
+		} elsif ($ver =~ /^(\d+)$/ or $ver =~ /^(\d+)\..*Z/ ) {  # 9 and later
+			my $real_ver = "$1";
+			my $short_ver = $1; 
+			my $oracle_boilerplate = <<END;
+This package represents the currently installed version
+of Java $real_ver.  If this package shows as not being installed,
+you must download the corresponding Java JDK from Oracle at:
+
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  
+(registration required).  
+
+END
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{provides}    = 'system-java, jdbc, jdbc2, jdbc3, jdbc-optional';
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			unless (exists $self->{$hash->{package}}) {
+				$self->{$hash->{package}} = $hash ;
+				print STDERR "  - $real_ver... not present on system\n" if ($options{debug});	
+			}
+			
+			$hash = {};
+			$hash->{package}     = "system-java$short_ver-dev";
+			$hash->{status}      = STATUS_ABSENT;
+			$hash->{version}     = "$real_ver-1";
+			$hash->{description} = "[virtual package representing Java $real_ver development headers]";
+			$hash->{homepage}    = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
+			$hash->{descdetail}  = $oracle_boilerplate;
+			$hash->{compilescript} = &gen_compile_script($hash);
+			$self->{$hash->{package}} = $hash unless (exists $self->{$hash->{package}});
 		} else {
 			print STDERR "  - $ver isn't recognized.  Contact the Fink Core Developers at fink-core\@lists.sourceforge.net .\n" if ($options{debug});
 		}
@@ -920,6 +973,10 @@ as part of the Xcode tools.
 	} elsif ($osxversion == 16) {
 		@SDKDIRS=qw(
 			MacOSX10.12.sdk
+		);
+	} elsif ($osxversion == 17) {
+		@SDKDIRS=qw(
+			MacOSX10.13.sdk
 		);
 	}
 #   Portable SDK path finder which works on 10.5 and later

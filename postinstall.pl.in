@@ -256,9 +256,9 @@ if ($updating) {
 # In this section, handle special cases where we have moved to a new real tree, but
 # have maintained binary compatibility, by copying the .debs over to the new tree.  
 
-# Currently applies to 10.9, 10.10, and 10.11 platforms coming from a
+# Currently applies to 10.9-10.13 platforms coming from a
 # dist that used the "10.7" subdir (regardless of actual platform)
-if ( $distribution eq "10.9" or $distribution eq "10.10" or $distribution eq "10.11" or $distribution eq "10.12"
+if ( $distribution eq "10.9" or $distribution eq "10.10" or $distribution eq "10.11" or $distribution eq "10.12" or $distribution eq "10.13"
      and -d "$basepath/fink/10.7" ) {
 	my @deb_list = glob "$basepath/fink/debs/*.deb";
 	my $copy_debs = 1;

@@ -23,8 +23,9 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &file_MD5_checksum &pkglist2lol &version_cmp);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &pkglist2lol &version_cmp);
 use Fink::Config qw($config);
+use Fink::CLI qw(&print_breaking);
 use Fink::PkgVersion;
 use Fink::Tie::IxHash;
 use Cwd qw(getcwd);
@@ -81,6 +82,7 @@ our %check_hardcode_fields = map {$_, 1}
 		 patchscript
 		 configureparams
 		 compilescript
+		 testscript
 		 installscript
 		 shlibs
 		 preinstscript
@@ -187,6 +189,7 @@ our %valid_fields = map {$_, 1}
 		 'updatepomakefile',
 		 'patch',
 		 'patchfile',
+		 'patchfile-checksum',
 		 'patchfile-md5',
 		 'patchscript'
 #  compile phase:
@@ -423,6 +426,7 @@ sub validate_info_file {
 	my ($properties, $info_level, $test_properties, $triggers_properties);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgepoch, $pkgfullname, $pkgdestdir, $pkgpatchpath);
 	my $value;
+	my $checksum;
 	my ($basepath, $buildpath);
 	my ($type, $type_hash);
 	my $expand = {};
@@ -892,7 +896,7 @@ sub validate_info_file {
 				print "Error: '$1' in RuntimeVars will break many shared libraries. ($filename)\n";
 				$looks_good = 0;
 			# error for PYTHONPATH as it is version agnostic and will break other pymods
-        	} elsif ($line =~ m,^\s*PYTHONPATH:.*$,) {
+			} elsif ($line =~ m,^\s*PYTHONPATH:.*$,) {
 				print "Error: 'PYTHONPATH' in RuntimeVars can break other Python scripts. ($filename)\n";
 				$looks_good = 0;
 			}
@@ -900,6 +904,7 @@ sub validate_info_file {
 	}
 
 	my %patchfile_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)$/ } keys %$properties;
+	my %patchfile_checksum_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)-checksum$/ } keys %$properties;
 	my %patchfile_md5_fields = map { lc $_, 1 } grep { /^patchfile(|[2-9]|[1-9]\d+)-md5$/ } keys %$properties;
 
 	for my $field (keys %patchfile_fields) {
@@ -982,8 +987,9 @@ sub validate_info_file {
 		my $pretty_field = $field;
 		$pretty_field =~ s/patchfile/PatchFile/i;
 
-		if (not exists $patchfile_md5_fields{$field.'-md5'}) {
-			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";
+		# must have PatchFileN-Checksum or PatchFileN-MD5 field
+		if (not exists $patchfile_checksum_fields{$field.'-checksum'} and not exists $patchfile_md5_fields{$field.'-md5'}) {
+			print "Error: No $pretty_field-MD5 or $pretty_field-checksum given for $pretty_field. ($filename)\n";
 			$looks_good = 0;
 		}
 
@@ -1002,17 +1008,27 @@ sub validate_info_file {
 			$looks_good = 0;
 		}
 
-		# must have PatchFileN-MD5 field that matches file's checksum
-		if (defined ($value = $properties->{"$field-md5"})) {
-			my $file = &expand_percent("\%{$field}", $expand, $filename.' '.$pretty_field);
-			my $file_md5 = file_MD5_checksum($file);
-			if ($value ne $file_md5) {
-				print "Error: $pretty_field-MD5 does not match $pretty_field checksum. ($filename)\n\tActual: $file_md5\n\tExpected: $value\n";
+		# PatchFileN-Checksum and PatchFileN-MD5 fields must match file's checksum
+		my $file = &expand_percent("\%{$field}", $expand, $filename.' '.$pretty_field);
+		if (defined ($checksum = $properties->{"$field-checksum"})) {
+			if (not Fink::Checksum->validate($file, $checksum)) {
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
+				&print_breaking("Error: $pretty_field-Checksum does not match $pretty_field checksum. ($filename)\n".
+								"Expected: $checksum\nActual: " .
+								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums));
+
 				$looks_good = 0;
 			}
-		} else {
-			print "Error: No $pretty_field-MD5 given for $pretty_field. ($filename)\n";
-			$looks_good = 0;
+		}
+		if (defined ($checksum = $properties->{"$field-md5"})) {
+			if (not Fink::Checksum->validate($file, $checksum, "MD5")) {
+				my %archive_sums = %{Fink::Checksum->get_all_checksums($file)};
+				&print_breaking("Error: $pretty_field-Checksum does not match $pretty_field checksum. ($filename)\n".
+								"Expected: $checksum\nActual: " .
+								join("        ", map "$_($archive_sums{$_})\n", sort keys %archive_sums));
+
+				$looks_good = 0;
+			}
 		}
 
 		# must actually be used
@@ -1021,6 +1037,16 @@ sub validate_info_file {
 				print "Warning: $pretty_field does not appear to be used in PatchScript. ($filename)\n";
 				$looks_good = 0;
 			}
+		}
+	}
+
+	for my $field (keys %patchfile_checksum_fields) {
+		$field =~ s/-checksum$//;
+		my $pretty_field = $field; $pretty_field =~ s/patchfile/PatchFile/;
+
+		if (not exists $patchfile_fields{$field}) {
+			print "Warning: No $pretty_field given for $pretty_field-Checksum. ($filename)\n";
+			$looks_good = 0;
 		}
 	}
 
@@ -1401,15 +1427,25 @@ sub validate_info_component {
 		next if $field =~ /^splitoff/;   # we don't do recursive stuff here
 		$value = $properties->{$field};
 
-		# Check for hardcoded /sw
+		# Check for hardcoded /sw (fink can be installed at other prefixes)
 		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|\Z)/) {
 			print "Warning: Field \"$field\"$splitoff_field appears to contain a hardcoded /sw. ($filename)\n";
 			$looks_good = 0;
 		}
 
-		# Check for %p/src
-		if ($value =~ /\%p\\?\/src\\?\//) {
+		# Check for %p/src (user can set alt or additional srcdirs)
+		if ($value =~ /\%p\/src([\s\/]|\Z)/) {
 			print "Warning: Field \"$field\"$splitoff_field appears to contain \%p/src. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		# Checks for relative pathnames that break if %p is multilevel
+		if ($value =~ /\%i\/\.\.([\s\/]|\Z)/) {
+			print "Warning: Field \"$field\"$splitoff_field appears to contain \%p/.. (did you mean \%d instead?). ($filename)\n";
+			$looks_good = 0;
+		}
+		if ($value =~ /\.\.\/DEBIAN([\s\/]|\Z)/) {
+			print "Warning: Field \"$field\"$splitoff_field appears to contain ../DEBIAN (did you mean \%d/DEBIAN instead?). ($filename)\n";
 			$looks_good = 0;
 		}
 
@@ -1429,7 +1465,7 @@ sub validate_info_component {
 		unless ($pkg_valid_fields{$field}) {
 			unless (!$is_splitoff and
 					( $field =~ m/^(test)?source([2-9]|[1-9]\d+)(|extractdir|rename|-md5|-checksum)$/
-					  or $field =~ m/^patchfile([2-9]|[1-9]\d+)(|-md5)$/
+					  or $field =~ m/^patchfile([2-9]|[1-9]\d+)(|-md5|-checksum)$/
 					  or $field =~ m/^(test)?tar([2-9]|[1-9]\d+)filesrename$/
 					  ) ) {
 				my $test = "";
@@ -1615,14 +1651,14 @@ sub validate_info_component {
 	if (defined $properties->{triggers}) {
 		# Packages using Triggers must BuildDepends on a fink that
 		# supports it
-		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.41.99.git'} }, 'use of Triggers', $filename);
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.43.99.git'} }, 'use of Triggers', $filename);
 	}
 
 	# Debconf
 	if (defined $properties->{debconf}) {
 		# Packages using Debconf requires bdep on fink that supports it
 		# and dep on debconf
-		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.41.99.git'} }, 'use of Triggers', $filename);
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.43.99.git'} }, 'use of Triggers', $filename);
 		my $ckdepends = &pkglist2lol($properties->{depends});
 
 		my $has_debconf_dep = 0;
@@ -1701,7 +1737,7 @@ sub validate_info_component {
 			'makemaker'   => '0.30.0',
 			'ruby'        => '0.30.0',
 			'modulebuild' => '0.30.2',
-			'debhelper'   => '0.41.99.git',
+			'debhelper'   => '0.43.99.git',
 		}->{$value};
 		if (defined $ds_min) {
 			$looks_good = 0 unless _require_dep($properties, { build => {'fink' => $ds_min} }, "use of DefaultScript:$value", $filename);
@@ -1840,7 +1876,7 @@ sub _validate_dpkg {
 	my @bad_dirs = ( map "$basepath/$_/", qw( src man info doc libexec lib/locale bin/.* sbin/.* ) );
 	push(@bad_dirs, ( map ".*/$_/", qw( CVS RCS \.svn \.git \.hg ) ) ); # forbid version control residues
 
-	my @good_dirs = ( map "$basepath/$_/", qw( bin sbin include lib opt share var etc Applications Library/Frameworks Library/Python ) );
+	my @good_dirs = ( map "$basepath/$_/", qw( bin sbin include lib opt share var etc Applications Library/Frameworks Library/LaunchAgents Library/LaunchDaemons Library/Python ) );
 	# allow $basepath/Library/ by itself, but with nothing below it other than what we explicitly allowed already
 	# (needed since we allow $basepath/Library/Frameworks)
 	push(@good_dirs, "$basepath/Library/\$");
@@ -2144,17 +2180,21 @@ sub _validate_dpkg {
 			}
 		}
 
-		# libtool and pkg-config files don't link to temp locations
-		if ($filename =~ /\.(pc|la)$/) {
-			my $filetype = ($1 eq 'pc' ? 'pkg-config' : 'libtool');
+		# data published for others' use leaking compile-time paths
+		if ($filename =~ /\.(pc|la|prl)$/) {
+			my $filetype = {
+				'pc' => 'pkg-config',
+				'la' => 'libtool',
+				'prl' => 'qmake',
+				}->{$1};
 			if (!-l $File::Find::name and open my $datafile, '<', $File::Find::name) {
 				while (<$datafile>) {
 					chomp;
 					if (/$pkgbuilddir/) {
-						&stack_msg($msgs, "Published compiler flag points to fink build dir.", $filename);
+						&stack_msg($msgs, "Published $filetype compiler information points to fink build dir.", $filename);
 						last;
 					} elsif (/$pkginstdirs/) {
-						&stack_msg($msgs, "Published compiler flag points to fink install dir.", $filename);
+						&stack_msg($msgs, "Published $filetype compiler information points to fink install dir.", $filename);
 						last;
 					}
 				}

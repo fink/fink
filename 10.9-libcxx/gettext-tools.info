@@ -1,11 +1,11 @@
 Package: gettext-tools
 Version: 0.19.8.1
-Revision: 1
+Revision: 2
 Source: mirror:gnu:gettext/gettext-%v.tar.gz
 #Source: mirror:sourceforge:fink/gettext-%v.tar.gz
 Source-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 PatchFile: libgettext8-shlibs.patch
-PatchFile-MD5: d4667d68ebe55562d5b443550c60c6f8
+PatchFile-MD5: 9a702c97d1c95d216f0908e368e7ad42
 PatchFile2: gettext-tools-tests.patch
 PatchFile2-MD5: 6051a92acfc5ba9bf2274c258dbd6c7e
 PatchScript: <<
@@ -15,7 +15,7 @@ PatchScript: <<
 <<
 Depends: <<
 	expat1-shlibs (>= 2.0.1-1),
-	libgettext8-shlibs (>= %v-1),
+	libgettext8-shlibs (>= %v-2),
 	libiconv (>= 1.14-6),
 	libncurses5-shlibs (>= 5.4-20041023-1011)
 <<
@@ -23,7 +23,7 @@ Suggests: gettext-doc
 BuildDepends: <<
 	expat1 (>= 2.0.1-1),
 	fink (>= 0.30.0),
-	libgettext8-dev (>= %v-1),
+	libgettext8-dev (>= %v-2),
 	libiconv-dev (>= 1.14-6),
 	libncurses5 (>= 5.4-20041023-1011)
 <<
@@ -93,7 +93,7 @@ Splitoff: <<
   Replaces: libgettext3-dev (<< 0.14.5-1)
   Depends: <<
 	libgettextpo2-shlibs (= %v-%r),
-	gettext-bin (>= %v-1),
+	gettext-bin (>= %v-2),
 	gettext-tools (>= %v-%r)
   <<
   BuildDependsOnly: true
@@ -193,6 +193,10 @@ DescPackaging: <<
 	is not properly honored by the configure script in this version of the package,
 	and there are numerous hardcoded 'gcj').
 	
+  With format string strictness, High Sierra also enforces that
+  %n isn't used in dynamic format strings, but we should just
+  disable its use on darwin in general.
+
 <<
 
 
