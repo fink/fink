@@ -1167,18 +1167,23 @@ sub get_script {
 		$field_value = $self->param_default($field, '%{default_script}');
 
 		my $type = $self->get_defaultscript_type();
+		my $sdkpath = `xcrun --sdk macosx --show-sdk-path 2>/dev/null`;
+		chomp($sdkpath);
+		my $perlversion = substr($^V, 1, 4); # hack to extract '5.18'
 		if ($type eq 'makemaker') {
 			# We specify explicit CC and CXX values below, because even though
 			# path-prefix-*wraps gcc and g++, system-perl configure hardcodes
 			# gcc-4.x, which is not wrapped or necessarily even present.
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			my $archflags = 'ARCHFLAGS="-I`xcrun --sdk macosx --show-sdk-path`/System/Library/Perl/`perl -e \'print substr($^V, 1)\' | cut -d. -f1 -f2`/darwin-thread-multi-2level/CORE"'; # prevent Apple's perl from building fat
+			# prevent Apple's perl from building fat
+			my $archflags = "ARCHFLAGS=\"-I$sdkpath/System/Library/Perl/$perlversion/darwin-thread-multi-2level/CORE\"";
 			$default_script =
 				"$archflags $perlcmd Makefile.PL \%c\n".
 				"/usr/bin/make CC=gcc CXX=g++\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
+			# prevent Apple's perl from building fat
+			my $archflags = "ARCHFLAGS=\"-I$sdkpath/System/Library/Perl/$perlversion/darwin-thread-multi-2level/CORE\"";
 			$default_script =
 				"$archflags $perlcmd Build.PL \%c\n".
 				"$archflags ./Build\n";
