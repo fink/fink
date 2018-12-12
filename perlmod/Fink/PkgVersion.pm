@@ -1172,7 +1172,7 @@ sub get_script {
 			# path-prefix-*wraps gcc and g++, system-perl configure hardcodes
 			# gcc-4.x, which is not wrapped or necessarily even present.
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
+			my $archflags = 'ARCHFLAGS="-I`xcrun --sdk macosx --show-sdk-path`/System/Library/Perl/`perl -e \'print substr($^V, 1)\' | cut -d. -f1 -f2`/darwin-thread-multi-2level/CORE"'; # prevent Apple's perl from building fat
 			$default_script =
 				"$archflags $perlcmd Makefile.PL \%c\n".
 				"/usr/bin/make CC=gcc CXX=g++\n";
@@ -5428,6 +5428,10 @@ sub get_perl_dir_arch {
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '17') {
 				# 10.13 system-perl is 5.18.2, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '18') {
+				# 10.14 system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			}
