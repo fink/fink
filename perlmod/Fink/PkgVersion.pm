@@ -28,7 +28,6 @@ use Fink::Services qw(&filename &execute
 					  &collapse_space &read_properties &read_properties_var
 					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &version_cmp
-					  &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
 					  &store_rename &apt_available
@@ -1167,23 +1166,26 @@ sub get_script {
 		$field_value = $self->param_default($field, '%{default_script}');
 
 		my $type = $self->get_defaultscript_type();
-		my $sdkpath = `xcrun --sdk macosx --show-sdk-path 2>/dev/null`;
-		chomp($sdkpath);
-		my $perlversion = substr($^V, 1, 4); # hack to extract '5.18'
 		if ($type eq 'makemaker') {
 			# We specify explicit CC and CXX values below, because even though
 			# path-prefix-*wraps gcc and g++, system-perl configure hardcodes
 			# gcc-4.x, which is not wrapped or necessarily even present.
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			my $perlversion = substr($^V, 1, 4); # hack to extract '5.18'
 			# prevent Apple's perl from building fat
-			my $archflags = "ARCHFLAGS=\"-I$sdkpath/System/Library/Perl/$perlversion/darwin-thread-multi-2level/CORE\"";
+			my $archflags =
+				'ARCHFLAGS="-I' . Fink::Services::get_sdkpath() .
+				'/System/Library/Perl/' . $perlversion . '/darwin-thread-multi-2level/CORE"';
 			$default_script =
 				"$archflags $perlcmd Makefile.PL \%c\n".
 				"/usr/bin/make CC=gcc CXX=g++\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
+			my $perlversion = substr($^V, 1, 4); # hack to extract '5.18'
 			# prevent Apple's perl from building fat
-			my $archflags = "ARCHFLAGS=\"-I$sdkpath/System/Library/Perl/$perlversion/darwin-thread-multi-2level/CORE\"";
+			my $archflags =
+				'ARCHFLAGS="-I' . Fink::Services::get_sdkpath() .
+				'/System/Library/Perl/' . $perlversion . '/darwin-thread-multi-2level/CORE"';
 			$default_script =
 				"$archflags $perlcmd Build.PL \%c\n".
 				"$archflags ./Build\n";
