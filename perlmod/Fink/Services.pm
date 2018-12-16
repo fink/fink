@@ -1315,13 +1315,6 @@ sub enforce_gcc {
 		'10.13' => '4.2',
 		'10.14' => '4.2',
 	);
-	my %gcc_abi_default = (
-		'2.95' => '2.95',
-		'3.1' => '3.1',
-		'3.3' => '3.3',
-		'4.0' => '3.3',
-		'4.2' => '3.3',
-	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
 		$current_system = "Mac OS X $sw_vers";
@@ -1332,8 +1325,8 @@ sub enforce_gcc {
 	}
 
 	if (defined $gcc_abi) {
-		if ($gcc_abi_default{$gcc} !~ /^$gcc_abi/) {
-			return $gcc_abi_default{$gcc};
+		if ('3.3' !~ /^$gcc_abi/) {
+			return '3.3';
 		}
 	}
 
