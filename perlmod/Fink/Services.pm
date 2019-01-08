@@ -60,11 +60,16 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
-					  &get_osx_vers &enforce_gcc
-					  &get_system_perl_version &get_path
-					  &eval_conditional &count_files
-					  &get_osx_vers_long &get_kernel_vers
+					  &enforce_gcc
+					  &get_osx_vers
+					  &get_osx_vers_long
 					  &get_darwin_equiv
+					  &get_kernel_vers
+					  &get_kernel_vers_long
+					  &get_system_perl_version
+					  &get_sdkpath
+					  &get_path
+					  &eval_conditional &count_files
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
 					  &store_rename
@@ -80,6 +85,7 @@ our @EXPORT_OK;
 # non-exported package globals go here
 our $arch;
 our $system_perl_version;
+our $sdkpath;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -1313,13 +1319,7 @@ sub enforce_gcc {
 		'10.11' => '4.2',
 		'10.12' => '4.2',
 		'10.13' => '4.2',
-	);
-	my %gcc_abi_default = (
-		'2.95' => '2.95',
-		'3.1' => '3.1',
-		'3.3' => '3.3',
-		'4.0' => '3.3',
-		'4.2' => '3.3',
+		'10.14' => '4.2',
 	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
@@ -1331,8 +1331,8 @@ sub enforce_gcc {
 	}
 
 	if (defined $gcc_abi) {
-		if ($gcc_abi_default{$gcc} !~ /^$gcc_abi/) {
-			return $gcc_abi_default{$gcc};
+		if ('3.3' !~ /^$gcc_abi/) {
+			return '3.3';
 		}
 	}
 
@@ -1469,6 +1469,28 @@ sub get_system_perl_version {
 		}
 	}
 	return $system_perl_version;
+}
+
+
+=item get_sdkpath()
+
+    my $sdkpath = get_sdkpath();
+
+
+Returns the path to the active macOS SDK. The value is cached.
+
+=cut
+
+sub get_sdkpath {
+	if (not defined $sdkpath) {
+		my $osxversion = Fink::Services::get_kernel_vers();
+		$sdkpath = '';
+		if ($osxversion >= 18) {
+			$sdkpath = `xcrun --sdk macosx --show-sdk-path 2>/dev/null`;
+		}
+		chomp($sdkpath);
+	}
+	return $sdkpath;
 }
 
 =item get_path
