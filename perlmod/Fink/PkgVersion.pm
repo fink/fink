@@ -3967,7 +3967,7 @@ sub phase_install {
 		}
 		chomp (my $developer_dir=`xcode-select -print-path 2>/dev/null`);
 		$install_script .= "\n/bin/chmod -R o-w '%i/Applications/'" .
-			"\nif test -x $developer_dir/Tools/SplitForks; then $developer_dir/Tools/SplitForks '%i/Applications/'; fi";
+			"\nif test -x $developer_dir/Tools/SplitForks -a \"\$(mount | grep ' on / (hfs' )\"_x != _x ; then $developer_dir/Tools/SplitForks '%i/Applications/'; fi";
 	}
 
 	# generate commands to install jar files
