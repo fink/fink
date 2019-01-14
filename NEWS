@@ -1,6 +1,14 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
+/-------------
+| fink 0.44.x
+\-------------
+
+0.44.0 "Dubious Debacle" (2019-01-13)
+	* Support 10.14
+	* Improve dpkg bootstrapping
+	* Support for Java 10
 
 /-------------
 | fink 0.43.x
@@ -22,7 +30,6 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Better checksum support
 	* Other fixes and enhancements (see the commits)
 
-
 /-------------
 | fink 0.42.x
 \-------------
@@ -37,7 +44,6 @@ For a more comprehensive changelog of the latest experimental code, see:
 /-------------
 | fink 0.41.x
 \-------------
-
 
 0.41.1 "Jigsaw" (2017-11-13)
 	* Support 10.12.1
