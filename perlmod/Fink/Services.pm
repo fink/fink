@@ -84,8 +84,6 @@ our @EXPORT_OK;
 
 # non-exported package globals go here
 our $arch;
-our $system_perl_version;
-our $sdkpath;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -948,8 +946,10 @@ either direction.
 
 =cut
 
-# Caching the results makes fink much faster.
-my %Version_Cmp_Cache = ();
+{
+	# Caching the results makes fink much faster.
+	my %Version_Cmp_Cache = ();
+
 sub version_cmp {
 	my ($a, $b, $op, $i, $res, @avers, @bvers);
 	$a = shift;
@@ -991,6 +991,7 @@ sub version_cmp {
 	}
 
 	return $res;
+}
 }
 
 =item raw_version_cmp
@@ -1459,6 +1460,9 @@ perl processes. System perl would not be changing during a fink run.
 
 =cut
 
+{
+	my $system_perl_version;
+
 sub get_system_perl_version {
 	if (not defined $system_perl_version) {
 		if (open(PERL, "/usr/bin/perl -e 'printf \"\%vd\", \$^V' 2>/dev/null |")) {
@@ -1467,6 +1471,7 @@ sub get_system_perl_version {
 		}
 	}
 	return $system_perl_version;
+}
 }
 
 =item get_sdkpath()
@@ -1481,6 +1486,9 @@ The macosx sdk is unlikely to change during a fink run.
 
 =cut
 
+{
+	my $sdkpath;
+
 sub get_sdkpath {
 	if (not defined $sdkpath) {
 		my $osxversion = Fink::Services::get_kernel_vers();
@@ -1491,6 +1499,7 @@ sub get_sdkpath {
 		chomp($sdkpath);
 	}
 	return $sdkpath;
+}
 }
 
 =item get_path
