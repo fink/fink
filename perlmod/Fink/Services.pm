@@ -82,9 +82,6 @@ BEGIN {
 }
 our @EXPORT_OK;
 
-# non-exported package globals go here
-our $arch;
-
 END { }				# module clean-up code here (global destructor)
 
 =head1 NAME
