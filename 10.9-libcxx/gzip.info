@@ -1,11 +1,11 @@
 Package: gzip
-Version: 1.6
-Revision: 2
+Version: 1.9
+Revision: 1
 Source: mirror:sourceforge:fink/%n-%v.tar.gz
 #Source: mirror:gnu:%n/%n-%v.tar.gz
-Source-MD5: 38603cb2843bf5681ff41aab3bcd6a20
-PatchFile: %n.patch
-PatchFile-MD5: f4c32d5450ed676d05e5efe4c9ed7c30
+Source-MD5: 929d6a6b832f75b28e3eeeafb30c1d9b
+#PatchFile: %n.patch
+#PatchFile-MD5: f4c32d5450ed676d05e5efe4c9ed7c30
 Essential: yes
 Depends: base-files
 ConfigureParams: --infodir=%p/share/info --mandir=%p/share/man
