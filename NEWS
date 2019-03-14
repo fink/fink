@@ -5,6 +5,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.44.x
 \-------------
 
+0.44.1 "Extreme Explosion" (2019-03-13)
+	* Support 10.13.6
+	* Bugfix: Update bzip2 source to Fink's SF.net repo.
+
 0.44.0 "Dubious Debacle" (2019-01-13)
 	* Support 10.14
 	* Improve dpkg bootstrapping
