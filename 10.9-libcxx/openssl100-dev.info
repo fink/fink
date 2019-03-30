@@ -35,11 +35,12 @@ Replaces: <<
 <<
 BuildDependsOnly: True
 
-Source: mirror:custom:source/openssl-%v.tar.gz
-CustomMirror: <<
-  Primary:   http://www.openssl.org/
-  Secondary: ftp://ftp.openssl.org/
-<<
+Source: mirror:sourceforge:fink/openssl-%v.tar.gz
+#Source: mirror:custom:source/openssl-%v.tar.gz
+#CustomMirror: <<
+#  Primary:   http://www.openssl.org/
+#  Secondary: ftp://ftp.openssl.org/
+#<<
 Source-MD5: f965fc0bf01bf882b31314b61391ae65
 
 PatchFile: %{ni}.patch

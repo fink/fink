@@ -1,8 +1,8 @@
 Package: gettext-tools
 Version: 0.19.8.1
 Revision: 2
-Source: mirror:gnu:gettext/gettext-%v.tar.gz
-#Source: mirror:sourceforge:fink/gettext-%v.tar.gz
+Source: mirror:sourceforge:fink/gettext-%v.tar.gz
+#Source: mirror:gnu:gettext/gettext-%v.tar.gz
 Source-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 PatchFile: libgettext8-shlibs.patch
 PatchFile-MD5: 9a702c97d1c95d216f0908e368e7ad42

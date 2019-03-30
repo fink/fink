@@ -7,11 +7,14 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Depends: base-files
 BuildDepends: fink (>= 0.30.0)
 Essential: yes
-Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
+Source: mirror:sourceforge:fink/libiconv-%v.tar.gz
+#Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
 Source-MD5: ace8b5f2db42f7b3b3057585e80d9808
-Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
+Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
+#Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
 Source2-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
-Source3: mirror:gnu:gperf/gperf-3.0.4.tar.gz
+Source3: mirror:sourceforge:fink/gperf-3.0.4.tar.gz
+#Source3: mirror:gnu:gperf/gperf-3.0.4.tar.gz
 Source3-MD5: c1f1db32fb6598d6a93e6e88796a8632
 PatchFile: %n.patch
 PatchFile-MD5: df5031bae867ed716e5e3637ebe0ca62

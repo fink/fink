@@ -6,7 +6,8 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 ## Remove po4a
 BuildDepends: fink (>= 0.24.12-1)
 Replaces: debianutils (<= 2.32.3)
-Source: mirror:debian:pool/main/s/%n/%n_%v.tar.gz
+Source: mirror:sourceforge:fink/%n_%v.tar.gz
+#Source: mirror:debian:pool/main/s/%n/%n_%v.tar.gz
 Source-MD5: 9a208cceb0e9c5cc1d2aa4d53d7d2baa
 SourceDirectory: %n-%v
 PatchScript: <<
