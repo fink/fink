@@ -1,8 +1,11 @@
 Package: gzip
 Version: 1.9
 Revision: 1
-Source: mirror:sourceforge:fink/%n-%v.tar.gz
-#Source: mirror:gnu:%n/%n-%v.tar.gz
+CustomMirror: <<
+	Primary: http://ftpmirror.gnu.org/%n/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:%n-%v.tar.gz
 Source-MD5: 929d6a6b832f75b28e3eeeafb30c1d9b
 #PatchFile: %n.patch
 #PatchFile-MD5: f4c32d5450ed676d05e5efe4c9ed7c30

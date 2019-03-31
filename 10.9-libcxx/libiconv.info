@@ -7,8 +7,12 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Depends: base-files
 BuildDepends: fink (>= 0.30.0)
 Essential: yes
-Source: mirror:sourceforge:fink/libiconv-%v.tar.gz
-#Source: mirror:gnu:libiconv/libiconv-%v.tar.gz
+
+CustomMirror: <<
+	Primary: http://ftpmirror.gnu.org/%n/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:libiconv-%v.tar.gz
 Source-MD5: ace8b5f2db42f7b3b3057585e80d9808
 Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
 #Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz

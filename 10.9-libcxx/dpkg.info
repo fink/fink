@@ -13,11 +13,15 @@ Essential: yes
 UseMaxBuildJobs: false
 BuildAsNobody: false
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
+CustomMirror: <<
+	Primary: http://ftp.debian.org/debian/pool/main/d/%n/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
-Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
-#Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
+Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
+#Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
 Source2-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 PatchFile: %n.patch
 PatchFile-MD5: 9c3d590be2403102773cce89556443e7
