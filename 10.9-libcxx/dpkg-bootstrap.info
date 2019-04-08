@@ -2,7 +2,11 @@ Package: dpkg-bootstrap
 Version: 1.10.21
 Revision: 1221
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
+CustomMirror: <<
+	Primary: http://ftp.debian.org/debian/pool/main/d/%n/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchFile: dpkg.patch

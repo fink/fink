@@ -13,8 +13,11 @@ Depends: <<
 	libiconv (>= 1.14-5)
 <<
 BuildAsNobody: false
-#Source: mirror:sourceforge:fink/%n-%v.tar.bz2
-Source: mirror:gnu:%n/%n-%v.tar.bz2
+CustomMirror: <<
+	Primary: http://ftpmirror.gnu.org/%n/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:%n-%v.tar.bz2
 Source-MD5: 955cd533955acb1804b83fd70218da51
 PatchFile: %n.patch
 PatchFile-MD5: 1de48773d822a8716a742ce0b4bba96e
