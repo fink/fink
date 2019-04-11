@@ -8,7 +8,7 @@ CustomMirror: <<
 	Primary: ftp://ftp.invisible-island.net/%n/
 	Secondary: http://downloads.sourceforge.net/fink/
 <<
-Source: mirror:sourceforge:ncurses-%v.tgz
+Source: mirror:custom:ncurses-%v.tgz
 Source-MD5: 49dc7136424f2bdd653439eda63a2375
 SourceDirectory: ncurses-5.9
 BuildDepends: fink (>= 0.13.0)
