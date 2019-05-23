@@ -1279,7 +1279,7 @@ the successful execution of "/usr/bin/clang -v".
 				my ($versionoutput, $version, $build);
 				{ local $/ = undef; $versionoutput = <CLANG> }
 				close(CLANG);
-				if ($versionoutput =~ m[Apple\s(clang|LLVM)\sversion\s(\d(?:\.\d+(?:\.\d+)?)?)\s\((tags/Apple/)?clang\-(\d+(?:\.\d+(?:\.\d+)?)?)]) {
+				if ($versionoutput =~ m[Apple\s(clang|LLVM)\sversion\s(\d+(?:\.\d+(?:\.\d+)?)?)\s\((tags/Apple/)?clang\-(\d+(?:\.\d+(?:\.\d+)?)?)]) {
 					($version, $build)= ($2, $4);
 				} else {
 					print STDERR "  - warning, unable to determine the version for clang\n" if ($options{debug});
