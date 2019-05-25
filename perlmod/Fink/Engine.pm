@@ -249,6 +249,7 @@ sub process {
 
 		my $raw_distribution = $Fink::Config::distribution;
 		my $raw_osversion = &Fink::Services::get_osx_vers();
+		my $raw_osversion_long = &Fink::Services::get_osx_vers_long();
 		my $distribution = version->parse('v'.$raw_distribution);
 		our $osversion = version->parse('v'.$raw_osversion); #shared elsewhere so use 'our'
 		# $osversion is also used in &real_install() if $willbuild is set, and that
@@ -256,7 +257,7 @@ sub process {
 		# match above to trigger this block.
 
 		# return immediately if distribution and OS match
-		unless ($osversion == $distribution) {
+		unless ($osversion == $distribution or $raw_distribution eq $raw_osversion_long) {
 			my $valid_upgrade = 0; #default
 			# legal update paths; add new ones as needed
 			$valid_upgrade = 1 if ($osversion == version->parse("v10.6") and $distribution == version->parse("v10.5"));
