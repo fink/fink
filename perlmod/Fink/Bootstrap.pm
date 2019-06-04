@@ -256,7 +256,7 @@ GCC_MSG
 			"this Fink release was made.  Prerelease versions " .
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
-		$distribution = "10.14";
+		$distribution = "10.14.5";
 	} elsif ($host =~ /^i386-apple-darwin(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
