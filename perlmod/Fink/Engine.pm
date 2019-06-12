@@ -257,7 +257,7 @@ sub process {
 		# match above to trigger this block.
 
 		# return immediately if distribution and OS match
-		if (($raw_osversion_long lt '10.14.5' and $osversion != $distribution) or ($raw_osversion_long ge '10.14.5' and $raw_distribution eq '10.14')) {
+		if ((($osversion <= version->parse("v10.9") or $raw_osversion_long lt '10.14.5') and $osversion != $distribution) or ($raw_osversion_long ge '10.14.5' and $raw_distribution eq '10.14')) {
 			my $valid_upgrade = 0; #default
 			# legal update paths; add new ones as needed
 			$valid_upgrade = 1 if ($osversion == version->parse("v10.6") and $distribution == version->parse("v10.5"));
