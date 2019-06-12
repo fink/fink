@@ -265,7 +265,7 @@ sub process {
 			# Assuming 10.11 won't break stuff.  This probably isn't safe...
 			$valid_upgrade = 1 if ($osversion > version->parse("v10.9") and $distribution >= version->parse("v10.9"));
 			my $new_distribution = $raw_osversion;
-			$new_distribution = "10.14.5" if ($raw_osversion_long ge '10.14.5');
+			$new_distribution = "10.14.5" if ($raw_osversion eq "10.14" and $raw_osversion_long ge '10.14.5');
 			if ($valid_upgrade) {
 				# allow reinstalls to proceed otherwise block the operation.
 				warn "Use 'fink reinstall fink' to switch distributions\n" .
