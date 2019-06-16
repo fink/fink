@@ -257,20 +257,22 @@ sub process {
 		# match above to trigger this block.
 
 		# return immediately if distribution and OS match
-		unless ($osversion == $distribution or $raw_distribution eq $raw_osversion_long) {
+		if ((($osversion <= version->parse("v10.9") or $raw_osversion_long lt '10.14.5') and $osversion != $distribution) or ($raw_osversion_long ge '10.14.5' and $raw_distribution eq '10.14')) {
 			my $valid_upgrade = 0; #default
 			# legal update paths; add new ones as needed
 			$valid_upgrade = 1 if ($osversion == version->parse("v10.6") and $distribution == version->parse("v10.5"));
 			$valid_upgrade = 1 if ($osversion == version->parse("v10.8") and $distribution == version->parse("v10.7"));
 			# Assuming 10.11 won't break stuff.  This probably isn't safe...
 			$valid_upgrade = 1 if ($osversion > version->parse("v10.9") and $distribution >= version->parse("v10.9"));
+			my $new_distribution = $raw_osversion;
+			$new_distribution = "10.14.5" if ($raw_osversion eq "10.14" and $raw_osversion_long ge '10.14.5');
 			if ($valid_upgrade) {
 				# allow reinstalls to proceed otherwise block the operation.
 				warn "Use 'fink reinstall fink' to switch distributions\n" .
-					 "from $raw_distribution to $raw_osversion.\n";
+					 "from $raw_distribution to $new_distribution.\n";
 				die "'$cmd' operation not permitted.\n" if $cmd ne "reinstall";
 			} else {
-				die "\nWe don't support updates from $raw_distribution to $raw_osversion\n" .
+				die "\nWe don't support updates from $raw_distribution to $new_distribution.\n" .
 					"Check the 'Clean Upgrade' section of $basepath/share/doc/fink/INSTALL\n" .
 					"or $basepath/share/doc/fink/INSTALL.html for information about \n" .
 					"how to proceed.\n\n".
