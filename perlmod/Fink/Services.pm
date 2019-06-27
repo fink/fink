@@ -60,11 +60,16 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
-					  &get_osx_vers &enforce_gcc
-					  &get_system_perl_version &get_path
-					  &eval_conditional &count_files
-					  &get_osx_vers_long &get_kernel_vers
+					  &enforce_gcc
+					  &get_osx_vers
+					  &get_osx_vers_long
 					  &get_darwin_equiv
+					  &get_kernel_vers
+					  &get_kernel_vers_long
+					  &get_system_perl_version
+					  &get_sdkpath
+					  &get_path
+					  &eval_conditional &count_files
 					  &call_queue_clear &call_queue_add &lock_wait
 					  &dpkg_lockwait &aptget_lockwait
 					  &store_rename
@@ -76,10 +81,6 @@ BEGIN {
 					  &select_legal_path);
 }
 our @EXPORT_OK;
-
-# non-exported package globals go here
-our $arch;
-our $system_perl_version;
 
 END { }				# module clean-up code here (global destructor)
 
@@ -942,8 +943,10 @@ either direction.
 
 =cut
 
-# Caching the results makes fink much faster.
-my %Version_Cmp_Cache = ();
+{
+	# Caching the results makes fink much faster.
+	my %Version_Cmp_Cache = ();
+
 sub version_cmp {
 	my ($a, $b, $op, $i, $res, @avers, @bvers);
 	$a = shift;
@@ -985,6 +988,7 @@ sub version_cmp {
 	}
 
 	return $res;
+}
 }
 
 =item raw_version_cmp
@@ -1084,7 +1088,6 @@ sub my_version_cmp {
 sub sort_versions {
 	sort my_version_cmp @_;
 }
-
 
 =item parse_fullversion
 
@@ -1313,13 +1316,7 @@ sub enforce_gcc {
 		'10.11' => '4.2',
 		'10.12' => '4.2',
 		'10.13' => '4.2',
-	);
-	my %gcc_abi_default = (
-		'2.95' => '2.95',
-		'3.1' => '3.1',
-		'3.3' => '3.3',
-		'4.0' => '3.3',
-		'4.2' => '3.3',
+		'10.14' => '4.2',
 	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
@@ -1331,8 +1328,8 @@ sub enforce_gcc {
 	}
 
 	if (defined $gcc_abi) {
-		if ($gcc_abi_default{$gcc} !~ /^$gcc_abi/) {
-			return $gcc_abi_default{$gcc};
+		if ('3.3' !~ /^$gcc_abi/) {
+			return '3.3';
 		}
 	}
 
@@ -1476,13 +1473,15 @@ sub get_system_version {
 
     my $perlversion = get_system_perl_version;
 
-
 Returns the version of perl in that is /usr/bin/perl by running a
 program with it to return its $^V variable. The value is cached, so
 multiple calls to this function do not result in repeated spawning of
-perl processes.
+perl processes. System perl would not be changing during a fink run.
 
 =cut
+
+{
+	my $system_perl_version;
 
 sub get_system_perl_version {
 	if (not defined $system_perl_version) {
@@ -1492,6 +1491,35 @@ sub get_system_perl_version {
 		}
 	}
 	return $system_perl_version;
+}
+}
+
+=item get_sdkpath()
+
+    my $sdkpath = get_sdkpath();
+
+On darwin>=18 (OS X >= 10.14), returns the path to the active macOS
+SDK. On lower kernels, or if `xcrun` could not determine the SDK path,
+a null string is returned. The value is cached, so multiple calls to
+this function do not result in repeated spawning of xcrun processes.
+The macosx sdk is unlikely to change during a fink run.
+
+=cut
+
+{
+	my $sdkpath;
+
+sub get_sdkpath {
+	if (not defined $sdkpath) {
+		my $osxversion = Fink::Services::get_kernel_vers();
+		$sdkpath = '';
+		if ($osxversion >= 18) {
+			$sdkpath = `xcrun --sdk macosx --show-sdk-path 2>/dev/null`;
+		}
+		chomp($sdkpath);
+	}
+	return $sdkpath;
+}
 }
 
 =item get_path
@@ -1611,7 +1639,6 @@ sub eval_conditional {
 		die "Error: Invalid conditional expression \"$expr\"\nin $where.\n";
 	}
 }
-
 
 =item call_queue_clear
 
@@ -1992,10 +2019,8 @@ Convenience method to parse arguments for a Fink command.
 
 Standard errors such as invalid options and --help are handled automagically.
 
-
 The $command parameter should simply contain the name of the current Fink
 command, eg: 'index'.
-
 
 The $optiondesc array-ref should contain sub-arrays describing options. Each
 sub-array should contain, in order:
@@ -2012,11 +2037,9 @@ Eg:  [ 'option|o' => \$opt, 'Descriptive text', 'value' ]
 
 It is not necessary to include the --help item, it will be added automatically.
 
-
 The $args array-ref should contain the list of command-line arguments to be
 examined for options. The array will be modified to remove the arguments
 found, make a copy if you want to retain the original list.
-
 
 The following elements of %optional are available:
 
@@ -2066,7 +2089,6 @@ The width of the screen given to showing the options (as opposed to their
 descriptions). The default should usually be fine.
 
 =back
-
 
 If an option has the form "foo!", then a --no-foo help string will also be
 created as part of %all{}. Other special features of Getopt may be adopted in
@@ -2475,7 +2497,6 @@ sub edit_ds_entry {
 	}
 	return 1;
 }
-
 
 =item check_id_unused
 

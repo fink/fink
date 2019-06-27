@@ -6,7 +6,12 @@ Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 ## Remove po4a
 BuildDepends: fink (>= 0.24.12-1)
 Depends: base-files, sensible-utils
-Source: mirror:debian:pool/main/d/%n/%n_%v.tar.gz
+CustomMirror: <<
+	Primary: http://ftp.debian.org/debian/pool/main/d/%n/
+	Secondary: http://downloads.sourceforge.net/fink/
+	Tertiary: https://launchpad.net/debian/+archive/primary/+sourcefiles/%n/%v/
+<<
+Source: mirror:custom:%n_%v.tar.gz
 Source-MD5: c0cb076754d7f4eb1e3397d00916647f
 SourceDirectory: %n-%v
 PatchScript: <<

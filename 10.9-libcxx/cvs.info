@@ -6,7 +6,11 @@ Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 #
 Conflicts: cvs-stable, cvs-proxy
 Replaces: cvs-stable, cvs-proxy
-Source: mirror:gnu:non-gnu/%n/source/feature/%v/%n-%v.tar.bz2 
+CustomMirror: <<
+	Primary: http://ftpmirror.gnu.org/non-gnu/%n/source/feature/%v/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:%n-%v.tar.bz2
 Source-MD5: 956ab476ce276c2d19d583e227dbdbea
 PatchFile: %n.patch
 PatchFile-MD5: c8f480b3d01d9ff1e980044274e1d192

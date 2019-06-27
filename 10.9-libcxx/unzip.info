@@ -4,11 +4,11 @@ Revision: 1
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 License: BSD
 Essential: yes
-#CustomMirror: <<
-#Primary: ftp://ftp.info-zip.org/pub/infozip/src/
-#<<
-#Source: mirror:custom:%n60.tgz
-Source: mirror:sourceforge:fink/%n60.tgz
+CustomMirror: <<
+	Primary: ftp://ftp.info-zip.org/pub/infozip/src/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:%n60.tgz
 Source-MD5: 62b490407489521db863b523a7f86375
 SourceDirectory: %n60
 BuildDepends: fink (>= 0.24.12)

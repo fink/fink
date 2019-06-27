@@ -28,7 +28,6 @@ use Fink::Services qw(&filename &execute
 					  &collapse_space &read_properties &read_properties_var
 					  &pkglist2lol &lol2pkglist &cleanup_lol
 					  &version_cmp
-					  &get_system_perl_version
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
 					  &store_rename &apt_available
@@ -1189,13 +1188,21 @@ sub get_script {
 			# path-prefix-*wraps gcc and g++, system-perl configure hardcodes
 			# gcc-4.x, which is not wrapped or necessarily even present.
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
+			my $perlversion = substr($^V, 1, 4); # hack to extract '5.18'
+			# prevent Apple's perl from building fat
+			my $archflags =
+				'ARCHFLAGS="-I' . Fink::Services::get_sdkpath() .
+				'/System/Library/Perl/' . $perlversion . '/darwin-thread-multi-2level/CORE"';
 			$default_script =
 				"$archflags $perlcmd Makefile.PL \%c\n".
 				"/usr/bin/make CC=gcc CXX=g++\n";
 		} elsif ($type eq 'modulebuild') {
 			my ($perldirectory, $perlarchdir, $perlcmd) = $self->get_perl_dir_arch();
-			my $archflags = 'ARCHFLAGS=""'; # prevent Apple's perl from building fat
+			my $perlversion = substr($^V, 1, 4); # hack to extract '5.18'
+			# prevent Apple's perl from building fat
+			my $archflags =
+				'ARCHFLAGS="-I' . Fink::Services::get_sdkpath() .
+				'/System/Library/Perl/' . $perlversion . '/darwin-thread-multi-2level/CORE"';
 			$default_script =
 				"$archflags $perlcmd Build.PL \%c\n".
 				"$archflags ./Build\n";
@@ -3990,7 +3997,7 @@ sub phase_install {
 		}
 		chomp (my $developer_dir=`xcode-select -print-path 2>/dev/null`);
 		$install_script .= "\n/bin/chmod -R o-w '%i/Applications/'" .
-			"\nif test -x $developer_dir/Tools/SplitForks; then $developer_dir/Tools/SplitForks '%i/Applications/'; fi";
+			"\nif /bin/test -x $developer_dir/Tools/SplitForks -a \"\$(/sbin/mount | /usr/bin/grep ' on / (hfs' )\"_x != _x ; then $developer_dir/Tools/SplitForks '%i/Applications/'; fi";
 	}
 
 	# generate commands to install jar files
@@ -5736,6 +5743,10 @@ sub get_perl_dir_arch {
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '17') {
 				# 10.13 system-perl is 5.18.2, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '18') {
+				# 10.14 system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			}

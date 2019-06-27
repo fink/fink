@@ -978,6 +978,10 @@ as part of the Xcode tools.
 		@SDKDIRS=qw(
 			MacOSX10.13.sdk
 		);
+	} elsif ($osxversion == 18) {
+		@SDKDIRS=qw(
+			MacOSX10.14.sdk
+		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
 	my $sdkpath;
@@ -1275,7 +1279,7 @@ the successful execution of "/usr/bin/clang -v".
 				my ($versionoutput, $version, $build);
 				{ local $/ = undef; $versionoutput = <CLANG> }
 				close(CLANG);
-				if ($versionoutput =~ m[Apple\s(clang|LLVM)\sversion\s(\d(?:\.\d+(?:\.\d+)?)?)\s\((tags/Apple/)?clang\-(\d+(?:\.\d+(?:\.\d+)?)?)]) {
+				if ($versionoutput =~ m[Apple\s(clang|LLVM)\sversion\s(\d+(?:\.\d+(?:\.\d+)?)?)\s\((tags/Apple/)?clang\-(\d+(?:\.\d+(?:\.\d+)?)?)]) {
 					($version, $build)= ($2, $4);
 				} else {
 					print STDERR "  - warning, unable to determine the version for clang\n" if ($options{debug});
@@ -1465,10 +1469,9 @@ END
 		$options{debug} && printf STDERR " - program %s... %s\n", $file, -x $file ? "found" : "missing!";
 		$hash->{status} = STATUS_ABSENT if not -x $file;
 	}
-	foreach my $file (qw| /usr/include |) {
-		$options{debug} && printf STDERR " - directory %s... %s\n", $file, -d $file ? "found" : "missing!";
-		$hash->{status} = STATUS_ABSENT if not -d $file;
-	}
+	my $includedir = Fink::Services::get_sdkpath() . '/usr/include';
+	$options{debug} && printf STDERR " - directory %s... %s\n", $includedir, -d $includedir ? "found" : "missing!";
+	$hash->{status} = STATUS_ABSENT if not -d $includedir;
 
 	$hash->{compilescript} = &gen_compile_script($hash);
 
