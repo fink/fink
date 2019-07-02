@@ -1317,6 +1317,7 @@ sub enforce_gcc {
 		'10.12' => '4.2',
 		'10.13' => '4.2',
 		'10.14' => '4.2',
+		'10.15' => '4.2',
 	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
@@ -2674,4 +2675,3 @@ sub select_legal_path {
 
 ### EOF
 1;
-
