@@ -1,6 +1,14 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/fink/fink/commits/
 
+/-------------
+| fink HEAD
+\-------------
+
+	* Support 10.14.5 and 10.15
+	* Fully support .app bundles on APFS systems
+	* Caching cleanup
+	* Support for latest versions of Xcode and clang
 
 /-------------
 | fink 0.44.x
