@@ -242,7 +242,7 @@ in /usr/include/cups.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
-	if (open(FILEIN, '/usr/include/cups/cups.h')) {
+	if (open(FILEIN, Fink::Services::get_sdkpath() . '/usr/include/cups/cups.h')) {
 		while (<FILEIN>) {
 			if (/\#\s*define\s+CUPS_VERSION\s+(.*?)\s*$/) {
 				$hash->{version} = $1 . '-1';
