@@ -2146,7 +2146,7 @@ Maintainer.
 
 =item canonical_prefix (optional)
 
-If the value is true, use "/sw" for %p when parsing the DescDetail and
+If the value is true, use "/opt/sw" for %p when parsing the DescDetail and
 DescUsage fields instead of the local fink's normal installation path.
 
 =back
@@ -2173,7 +2173,7 @@ sub get_description {
 	# need local copy of the %-exp map so we can change it
 	my %expand = %{$self->{_expand}};
 	if ($options{canonical_prefix}) {
-		$expand{p} = '/sw';
+		$expand{p} = '/opt/sw';
 	}
 
 	if ($self->has_param("DescDetail")) {
@@ -3156,8 +3156,8 @@ sub phase_fetch_deb {
 	my $dryrun = shift || 0;
 	my @packages = @_ ? @_ : ($self);
 
-	# check if $basepath is really '/sw' since the debs are built with
-	# '/sw' hardcoded
+	# check if $basepath is really '/opt/sw' since the debs are built with
+	# '/opt/sw' hardcoded
 	#
 	if (my $err = $config->bindist_check_prefix) {
 		print "\n"; print_breaking("ERROR: $err");
@@ -3953,7 +3953,7 @@ sub phase_install {
 			$install_script .= "\n/bin/cat %i/etc/profile.d/%n.sh >> %i/etc/profile.d/%n.sh.env";
 			$install_script .= "\n/bin/mv -f %i/etc/profile.d/%n.csh.env %i/etc/profile.d/%n.csh";
 			$install_script .= "\n/bin/mv -f %i/etc/profile.d/%n.sh.env %i/etc/profile.d/%n.sh";
-			# make them executable (to allow them to be sourced by /sw/bin.init.[c]sh)
+			# make them executable (to allow them to be sourced by /opt/sw/bin.init.[c]sh)
 			$install_script .= "\n/bin/chmod 755 %i/etc/profile.d/%n.*";
 		}
 	}
