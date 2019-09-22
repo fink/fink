@@ -6,6 +6,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 \-------------
 
 	* Fix finding cups headers on 10.14+
+	* Move default install path to /opt/sw
 
 /-------------
 | fink 0.45.x
