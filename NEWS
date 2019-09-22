@@ -5,7 +5,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink HEAD
 \-------------
 
-
+	* Fix finding cups headers on 10.14+
 
 /-------------
 | fink 0.45.x
