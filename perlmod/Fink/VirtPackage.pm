@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2019 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -242,7 +242,7 @@ in /usr/include/cups.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
 
-	if (open(FILEIN, '/usr/include/cups/cups.h')) {
+	if (open(FILEIN, Fink::Services::get_sdkpath() . '/usr/include/cups/cups.h')) {
 		while (<FILEIN>) {
 			if (/\#\s*define\s+CUPS_VERSION\s+(.*?)\s*$/) {
 				$hash->{version} = $1 . '-1';
@@ -981,6 +981,10 @@ as part of the Xcode tools.
 	} elsif ($osxversion == 18) {
 		@SDKDIRS=qw(
 			MacOSX10.14.sdk
+		);
+	} elsif ($osxversion == 19) {
+		@SDKDIRS=qw(
+			MacOSX10.15.sdk
 		);
 	}
 #   Portable SDK path finder which works on 10.5 and later

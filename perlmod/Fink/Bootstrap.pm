@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2019 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -245,15 +245,27 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.13";
-	} elsif ($host =~ /^i386-apple-darwin18\.[0-6]/) {
+	} elsif ($host =~ /^i386-apple-darwin18\.[0-5]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "10.14";
+	} elsif ($host =~ /^i386-apple-darwin18\.[6-7]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "10.14.5";
 	} elsif ($host =~ /^i386-apple-darwin18\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
-		$distribution = "10.14";
+		$distribution = "10.14.5";
+	} elsif ($host =~ /^i386-apple-darwin19\.[0]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "10.15";
+	} elsif ($host =~ /^i386-apple-darwin19\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of Mac OS X might work with Fink, but there are no " .
+			"guarantees.");
+		$distribution = "10.15";
 	} elsif ($host =~ /^i386-apple-darwin(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
@@ -465,6 +477,7 @@ sub is_perl_supported {
 	} elsif ("$]" == "5.012004") {
 	} elsif ("$]" == "5.016002") {
 	} elsif ("$]" == "5.018002") {
+	} elsif ("$]" == "5.018004") {
 	} else {
 		# unsupported version of perl
 		return 0;
@@ -1094,6 +1107,8 @@ sub get_selfupdatetrees {
 		"10.12" => "10.9-libcxx",
 		"10.13" => "10.9-libcxx",
 		"10.14" => "10.9-libcxx",
+		"10.14.5" => "10.9-libcxx",
+		"10.15" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};

@@ -6,7 +6,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2019 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -256,9 +256,9 @@ if ($updating) {
 # In this section, handle special cases where we have moved to a new real tree, but
 # have maintained binary compatibility, by copying the .debs over to the new tree.  
 
-# Currently applies to 10.9-10.13 platforms coming from a
+# Currently applies to 10.9-10.15 platforms coming from a
 # dist that used the "10.7" subdir (regardless of actual platform)
-if ( $distribution eq "10.9" or $distribution eq "10.10" or $distribution eq "10.11" or $distribution eq "10.12" or $distribution eq "10.13" or $distribution eq "10.14"
+if ( $distribution eq "10.9" or $distribution eq "10.10" or $distribution eq "10.11" or $distribution eq "10.12" or $distribution eq "10.13" or $distribution eq "10.14" or $distribution eq "10.14.5" or $distribution eq "10.15"
      and -d "$basepath/fink/10.7" ) {
 	my @deb_list = glob "$basepath/fink/debs/*.deb";
 	my $copy_debs = 1;

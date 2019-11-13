@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2019 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -5748,6 +5748,14 @@ sub get_perl_dir_arch {
 			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '18') {
 				# 10.14 system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.18.4" and Fink::Services::get_kernel_vers() eq '18') {
+				# 10.14.5 system-perl is 5.18.4, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.4)
+				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.18.4" and Fink::Services::get_kernel_vers() eq '19') {
+				# 10.15 system-perl is 5.18.4, but the only supplied
+				# interpreter is /usr/bin/perl5.18 (not perl5.18.4)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
 			}
 		} else {
