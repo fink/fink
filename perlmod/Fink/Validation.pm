@@ -906,7 +906,7 @@ sub validate_info_file {
 				while (defined($patch_file_content=<INPUT>)) {
 					# only check lines being added (and skip diff header line)
 					next unless $patch_file_content =~ /^\+(?!\+\+ )/;
-					if ($patch_file_content =~ /\/opt/sw([\s\/]|\Z)/) {
+					if ($patch_file_content =~ /\/opt\/sw([\s\/]|\Z)/) {
 						print "Warning: $pretty_field appears to contain a hardcoded /opt/sw. ($value)\n";
 						$looks_good = 0;
 						last;
@@ -1342,7 +1342,7 @@ sub validate_info_component {
 		$value = $properties->{$field};
 
 		# Check for hardcoded /opt/sw (fink can be installed at other prefixes)
-		if ($check_hardcode_fields{$field} and $value =~ /\/opt/sw([\s\/]|\Z)/) {
+		if ($check_hardcode_fields{$field} and $value =~ /\/opt\/sw([\s\/]|\Z)/) {
 			print "Warning: Field \"$field\"$splitoff_field appears to contain a hardcoded /opt/sw. ($filename)\n";
 			$looks_good = 0;
 		}
