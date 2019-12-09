@@ -341,7 +341,7 @@ SplitOff2: <<
 		share/man/man8
 	<<
 	InstallScript: <<
-		cp fink/%n.triggers %i/../DEBIAN/triggers
+		cp %b/fink/%n.triggers %d/DEBIAN/triggers
 	<<
 	DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
 	Description: Manage installed documentation in info format
