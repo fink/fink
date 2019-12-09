@@ -1171,9 +1171,9 @@ sub get_script {
 		if ($type eq 'debhelper') {
 			$default_script =
 				"BASE=\$(echo %p | sed -e 's,/,,'); for i in `find debian -type f`; do perl -pi -e \"s,usr,\${BASE},g\" \$i; perl -pi -e \"s,etc,\${BASE}\\/etc,g\" \$i; perl -pi -e \"s,var\\/lib,\${BASE}\\/var\\/lib,g\" \$i; done; \n" .
-				"perl -pi -e 's,dh_gencontrol,#dh_gencontrol,g' debian/rules\n" .
-				"perl -pi -e 's,dh_md5sums,#dh_md5sums,g' debian/rules\n" .
-				"perl -pi -e 's,dh_builddeb,#dh_builddep,g' debian/rules\n";
+				"perl -pi -e 's,(^override_)dh_gencontrol,#dh_gencontrol,g' debian/rules\n" .
+				"perl -pi -e 's,(^override_)dh_md5sums,#dh_md5sums,g' debian/rules\n" .
+				"perl -pi -e 's,(^override_)dh_builddeb,#dh_builddep,g' debian/rules\n";
 		}
 
 	} elsif ($field eq 'compilescript') {
