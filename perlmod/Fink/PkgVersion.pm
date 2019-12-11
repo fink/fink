@@ -1170,10 +1170,8 @@ sub get_script {
 		my $type = $self->get_defaultscript_type();
 		if ($type eq 'debhelper') {
 			$default_script =
-				"BASE=\$(echo %p | sed -e 's,/,,'); for i in `find debian -type f`; do perl -pi -e \"s,usr,\${BASE},g\" \$i; perl -pi -e \"s,etc,\${BASE}\\/etc,g\" \$i; perl -pi -e \"s,var\\/lib,\${BASE}\\/var\\/lib,g\" \$i; done; \n" .
-				"perl -pi -e 's,(^override_)dh_gencontrol,#dh_gencontrol,g' debian/rules\n" .
-				"perl -pi -e 's,(^override_)dh_md5sums,#dh_md5sums,g' debian/rules\n" .
-				"perl -pi -e 's,(^override_)dh_builddeb,#dh_builddep,g' debian/rules\n";
+				"perl -pi -e 's,(^dh_|[ \t]+dh_)(gencontrol|md5sums|builddeb|usrlocal),#\$1\$2,g' debian/rules\n" .
+				"BASE=\$(echo %p | sed -e 's,/,,'); for i in `find debian -type f`; do perl -pi -e \"s,usr,\${BASE},g\" \$i; perl -pi -e \"s,etc,\${BASE}\\/etc,g\" \$i; perl -pi -e \"s,var\\/lib,\${BASE}\\/var\\/lib,g\" \$i; done; \n";
 		}
 
 	} elsif ($field eq 'compilescript') {
