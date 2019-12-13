@@ -1171,7 +1171,7 @@ sub get_script {
 		if ($type eq 'debhelper') {
 			$default_script =
 				"perl -pi -e 's,(^dh_|[ \t]+dh_)(gencontrol|md5sums|builddeb|usrlocal|testroot),#\$1\$2,g' debian/rules\n" .
-				"BASE=\$(echo %p | sed -e 's,/,,'); for i in `find debian -type f`; do perl -pi -e \"s,usr,\${BASE},g\" \$i; perl -pi -e \"s,etc,\${BASE}\\/etc,g\" \$i; perl -pi -e \"s,var\\/lib,\${BASE}\\/var\\/lib,g\" \$i; done; \n";
+				"BASE=\$(echo %p | sed -e 's,/,,'); for i in `find debian -type f`; do perl -pi -e 's,((['\"'\"'\"/]+)usr(['\"'\"'\"/]+)|(['\"'\"'\"/]+)usr|usr(['\"'\"'\"/]+)|usr/|/usr|([\\s\\t]+)usr),\$6\$2\$4'\"\${BASE}\"'\$5\$3,g' \$i; perl -pi -e 's,((['\"'\"'\"/]+)etc(['\"'\"'\"/]+)|(['\"'\"'\"/]+)etc|etc(['\"'\"'\"/]+)|etc/|/etc|([\\s\\t]+)etc),\$6\$2\$4'\"\${BASE}\"'/etc\$5\$3,g' \$i; perl -pi -e 's,((['\"'\"'\"/]+)var(['\"'\"'\"/]+)|(['\"'\"'\"/]+)var|var(['\"'\"'\"/]+)|var/|/var|([\\s\\t]+)var),\$6\$2\$4'\"\${BASE}\"'/var\$5\$3,g' \$i; done; \n";
 		}
 
 	} elsif ($field eq 'compilescript') {
