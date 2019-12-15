@@ -901,13 +901,14 @@ sub validate_info_file {
 					print "Error: $pretty_field has Mac line endings. ($value)\n";
 					$looks_good = 0;
 				}
-				# Check for hardcoded /opt/sw.
+				# Check for hardcoded /sw.
+				# This catches both /sw and /opt/sw.
 				open(INPUT, "<$value") or die "Couldn't read $pretty_field ($value): $!\n";
 				while (defined($patch_file_content=<INPUT>)) {
 					# only check lines being added (and skip diff header line)
 					next unless $patch_file_content =~ /^\+(?!\+\+ )/;
-					if ($patch_file_content =~ /\/opt\/sw([\s\/]|\Z)/) {
-						print "Warning: $pretty_field appears to contain a hardcoded /opt/sw. ($value)\n";
+					if ($patch_file_content =~ /\/sw([\s\/]|\Z)/) {
+						print "Warning: $pretty_field appears to contain a hardcoded /sw. ($value)\n";
 						$looks_good = 0;
 						last;
 					}
@@ -1341,9 +1342,10 @@ sub validate_info_component {
 		next if $field =~ /^splitoff/;   # we don't do recursive stuff here
 		$value = $properties->{$field};
 
-		# Check for hardcoded /opt/sw (fink can be installed at other prefixes)
-		if ($check_hardcode_fields{$field} and $value =~ /\/opt\/sw([\s\/]|\Z)/) {
-			print "Warning: Field \"$field\"$splitoff_field appears to contain a hardcoded /opt/sw. ($filename)\n";
+		# Check for hardcoded /sw (fink can be installed at other prefixes)
+		# This check will still catch hardcoded /opt/sw, and older users may still be using /sw anyway.
+		if ($check_hardcode_fields{$field} and $value =~ /\/sw([\s\/]|\Z)/) {
+			print "Warning: Field \"$field\"$splitoff_field appears to contain a hardcoded /sw. ($filename)\n";
 			$looks_good = 0;
 		}
 
