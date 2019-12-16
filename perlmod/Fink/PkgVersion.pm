@@ -1210,7 +1210,17 @@ sub get_script {
 				"$rubycmd extconf.rb\n".
 				"/usr/bin/make\n";
 		} elsif ($type eq 'debhelper') {
-			$default_script = "debian/rules binary\n";
+			# If UseMaxBuildJobs is absent or set to True, turn on MaxBuildJobs
+			my $mbj = 1;
+			if ((!$self->has_param('UseMaxBuildJobs') || $self->param_boolean('UseMaxBuildJobs')) && $config->has_param('MaxBuildJobs')) {
+				if ($mbj =~ /^\d+$/ && $mbj > 0) {
+					$mbj = $config->param('MaxBuildJobs');
+				} else {
+					warn "Ignoring invalid MaxBuildJobs value in fink.conf: " .
+						"$mbj is not a positive integer\n";
+				}
+			}
+			$default_script = "DEB_BUILD_OPTIONS='nocheck parallel=" . $mbj . "' debian/rules binary\n";
 		} elsif ($self->is_type('dummy')) {
 			$default_script = "";
 		} else {
