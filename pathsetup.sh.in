@@ -2,7 +2,7 @@
 #
 # Shell script for preparing the user's shell startup scripts for Fink.
 # Copyright (c) 2003-2005 Martin Costabel
-# Copyright (c) 2003-2019 The Fink Package Manager Team
+# Copyright (c) 2003-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -283,8 +283,6 @@ else
         SOURCECMD="test -r @PREFIX@/bin/init.sh && . @PREFIX@/bin/init.sh"
         if [ -f $HOME/.zprofile ]; then
 	    RC=.zprofile
-	elif [ -f $HOME/.zshrc ]; then
-	    RC=.zshrc
         elif [ -f $HOME/.zlogin ]; then
 	    RC=.zlogin
 	else
@@ -292,7 +290,7 @@ else
 	fi
 	case $RC in
 	  new)
-	    RC=.login
+	    RC=.zlogin
 	    MSG=msg_create
 	  ;;
 	  *)
