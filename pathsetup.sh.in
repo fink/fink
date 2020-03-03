@@ -283,8 +283,6 @@ else
         SOURCECMD="test -r @PREFIX@/bin/init.sh && . @PREFIX@/bin/init.sh"
         if [ -f $HOME/.zprofile ]; then
 	    RC=.zprofile
-	elif [ -f $HOME/.zshrc ]; then
-	    RC=.zshrc
         elif [ -f $HOME/.zlogin ]; then
 	    RC=.zlogin
 	else
@@ -292,7 +290,7 @@ else
 	fi
 	case $RC in
 	  new)
-	    RC=.login
+	    RC=.zlogin
 	    MSG=msg_create
 	  ;;
 	  *)
