@@ -5,11 +5,17 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink HEAD
 \-------------
 
-	* Fix finding cups headers on 10.14+
+
 
 /-------------
 | fink 0.45.x
 \-------------
+
+0.45.1 "Fumarole" (2020-03-28)
+
+	* Fix finding cups headers on 10.14+
+	* Support 10.15.2 - 10.15.4
+	* Support user shells running zsh
 
 0.45.0 "Funicular" (2019-08-05)
 	* Support 10.14.5, 10.14.6, and 10.15
@@ -30,7 +36,6 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Improve dpkg bootstrapping
 	* Support for Java 10
 
-
 /-------------
 | fink 0.43.x
 \-------------
@@ -50,7 +55,6 @@ For a more comprehensive changelog of the latest experimental code, see:
 	* Support 2017 version of Java 1.6
 	* Better checksum support
 	* Other fixes and enhancements (see the commits)
-
 
 /-------------
 | fink 0.42.x
