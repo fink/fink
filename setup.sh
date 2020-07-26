@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2019 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 
 if [ $# -ne 2 ]; then
   echo "Usage: ./setup.sh <prefix> <architecture>"
-  echo "  Example: ./setup.sh /sw i386"
+  echo "  Example: ./setup.sh /opt/sw i386"
   exit 1
 fi
 

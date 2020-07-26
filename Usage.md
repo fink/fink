@@ -7,13 +7,13 @@ Setting The Paths
 -------------------
 To use the software installed in Fink's directory hierarchy, including the `fink` command itself, you must set your PATH environment variable (and some others) accordingly. Shell scripts are provided to do this for you. If you use `tcsh`, add the following to your `.cshrc`:
 
-    source /sw/bin/init.csh
+    source /opt/sw/bin/init.csh
 
 Editing `.cshrc` will only affect new shells (i.e. newly opened Terminal windows), so you should also run this command in all Terminal windows that you opened before you edited the file. You'll also need to run "`rehash`" because `tcsh` caches the list of available commands internally.
 
 If you use a Bourne type shell (e.g. `sh`, `bash`, `zsh`), use instead:
 
-    source /sw/bin/init.sh
+    source /opt/sw/bin/init.sh
 
 Note that the scripts also add /usr/X11R6/bin and /usr/X11R6/man to your path so you can use X11 when it is installed. Packages have the ability to add settings of their own, e.g. the qt package sets the QTDIR environment variable.
 
@@ -44,7 +44,7 @@ Aliases for the `install` command: `update`, `enable`, `activate`, `use`. (Most 
 --------
 The remove command removes packages from the system by calling '`dpkg --remove`'. The current implementation has some flaws: It only works on packages Fink knows about (i.e. where an .info file is present); and it doesn't check dependencies itself but rather completely leaves that to the `dpkg` tool (usually this poses no problem, though).
 
-The remove command only removes the actual package files, but leaves the .deb compressed package file intact. This means that you can re-install the package later without going through the compile process again. If you need the disk space, you can remove the .deb from the /sw/fink/dists tree.
+The remove command only removes the actual package files, but leaves the .deb compressed package file intact. This means that you can re-install the package later without going through the compile process again. If you need the disk space, you can remove the .deb from the /opt/sw/fink/dists tree.
 
 Aliases: `disable`, `deactivate`, `unuse`, `delete`, `purge`.
 
@@ -119,7 +119,7 @@ Reruns the Fink configuration process. This will let you change your mirror site
 
 `selfupdate`
 ------------
-This command automates the process of upgrading to a new Fink release. It checks the Fink website to see if a new version is available. It then downloads the package descriptions and updates the core packages, including fink itself. This command can only upgrade to regular releases, but you can use it to upgrade from a CVS version to a later regular release. It will refuse to run if you have /sw/fink set up to get package descriptions directly from CVS.
+This command automates the process of upgrading to a new Fink release. It checks the Fink website to see if a new version is available. It then downloads the package descriptions and updates the core packages, including fink itself. This command can only upgrade to regular releases, but you can use it to upgrade from a CVS version to a later regular release. It will refuse to run if you have /opt/sw/fink set up to get package descriptions directly from CVS.
 
 
  Further Questions

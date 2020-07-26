@@ -1,4 +1,4 @@
-PREFIX=/sw
+PREFIX=/opt/sw
 ARCHITECTURE=x86_64
 VERSION=`cat VERSION`
 TEST_BASEPATH=$(PWD)/t/basepath
@@ -8,7 +8,7 @@ all:
 	@echo    "usage: $(MAKE) <target>"
 	@echo    ""
 	@echo -e "\tbootstrap   install a fresh fink installation"
-	@echo -e "\t            PREFIX can be set, defaults to /sw"   
+	@echo -e "\t            PREFIX can be set, defaults to /opt/sw"   
 	@echo -e "              ARCHITECTURE can also be set, defaults to x86_64"   
 	@echo -e "\tinstall     install to an existing fink installation"
 	@echo -e "\ttest        perform tests on the fink code"

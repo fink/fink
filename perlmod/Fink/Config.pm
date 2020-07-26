@@ -115,7 +115,7 @@ Fink::Config globals from it.
 If %defaults is given they will be used as defaults for any keys not in the
 config file.  For example...
 
-    my $config = Fink::Config->new_with_path($file, { Basepath => "/sw" });
+    my $config = Fink::Config->new_with_path($file, { Basepath => "/opt/sw" });
 
 =cut
 
@@ -846,16 +846,16 @@ string if a problem exists, otherwise returns a false value.
 =cut
 
 # FIXME: Private repositories could easily have different basepaths. Can
-# we keep UseBinaryDist enabled with $basepath ne '/sw' but just restrict
+# we keep UseBinaryDist enabled with $basepath ne '/opt/sw' but just restrict
 # use to non-official repos?
 
 sub bindist_check_prefix {
 	my ($self) = @_;
 	my $err = <<ERR;
 Downloading packages from the binary distribution is currently only possible
-if Fink is installed at '/sw'.
+if Fink is installed at '/opt/sw'.
 ERR
-	return $self->param('Basepath') eq '/sw' ? 0 : $err;
+	return $self->param('Basepath') eq '/opt/sw' ? 0 : $err;
 }
 
 =item bindist_check_distro
@@ -1179,7 +1179,7 @@ a Fink::Config object.
 
 Path to the base of the Fink installation directory.
 
-Typically F</sw>.
+Typically F</opt/sw>.
 
 =item $buildpath
 

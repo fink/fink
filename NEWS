@@ -5,7 +5,7 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink HEAD
 \-------------
 
-
+	* Move default install path to /opt/sw
 
 /-------------
 | fink 0.45.x
@@ -802,7 +802,7 @@ Bug fixes
 
 0.24.22 "Lupus" (2006-06-27)
 
-0.24.21 "Boötes" (2006-06-23)
+0.24.21 "BoÃ¶tes" (2006-06-23)
 
 0.24.20 (2006-06-23)
 	again quickly replaced
