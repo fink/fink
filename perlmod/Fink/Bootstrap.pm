@@ -266,10 +266,13 @@ GCC_MSG
 			"of Mac OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.15";
+	} elsif ($host =~ /^i386-apple-darwin20\.[0]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "11.0";
 	} elsif ($host =~ /^i386-apple-darwin(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10." . ($1-4);
 	} else {
@@ -1109,6 +1112,7 @@ sub get_selfupdatetrees {
 		"10.14" => "10.9-libcxx",
 		"10.14.5" => "10.9-libcxx",
 		"10.15" => "10.9-libcxx",
+		"11.0" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};
