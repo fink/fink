@@ -5765,6 +5765,10 @@ sub get_perl_dir_arch {
 				# 10.15 system-perl is 5.18.4, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.4)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.28.2" and Fink::Services::get_kernel_vers() eq '20') {
+				# 11.0 system-perl is 5.28.2, but the only supplied
+				# interpreter is /usr/bin/perl5.28 (not perl5.28.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.28";
 			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);

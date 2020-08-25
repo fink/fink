@@ -39,8 +39,10 @@ if [ $osMajorVer -eq 11 -o $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
 elif [ $osMajorVer -eq 13 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.16"
-elif [ $osMajorVer -gt 13 ]; then
+elif [ $osMajorVer -gt 13 -a $osMajorVer -le 19 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.18"
+elif [ $osMajorVer -gt 20 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.28"
 fi
 
 
