@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1276,13 +1276,13 @@ sub gcc_selected {
 	my $gcc = enforce_gcc($message, $gcc_abi);
 
 Check to see if the gcc version optionally supplied in $gcc_abi is the
-same as the default GCC ABI for the installed version of Mac OS X or Darwin.
+same as the default GCC ABI for the installed version of macOS or Darwin.
 If it is not, we return the value for the default GCC ABI.
 
 If it is, or if $gcc_abi is not supplied, then we check to see if the
 gcc version obtained from /usr/sbin/gcc_select agrees with the expected
 (default) gcc version corresponding to the installed version of
-Mac OS X or Darwin.  If the versions agree, the common value is returned.
+macOS or Darwin.  If the versions agree, the common value is returned.
 If they do not agree, we print $message and exit fink.
 
 The strings CURRENT_SYSTEM, INSTALLED_GCC, and EXPECTED_GCC,
@@ -1322,7 +1322,7 @@ sub enforce_gcc {
 	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
-		$current_system = "Mac OS X $sw_vers";
+		$current_system = "macOS $sw_vers";
 		$gcc = $system_gcc_default{get_osx_vers()};
 	} else {
 		$current_system = "Darwin " . get_kernel_vers_long();
@@ -1354,7 +1354,7 @@ sub enforce_gcc {
 
     my $os_x_version = get_osx_vers();
 
-Returns OS X major and minor versions (if that's what this platform
+Returns macOS major and minor versions (if that's what this platform
 appears to be, as indicated by being able to run /usr/bin/sw_vers).
 The output of that command is parsed and cached in a global configuration
 option in the Fink::Config package so that multiple calls to this function
@@ -1376,7 +1376,7 @@ sub get_osx_vers {
 
     my $os_x_version = get_osx_vers_long();
 
-Returns full OS X version (if that's what this platform appears to be,
+Returns full macOS version (if that's what this platform appears to be,
 as indicated by being able to run /usr/bin/sw_vers). The output of that
 command is parsed and cached in a global configuration option in the
 Fink::Config package so that multiple calls to this function do not
@@ -1428,7 +1428,7 @@ sub get_host_multiarch {
 	my $os_x_version = get_darwin_equiv($kernel_major_version);
 
 For a given kernel major version (i.e., the "8" of "8.6.1"), return
-the OS X version expected to be used on it. Returns undef if it
+the macOS version expected to be used on it. Returns undef if it
 couldn't be determined.
 
 =cut
@@ -1500,7 +1500,7 @@ sub get_system_perl_version {
 
     my $sdkpath = get_sdkpath();
 
-On darwin>=18 (OS X >= 10.14), returns the path to the active macOS
+On darwin>=18 (macOS >= 10.14), returns the path to the active macOS
 SDK. On lower kernels, or if `xcrun` could not determine the SDK path,
 a null string is returned. The value is cached, so multiple calls to
 this function do not result in repeated spawning of xcrun processes.

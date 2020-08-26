@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -138,7 +138,7 @@ from postinstall.pl).  It defaults to the empty string.
 This function also warns the user about certain bad configurations, or
 incorrect versions of gcc.
 
-After every release of Mac OS X, fink should be tested against the new
+After every release of macOS, fink should be tested against the new
 release and then this function should be updated.
 
 Called by bootstrap and fink's postinstall.pl.
@@ -206,8 +206,8 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin13\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
-			 "guarantees.");
+			"of OS X might work with Fink, but there are no " .
+			"guarantees.");
 		$distribution = "10.9";
 	} elsif ($host =~ /^i386-apple-darwin14\.[0-5]/) {
 		&print_breaking("This system is supported and tested.");
@@ -215,8 +215,8 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin14\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
-			 "guarantees.");
+			"of OS X might work with Fink, but there are no " .
+			"guarantees.");
 		$distribution = "10.10";
 	} elsif ($host =~ /^i386-apple-darwin15\.[0-6]/) {
 		&print_breaking("This system is supported and tested.");
@@ -224,7 +224,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin15\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.11";
 	} elsif ($host =~ /^i386-apple-darwin16\.[0-7]/) {
@@ -233,7 +233,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin16\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.12";
 	} elsif ($host =~ /^i386-apple-darwin17\.[0-7]/) {
@@ -242,7 +242,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin17\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.13";
 	} elsif ($host =~ /^i386-apple-darwin18\.[0-5]/) {
@@ -254,7 +254,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin18\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.14.5";
 	} elsif ($host =~ /^i386-apple-darwin19\.[0-6]/) {
@@ -263,7 +263,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin19\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.15";
 	} elsif ($host =~ /^i386-apple-darwin20\.[0]/) {

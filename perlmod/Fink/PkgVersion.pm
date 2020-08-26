@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -4421,7 +4421,7 @@ EOF
 		$scriptbody{postrm}   .= $scriptbody;
 	}
 
-	# add Fink symlink Code for .app OS X applications
+	# add Fink symlink Code for .app macOS applications
 	if ($self->has_param("AppBundles")) {
 		# shell-escape app names and parse down to just the .app dirname
 		my @apps = map { s/\'/\\\'/gsi; basename($_) } split(/\s+/, $self->param("AppBundles"));
