@@ -859,9 +859,9 @@ print "\n";
 &print_breaking(
     "Run '. $installto/bin/init.sh' to set up this terminal session ".
     "environment to use Fink. To make the software installed by Fink ".
-    "available in all of your future terminal shells, add ".
-    "'. $installto/bin/init.sh' to the init script '.profile' or ".
-    "'.bash_profile' in your home directory. The program ".
+    "available in all of your future terminal shells, add ". 
+    "'. $installto/bin/init.sh' to the init scripts '.zprofile', ".
+    "'.profile', or '.bash_profile' in your home directory. The program ".
     "$installto/bin/pathsetup.sh can help with this. Enjoy."
 );
 print "\n";
