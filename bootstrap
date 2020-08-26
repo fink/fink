@@ -369,13 +369,25 @@ my $xcode_version;
 	} elsif ($vers == 14) {
 		$min_xcode="6.0";
 		$max_xcode="7.2.1";
-		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 	} elsif ($vers == 15) {
 		$min_xcode="7.0";
 		$max_xcode="8.2.1";
-	 } elsif ($vers >= 16) {
-                $min_xcode="8.0";
-                $max_xcode="99.99.99";
+	} elsif ($vers == 16) {
+		$min_xcode="8.0";
+		$max_xcode="9.2";
+	} elsif ($vers == 17) {
+		$min_xcode="9.0";
+		$max_xcode="10.1";
+	} elsif ($vers == 18) {
+		$min_xcode="10.0";
+		$max_xcode="11.3.1";
+	} elsif ($vers == 19) {
+		$min_xcode="11.0";
+		# Only set the maximum xcode version once it's definite to avoid deadlocks.
+		$max_xcode="99.99.99";
+	} elsif ($vers >= 20) {
+		$min_xcode="12.0";
+		$max_xcode="99.99.99";
 		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 	} else {
 		die "ERROR:\n\tUnsupported macOS version.\n";
