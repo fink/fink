@@ -1438,7 +1438,13 @@ sub get_darwin_equiv {
 		'1' => '10.0',
 	);
 	my $kernel_vers = get_kernel_vers();
-	return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
+	if ($kernel_vers <= 19) {
+		# darwin19 == 10.15
+		return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
+	} elsif ($kernel_vers == 20) {
+		# darwin20 == 11.0
+		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers-20);
+	}
 }
 
 =item get_kernel_vers
