@@ -1034,7 +1034,7 @@ sub validate_info_file {
 
 		# must actually be used
 		if (defined ($value = $properties->{'patchscript'})) {
-			if ($value !~ /\%{($pretty_field|default_script)}/) {
+			if ($value !~ /\%\{($pretty_field|default_script)\}/) {
 				print "Warning: $pretty_field does not appear to be used in PatchScript. ($filename)\n";
 				$looks_good = 0;
 			}
