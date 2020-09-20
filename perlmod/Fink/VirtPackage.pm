@@ -310,8 +310,6 @@ END
 				'math-bigint',
 				'memoize',
 				'mime-base64',
-				'podparser',
-				'pod-parser',
 				'sys-syslog',
 				'term-readline',
 				'test-harness',
@@ -336,6 +334,12 @@ END
 			if ($perlver < 5.013001) {
 				push(@modules,
 					 'switch',
+				);
+			}
+			if ($perlver < 5.031001) {
+				push(@modules,
+					 'podparser',
+					 'pod-parser',
 				);
 			}
 		}
