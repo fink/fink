@@ -1,6 +1,6 @@
 Package: libiconv
 Version: 1.15
-Revision: 1
+Revision: 2
 Description: Character set conversion library
 License: LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
