@@ -56,8 +56,7 @@ You need:
 First Time Installation Very Fast Track
 -----------------------------------------
 Download the Install Fink.tool
-[https://raw.githubusercontent.com/fink/scripts/master/srcinstaller/Install%
-20Fink.tool] script and double-click on it. This will automate the downloads
+[https://raw.githubusercontent.com/fink/scripts/master/srcinstaller/Install%20Fink.tool] script and double-click on it. This will automate the downloads
 in the steps below.
 
 The script may have to stop for you to do something. If so, run it again.
