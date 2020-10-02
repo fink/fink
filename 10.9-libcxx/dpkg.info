@@ -24,7 +24,7 @@ Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
 #Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
 Source2-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
 PatchFile: %n.patch
-PatchFile-MD5: 5653f8bf15db1eacfb17342a2ff9dd2e
+PatchFile-MD5: 822262f7b27fc51b5fe71c1a893e0f90
 PatchFile2: libgettext8-shlibs.patch
 PatchFile2-MD5: 9a702c97d1c95d216f0908e368e7ad42
 PatchScript: <<
