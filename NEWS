@@ -5,6 +5,8 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink HEAD
 \-------------
 
+	* Support Xcode12
+	* Support 10.15.6 (and .7)
 	* Move default install path to /opt/sw
 
 /-------------
