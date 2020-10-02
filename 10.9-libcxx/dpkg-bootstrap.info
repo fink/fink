@@ -10,7 +10,7 @@ Source: mirror:custom:dpkg_%v.tar.gz
 SourceDirectory: dpkg-%v
 Source-MD5: a9f6c43891db74d727beab7dfc0ee663
 PatchFile: dpkg.patch
-PatchFile-MD5: 9c3d590be2403102773cce89556443e7
+PatchFile-MD5: 5653f8bf15db1eacfb17342a2ff9dd2e
 PatchScript: <<
 	#!/bin/sh -ev
 	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
