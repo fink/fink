@@ -1762,7 +1762,7 @@ sub real_install {
 	%already_activated = ();
 
 	# should we try to download the deb from the binary distro?
-	# warn if UseBinaryDist is enabled and not installed in '/sw'
+	# warn if UseBinaryDist is enabled and not installed in '/opt/sw'
 	my $deb_from_binary_dist = 0;
 	if ($config->binary_requested()) {
 		if (my $err = $config->bindist_check_prefix) {
