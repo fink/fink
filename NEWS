@@ -5,14 +5,19 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink HEAD
 \-------------
 
-	* Move default install path to /opt/sw
 
 /-------------
 | fink 0.45.x
 \-------------
 
-0.45.1 "Fumarole" (2020-03-28)
+0.45.2 "Fulminate" (2020-10-02)
 
+	* Move default install path to /opt/sw
+	* Support 10.15.6 (and .7)
+	* Clean some regex code for newer perls
+	* Support Xcode12
+
+0.45.1 "Fumarole" (2020-03-28)
 	* Fix finding cups headers on 10.14+
 	* Support 10.15.2 - 10.15.4
 	* Support user shells running zsh

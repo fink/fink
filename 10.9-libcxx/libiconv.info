@@ -1,6 +1,6 @@
 Package: libiconv
 Version: 1.15
-Revision: 1
+Revision: 2
 Description: Character set conversion library
 License: LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
@@ -17,9 +17,9 @@ Source-MD5: ace8b5f2db42f7b3b3057585e80d9808
 Source2: mirror:sourceforge:fink/gettext-0.19.8.1.tar.gz
 #Source2: mirror:gnu:gettext/gettext-0.19.8.1.tar.gz
 Source2-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
-Source3: mirror:sourceforge:fink/gperf-3.0.4.tar.gz
-#Source3: mirror:gnu:gperf/gperf-3.0.4.tar.gz
-Source3-MD5: c1f1db32fb6598d6a93e6e88796a8632
+Source3: mirror:sourceforge:fink/gperf-3.1.tar.gz
+#Source3: mirror:gnu:gperf/gperf-3.1.tar.gz
+Source3-MD5: 9e251c0a618ad0824b51117d5d9db87e
 PatchFile: %n.patch
 PatchFile-MD5: df5031bae867ed716e5e3637ebe0ca62
 PatchFile2: %n-gettext.patch
@@ -34,7 +34,7 @@ GCC: 4.0
 CompileScript: <<
 #! /bin/sh -ex
 ### build gperf
-cd %b/../gperf-3.0.4
+cd %b/../gperf-3.1
 ./configure --prefix=%p
 make
 make -j1 check || exit 2
@@ -68,7 +68,7 @@ make install DESTDIR=%b/../_inst
 
 ### now build iconv
 cd %b/../libiconv-%v
-make -f Makefile.devel GPERF=%b/../gperf-3.0.4/src/gperf
+make -f Makefile.devel GPERF=%b/../gperf-3.1/src/gperf
 am_cv_func_iconv="yes"
 am_cv_proto_iconv=""
 export am_cv_func_iconv am_cv_proto_iconv

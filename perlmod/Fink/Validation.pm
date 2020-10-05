@@ -1034,7 +1034,7 @@ sub validate_info_file {
 
 		# must actually be used
 		if (defined ($value = $properties->{'patchscript'})) {
-			if ($value !~ /%{($pretty_field|default_script)}/) {
+			if ($value !~ /\%\{($pretty_field|default_script)\}/) {
 				print "Warning: $pretty_field does not appear to be used in PatchScript. ($filename)\n";
 				$looks_good = 0;
 			}
@@ -1495,7 +1495,7 @@ sub validate_info_component {
 					print "Error: Info3 or later is required for trailing \",\" in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
-				if (($pkglist =~ /%V/) and ($info_level <= 3)) {
+				if (($pkglist =~ /\%V/) and ($info_level <= 3)) {
 					print "Error: Info4 or later is required for percent expansion %V in \"$field\"$splitoff_field. ($filename)\n";
 					$looks_good = 0;
 				}
