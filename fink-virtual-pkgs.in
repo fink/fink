@@ -2,7 +2,7 @@
 #
 # fink-virtual-pkgs
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -130,7 +130,7 @@ if ($standalone == 0) {
 }
 else
 {
-# We are running without fink modules, so just kernel and Mac OS X pkgs
+# We are running without fink modules, so just kernel and macOS pkgs
 	my $macosx_version = 0;
 	if (-x "/usr/bin/sw_vers") {
 		open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";

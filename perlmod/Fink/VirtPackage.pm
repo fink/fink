@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -135,7 +135,7 @@ uname(1) call.  This should *always* exist.
 	$hash->{version} = Fink::Services::get_kernel_vers_long() . "-1";
 	$hash->{description} = "[virtual package representing the kernel]";
 	$hash->{descdetail} = <<END;
-This package represents the kernel (XNU (Darwin) on Mac OS X),
+This package represents the kernel (XNU (Darwin) on macOS),
 which is a core part of the operating system.
 END
 	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
@@ -144,13 +144,13 @@ END
 
 =item "macosx"
 
-This test checks for the Mac OS X version by running the sw_vers(1)
-command and parsing the output.  It should exist on all Mac OS X
+This test checks for the macOS version by running the sw_vers(1)
+command and parsing the output.  It should exist on all macOS
 installations (but not pure Darwin systems).
 
 =cut
 
-	# create dummy object for system version, if this is OS X at all
+	# create dummy object for system version, if this is macOS at all
 	print STDERR "- checking OSX version... " if ($options{debug});
 
 	$hash = {};
@@ -167,7 +167,7 @@ installations (but not pure Darwin systems).
 		print STDERR "unknown\n" if ($options{debug});
 	}
 	$hash->{descdetail} = <<END;
-This package represents the Mac OS X software release.
+This package represents the macOS software release.
 It will not show as installed on pure Darwin systems.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
@@ -426,7 +426,7 @@ directories exist.
 	# check all Javas on system so that we can generate virtual packages
 	# for each version (even those new at the time of this fink release) and
 	# add hardcoded patterns for Javas which are known to be available 
-	# on supported OS X so that their system-* packages will show up as
+	# on supported macOS so that their system-* packages will show up as
 	# potentially installable.
 	my @jdktest = ( split (/\n/, `/usr/libexec/java_home -V 2>&1`),
 					'1.4.2_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.4.2.jdk/Contents/Home',
@@ -932,7 +932,7 @@ as part of the Xcode tools.
 =cut
 
 	my @SDKDIRS;
-	# possible SDKs for known OS X versions and supported Xcodes.
+	# possible SDKs for known macOS versions and supported Xcodes.
 	if ($osxversion == 9) {
 		@SDKDIRS= qw(
 			MacOSX10.3.9.sdk
@@ -990,6 +990,10 @@ as part of the Xcode tools.
 		@SDKDIRS=qw(
 			MacOSX10.15.sdk
 		);
+	} elsif ($osxversion == 20) {
+		@SDKDIRS=qw(
+			MacOSX11.0.sdk
+		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
 	my $sdkpath;
@@ -1030,11 +1034,11 @@ as part of the Xcode tools.
 				$hash->{package} = "system-sdk-${shortversion}";
 			}
 			$hash->{status} = STATUS_ABSENT;
-			$hash->{description} = "[virtual package representing the Mac OS X $versiontext SDK]";
+			$hash->{description} = "[virtual package representing the macOS $versiontext SDK]";
 			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{builddependsonly} = "true";
 			$hash->{descdetail} = <<END;
-This package represents the Mac OS X $versiontext SDK
+This package represents the macOS $versiontext SDK
 provided by Apple as part of Xcode.  If it does not show as
 installed, you can download Xcode from Apple at:
 
@@ -1301,7 +1305,7 @@ the successful execution of "/usr/bin/clang -v".
 This package represents the presence of the clang compiler
 in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
-Xcode for your OS X version from Apple at:
+Xcode for your macOS version from Apple at:
 
   http://developer.apple.com/
 
@@ -1360,7 +1364,7 @@ the successful execution of "/usr/bin/llvm-gcc -v".
 This package represents the presence of the LLVM compiler
 in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
-Xcode for your OS X version from Apple at:
+Xcode for your macOS version from Apple at:
 
   http://developer.apple.com/
 
@@ -1413,7 +1417,7 @@ cc1plus.
 This package represents broken versions of the GCC compiler
 as shipped by Apple.  If this package shows as installed,
 you should see if there is a newer version of the developer
-tools for your OS X version at:
+tools for your macOS version at:
 
   http://developer.apple.com/
 
