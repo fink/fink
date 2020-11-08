@@ -2012,7 +2012,7 @@ sub _validate_dpkg {
 		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}};
 
 	if ($install_info_called) {
-		print "\nWarning: install-info called found in dpkg scrips, please avoid this as Triggers in install-info will already do this for you.\n\n";
+		print "\nWarning: install-info called found in dpkg scripts, please avoid this as Triggers in install-info will already do this for you.\n\n";
 	}
 
 	# during File::Find loop, we stack all error msgs
