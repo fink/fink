@@ -963,7 +963,8 @@ sub prepare_percent_c {
 			"INSTALLSITEMAN3DIR=\%p/share/man/man3 " .
 			"INSTALLBIN=\%p/bin " .
 			"INSTALLSITEBIN=\%p/bin " .
-			"INSTALLSCRIPT=\%p/bin ";
+			"INSTALLSCRIPT=\%p/bin " .
+			"INSTALLSITESCRIPT=\%p/bin ";
 
 	} elsif ($type eq 'modulebuild') {
 		# grab perl version, if present
@@ -1228,7 +1229,7 @@ sub get_script {
 			# grab perl version, if present
 			my ($perldirectory, $perlarchdir) = $self->get_perl_dir_arch();
 			$default_script =
-				"/usr/bin/make -j1 install PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin DESTDIR=\%d\n";
+				"/usr/bin/make -j1 install PREFIX=\%p INSTALLPRIVLIB=\%p/lib/perl5$perldirectory INSTALLARCHLIB=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLSITELIB=\%p/lib/perl5$perldirectory INSTALLSITEARCH=\%p/lib/perl5$perldirectory/$perlarchdir INSTALLMAN1DIR=\%p/share/man/man1 INSTALLMAN3DIR=\%p/share/man/man3 INSTALLSITEMAN1DIR=\%p/share/man/man1 INSTALLSITEMAN3DIR=\%p/share/man/man3 INSTALLBIN=\%p/bin INSTALLSITEBIN=\%p/bin INSTALLSCRIPT=\%p/bin INSTALLSITESCRIPT=\%p/bin DESTDIR=\%d\n";
 		} elsif ($type eq 'modulebuild') {
 			$default_script =
 				"./Build install\n";
