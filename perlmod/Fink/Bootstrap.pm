@@ -269,6 +269,12 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin20\.[0-1]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "11.0";
+	} elsif ($host =~ /^i386-apple-darwin2(\d+)\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of macOS might work with Fink, but there are no " .
+			"guarantees.");
+		$distribution = "11." . ($1-20);
 	} elsif ($host =~ /^i386-apple-darwin(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
