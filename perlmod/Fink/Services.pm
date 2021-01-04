@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2020 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1438,12 +1438,14 @@ sub get_darwin_equiv {
 		'1' => '10.0',
 	);
 	my $kernel_vers = get_kernel_vers();
+	my $kernel_vers_minor = get_kernel_vers_minor();
 	if ($kernel_vers <= 19) {
 		# darwin19 == 10.15
 		return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
 	} elsif ($kernel_vers == 20) {
-		# darwin20 == 11.0
-		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers-20);
+		# darwin20.1 == 11.0
+		# darwin20.2 == 11.1
+		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers_minor-1);
 	}
 }
 
@@ -1461,6 +1463,16 @@ sub get_kernel_vers {
 		return $kernel_version;
 	} else {
 		my $error = "Couldn't determine major version number for $kernel_version kernel!";
+		die $error . "\n";
+	}
+}
+
+sub get_kernel_vers_minor {
+	my $kernel_version_minor = get_kernel_vers_long();
+	if ($kernel_version_minor =~ s/^\d+\.(\d+).*/$1/) {
+		return $kernel_version_minor;
+	} else {
+		my $error = "Couldn't determine minor version number for $kernel_version_minor kernel!";
 		die $error . "\n";
 	}
 }
