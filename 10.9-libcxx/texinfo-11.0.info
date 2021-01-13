@@ -3,7 +3,7 @@ Package: texinfo
 Version: 6.3
 # maintain %r spacing for 10.9 vs 10.10+ due to systemperl varianting
 Revision: 503.1
-Distribution: 11.0
+Distribution: 11.0, 11.1
 Type: systemperl (5.28.2)
 Source: gnu
 Source-MD5: 9b08daca9bf8eccae9b0f884aba41f9e
