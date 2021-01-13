@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2020 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -266,15 +266,21 @@ GCC_MSG
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.15";
-	} elsif ($host =~ /^i386-apple-darwin20\.[0-1]/) {
+	} elsif ($host =~ /^i386-apple-darwin20\.[0-2]/) {
 		&print_breaking("This system is supported and tested.");
+		$distribution = "11.0";
+	} elsif ($host =~ /^i386-apple-darwin20\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of macOS might work with Fink, but there are no " .
+			"guarantees.");
 		$distribution = "11.0";
 	} elsif ($host =~ /^i386-apple-darwin2(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
-		$distribution = "11." . ($1-20);
+		$distribution = "11." . ($1-1);
 	} elsif ($host =~ /^i386-apple-darwin(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
