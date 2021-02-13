@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2020 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -432,17 +432,22 @@ directories exist.
 					'1.4.2_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.4.2.jdk/Contents/Home',
 					'1.5.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.5.0.jdk/Contents/Home',
 					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home', # legacy location
-					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
-					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
+					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',
+					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',
 					'9, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home',
 					'9.0.Z, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.0.Z.jdk/Contents/Home',
 					'10.0.Z, x86_64:	"Java SE 10"	/Library/Java/JavaVirtualMachines/jdk-10.0.Z.jdk/Contents/Home',
+					'11.0.Z, x86_64:	"OpenJDK 11.0.Z"	/Library/Java/JavaVirtualMachines/jdk-11.0.Z.jdk/Contents/Home',
+					'12.0.Z, x86_64:	"OpenJDK 12.0.Z"	/Library/Java/JavaVirtualMachines/jdk-12.0.Z.jdk/Contents/Home',
+					'13.0.Z, x86_64:	"OpenJDK 13.0.Z"	/Library/Java/JavaVirtualMachines/jdk-13.0.Z.jdk/Contents/Home',
+					'14.0.Z, x86_64:	"OpenJDK 14.0.Z"	/Library/Java/JavaVirtualMachines/jdk-14.0.Z.jdk/Contents/Home',
+					'15.0.Z, x86_64:	"OpenJDK 15.0.Z"	/Library/Java/JavaVirtualMachines/jdk-15.0.Z.jdk/Contents/Home',
 					);
 	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
-		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
+		my ($ver,$javadir) = m|([_\.\dA-z]+),?\s+\(?.+\)?:?\s+\".+\"\s+(\/.+)$|; #extract version and directory info
 		my $testver; # for later
 		# Tweak $javadir to point to where stuff actually lives for JDK 1.6 and earlier.
 		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/ or $ver =~ '1\.6\.0') ;
