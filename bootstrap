@@ -539,7 +539,7 @@ foreach my $forbidden (
 	   /usr/X11R6 /usr/X11 /opt/X11
 	   /root /private /cores /boot
 	   /debian /debian/.*
-	   /usr/local /usr/local/.* /opt/local /opt/local/.*)
+	   /usr/local /usr/local/.* /opt/local /opt/local/.* /opt/homebrew /opt/homebrew/.*)
 ) {
 	if ($installto =~ /^$forbidden$/i) {
 		print "ERROR: Refusing to install into '$installto'.\n";
@@ -557,6 +557,12 @@ foreach my $forbidden (
 			&print_breaking(
 				 "/opt/local is the default location that Macports ".
 				 "uses, so installing there is likely to lead to problems.");
+		}
+		if ($installto =~ /^\/opt\/homebrew/) {
+			&print_breaking(
+				 "/opt/homebrew is the default location that Homebrew ".
+				 "uses on M1 systems, so installing there is likely to ".
+				 "lead to problems.");
 		}
 		redo OPT_BASEPATH;
 	}
