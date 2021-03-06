@@ -10,6 +10,11 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.45.x
 \-------------
 
+0.45.3 "No word" (2021-03-06)
+
+	* Restore default path to /sw for 10.14 and earlier.
+	* Populate INSTALLSITESCRIPT so Makemaker scripts work with perl5.28
+
 0.45.2 "Fulminate" (2020-10-02)
 
 	* Move default install path to /opt/sw
