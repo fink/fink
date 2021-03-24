@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -4516,17 +4516,23 @@ EOF
 		}
 	}
 
-	if (Fink::Config::get_option("validate")) {
+	# Run validation of the staging dir. This is no longer optional,
+	# but command-line flags control level of nit-pickiness (if any of
+	# the tests consider themselves "pedantic") and whether to
+	# warn-and-continue vs abort. By default, only check non-pedantic
+	# and abort if any detected.
+	{
 		my %saved_options = map { $_ => Fink::Config::get_option($_) } qw/ verbosity Pedantic /;
 		Fink::Config::set_options( {
 			'verbosity' => 3,
-			'Pedantic'  => 1
+			'Pedantic'  => Fink::Config::get_option("validate") ? 1 : 0 # actually asked for it, so really do it
 			} );
 		if (!Fink::Validation::validate_dpkg_unpacked($destdir)) {
-			if (Fink::Config::get_option("validate") eq "on") {
-				$self->package_error( phase => '.deb validation', preamble => "If you are the maintainer, please correct the above problems and try\nagain! Otherwise, consider this a bug that should be reported." );
+			if (Fink::Config::get_option("validate") eq "warn") {
+				# user can request it to be non-fatal
+				warn "Validation of .deb failed, but continuing with the package building process anyway as requested. Installing this package may damage other packages and create other unexpected results.\n";
 			} else {
-				warn "Validation of .deb failed.\n";
+				$self->package_error( phase => '.deb validation', preamble => "If you are the maintainer, please correct the above problems and try\nagain! Otherwise, consider this a bug that should be reported." );
 			}
 		}
 		Fink::Config::set_options(\%saved_options);
