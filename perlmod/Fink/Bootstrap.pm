@@ -266,15 +266,18 @@ GCC_MSG
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.15";
-	} elsif ($host =~ /^i386-apple-darwin20\.[0-4]/) {
+	} elsif ($host =~ /^i386-apple-darwin20\.[0-3]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "11.0";
+	} elsif ($host =~ /^i386-apple-darwin20\.[4-5]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "11.3";
 	} elsif ($host =~ /^i386-apple-darwin20\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
-		$distribution = "11.0";
+		$distribution = "11.3";
 	} elsif ($host =~ /^i386-apple-darwin2(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
@@ -494,6 +497,7 @@ sub is_perl_supported {
 	} elsif ("$]" == "5.018002") {
 	} elsif ("$]" == "5.018004") {
 	} elsif ("$]" == "5.028002") {
+	} elsif ("$]" == "5.030002") {
 	} else {
 		# unsupported version of perl
 		return 0;
@@ -1126,6 +1130,7 @@ sub get_selfupdatetrees {
 		"10.14.5" => "10.9-libcxx",
 		"10.15" => "10.9-libcxx",
 		"11.0" => "10.9-libcxx",
+		"11.3" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};
