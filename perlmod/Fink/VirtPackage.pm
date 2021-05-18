@@ -986,18 +986,23 @@ as part of the Xcode tools.
 	} elsif ($osxversion == 17) {
 		@SDKDIRS=qw(
 			MacOSX10.13.sdk
+			MacOSX10.14.sdk
 		);
 	} elsif ($osxversion == 18) {
 		@SDKDIRS=qw(
 			MacOSX10.14.sdk
+			MacOSX10.15.sdk
 		);
 	} elsif ($osxversion == 19) {
 		@SDKDIRS=qw(
 			MacOSX10.15.sdk
+			MacOSX11.1.sdk
 		);
 	} elsif ($osxversion == 20) {
 		@SDKDIRS=qw(
 			MacOSX11.0.sdk
+			MacOSX11.1.sdk
+			MacOSX11.3.sdk
 		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
