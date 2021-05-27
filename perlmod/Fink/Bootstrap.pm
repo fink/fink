@@ -269,7 +269,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin20\.[0-3]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "11.0";
-	} elsif ($host =~ /^i386-apple-darwin20\.[4-5]/) {
+	} elsif ($host =~ /^i386-apple-darwin20\.[4-6]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "11.3";
 	} elsif ($host =~ /^i386-apple-darwin20\./) {
