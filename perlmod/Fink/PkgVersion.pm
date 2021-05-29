@@ -5720,57 +5720,57 @@ sub get_perl_dir_arch {
 	###
 	my $perlcmd;
 	if ($perlversion) {
-		if ((&version_cmp($perlversion, '>=',  "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
+		if ((&version_cmp($perlversion, '>=', "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
 			### FIXME: instead of hardcoded expectation of system-perl
 			### perl kernel, check if matches %v of system-perl, then
 			###   $perlversion =~ /(5\.\d+)\.*/;
 			###   $perlcmd = "/usr/bin/arch -%m perl$1";
-			if ($perlversion eq  "5.12.3" and Fink::Services::get_kernel_vers() eq '11') {
+			if ($perlversion eq "5.12.3" and Fink::Services::get_kernel_vers() eq '11') {
 				# 10.7 system-perl is 5.12.3, but the only supplied
 				# interpreter is /usr/bin/perl5.12 (not perl5.12.3).
 				$perlcmd = "/usr/bin/arch -%m perl5.12";
-			} elsif ($perlversion eq  "5.12.4" and Fink::Services::get_kernel_vers() eq '12') {
+			} elsif ($perlversion eq "5.12.4" and Fink::Services::get_kernel_vers() eq '12') {
 				# 10.8 system-perl is 5.12.4, but the only supplied
 				# interpreter is /usr/bin/perl5.12 (not perl5.12.4).
 				$perlcmd = "/usr/bin/arch -%m perl5.12";
-			} elsif ($perlversion eq  "5.16.2" and Fink::Services::get_kernel_vers() eq '13') {
+			} elsif ($perlversion eq "5.16.2" and Fink::Services::get_kernel_vers() eq '13') {
 				# 10.9 system-perl is 5.16.2, but the only supplied
 				# interpreter is /usr/bin/perl5.16 (not perl5.16.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.16";
-			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '14') {
+			} elsif ($perlversion eq "5.18.2" and Fink::Services::get_kernel_vers() eq '14') {
 				# 10.10 system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
-			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '15') {
+			} elsif ($perlversion eq "5.18.2" and Fink::Services::get_kernel_vers() eq '15') {
 				# 10.11 system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
-			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '16') {
+			} elsif ($perlversion eq "5.18.2" and Fink::Services::get_kernel_vers() eq '16') {
 				# 10.12 system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
-			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '17') {
+			} elsif ($perlversion eq "5.18.2" and Fink::Services::get_kernel_vers() eq '17') {
 				# 10.13 system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
-			} elsif ($perlversion eq  "5.18.2" and Fink::Services::get_kernel_vers() eq '18' and Fink::Services::get_kernel_vers_minor() le '5') {
+			} elsif ($perlversion eq "5.18.2" and Fink::Services::get_kernel_vers() eq '18' and Fink::Services::get_kernel_vers_minor() le '5') {
 				# 10.14.[0-4] system-perl is 5.18.2, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
-			} elsif ($perlversion eq  "5.18.4" and Fink::Services::get_kernel_vers() eq '18' and Fink::Services::get_kernel_vers_minor() ge '6') {
+			} elsif ($perlversion eq "5.18.4" and Fink::Services::get_kernel_vers() eq '18' and Fink::Services::get_kernel_vers_minor() ge '6') {
 				# 10.14.5 system-perl is 5.18.4, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.4)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
-			} elsif ($perlversion eq  "5.18.4" and Fink::Services::get_kernel_vers() eq '19') {
+			} elsif ($perlversion eq "5.18.4" and Fink::Services::get_kernel_vers() eq '19') {
 				# 10.15 system-perl is 5.18.4, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.4)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
-			} elsif ($perlversion eq  "5.28.2" and Fink::Services::get_kernel_vers() eq '20' and Fink::Services::get_kernel_vers_minor() le '3') {
+			} elsif ($perlversion eq "5.28.2" and Fink::Services::get_kernel_vers() eq '20' and Fink::Services::get_kernel_vers_minor() le '3') {
 				# 11.0.[0-2] system-perl is 5.28.2, but the only supplied
 				# interpreter is /usr/bin/perl5.28 (not perl5.28.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.28";
-			} elsif ($perlversion eq  "5.30.2" and Fink::Services::get_kernel_vers() eq '20' and Fink::Services::get_kernel_vers_minor() ge '4') {
+			} elsif ($perlversion eq "5.30.2" and Fink::Services::get_kernel_vers() eq '20' and Fink::Services::get_kernel_vers_minor() ge '4') {
 				# 11.3 system-perl is 5.30.2, but the only supplied
 				# interpreter is /usr/bin/perl5.30 (not perl5.30.2)
 				$perlcmd = "/usr/bin/arch -%m perl5.30";
