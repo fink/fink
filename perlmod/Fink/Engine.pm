@@ -633,7 +633,7 @@ sub do_real_list {
 
 		foreach my $pname (sort @selected) {
 			my $package = Fink::Package->package_by_name($pname);
-
+			next unless defined $package; # package-name that doesn't exist (via parsing a dep-tree)
 			# Look only in versions the user should see. noload
 			my @pvs = _user_visible_versions($package->get_all_versions(1));
 			my @provs = _user_visible_versions($package->get_all_providers( no_load => 1 ));
