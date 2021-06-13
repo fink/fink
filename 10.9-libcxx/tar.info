@@ -5,7 +5,6 @@ Essential: yes
 Conflicts: dpkg (<= 1.10.21-1244)
 #Breaks: dpkg (<= 1.10.21-1244)
 Depends: <<
-	dpkg (>> 1.10.21-1244) | dpkg-bootstrap,
 	base-files,
 	bzip2,
 	gzip,

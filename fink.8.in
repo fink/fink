@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.Dd November 2015
+.Dd August 2020
 .Dt FINK 8
 .Sh NAME
 .Nm fink
@@ -18,7 +18,7 @@
 .Sh DESCRIPTION
 .Nm
 is a package management system that aims to bring the full world
-of GNU and other common Open Source software to Darwin and Mac OS X.
+of GNU and other common Open Source software to Darwin and macOS.
 .Pp
 With the help of
 .Xr dpkg 8

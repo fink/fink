@@ -1,0 +1,42 @@
+diff -Nurd binutils-2.22/bfd/bfd-in.h binutils-2.22-patched/bfd/bfd-in.h
+--- binutils-2.22/bfd/bfd-in.h	2011-09-16 03:15:18.000000000 +0200
++++ binutils-2.22-patched/bfd/bfd-in.h	2012-06-06 00:47:28.000000000 +0200
+@@ -286,7 +286,7 @@
+ 
+ #define bfd_is_com_section(ptr) (((ptr)->flags & SEC_IS_COMMON) != 0)
+ 
+-#define bfd_set_section_vma(bfd, ptr, val) (((ptr)->vma = (ptr)->lma = (val)), ((ptr)->user_set_vma = TRUE), TRUE)
++#define bfd_set_section_vma(bfd, ptr, val) ((ptr)->vma = (ptr)->lma = (val)) || ((ptr)->user_set_vma = TRUE)
+ #define bfd_set_section_alignment(bfd, ptr, val) (((ptr)->alignment_power = (val)),TRUE)
+ #define bfd_set_section_userdata(bfd, ptr, val) (((ptr)->userdata = (val)),TRUE)
+ /* Find the address one past the end of SEC.  */
+@@ -514,7 +514,7 @@
+ 
+ #define bfd_get_symbol_leading_char(abfd) ((abfd)->xvec->symbol_leading_char)
+ 
+-#define bfd_set_cacheable(abfd,bool) (((abfd)->cacheable = bool), TRUE)
++#define bfd_set_cacheable(abfd,bool) ((abfd)->cacheable = bool)
+ 
+ extern bfd_boolean bfd_cache_close
+   (bfd *abfd);
+diff -Nurd binutils-2.22/bfd/bfd-in2.h binutils-2.22-patched/bfd/bfd-in2.h
+--- binutils-2.22/bfd/bfd-in2.h	2011-09-16 03:15:18.000000000 +0200
++++ binutils-2.22-patched/bfd/bfd-in2.h	2012-06-06 00:47:39.000000000 +0200
+@@ -293,7 +293,7 @@
+ 
+ #define bfd_is_com_section(ptr) (((ptr)->flags & SEC_IS_COMMON) != 0)
+ 
+-#define bfd_set_section_vma(bfd, ptr, val) (((ptr)->vma = (ptr)->lma = (val)), ((ptr)->user_set_vma = TRUE), TRUE)
++#define bfd_set_section_vma(bfd, ptr, val) ((ptr)->vma = (ptr)->lma = (val)) || ((ptr)->user_set_vma = TRUE)
+ #define bfd_set_section_alignment(bfd, ptr, val) (((ptr)->alignment_power = (val)),TRUE)
+ #define bfd_set_section_userdata(bfd, ptr, val) (((ptr)->userdata = (val)),TRUE)
+ /* Find the address one past the end of SEC.  */
+@@ -521,7 +521,7 @@
+ 
+ #define bfd_get_symbol_leading_char(abfd) ((abfd)->xvec->symbol_leading_char)
+ 
+-#define bfd_set_cacheable(abfd,bool) (((abfd)->cacheable = bool), TRUE)
++#define bfd_set_cacheable(abfd,bool) ((abfd)->cacheable = bool)
+ 
+ extern bfd_boolean bfd_cache_close
+   (bfd *abfd);

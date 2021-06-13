@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -383,7 +383,7 @@ sub download_cmd {
 
 	# if we would prefer wget (or didn't have curl available), check for wget
 	if (!$cmd or $download_method eq "wget") {
-		if (-x "$basepath/bin/wget") { # no /usr/bin/wget on any supported OS X
+		if (-x "$basepath/bin/wget") { # no /usr/bin/wget on any supported macOS
 			$cmd = "wget -U 'fink/". Fink::FinkVersion::fink_version() ."'";
 			if ($config->verbosity_level() >= 1) {
 				$cmd .= " --verbose";

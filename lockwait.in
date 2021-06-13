@@ -23,7 +23,7 @@ if ($> == 0) {
 	open LOCK, ">$lockfile" or die "lockwait: Can't open: $!";
 	
 	print STDERR "Locking it\n" if $debug;
-	### Note this pack() is specific  to OS X and Darwin!!!
+	### Note this pack() is specific to macOS and Darwin!!!
 	# fcntl.h declares:
 	#   struct flock {
 	#       off_t   l_start;    /* starting offset */

@@ -1,6 +1,6 @@
 Package: unzip
 Version: 6.0
-Revision: 1
+Revision: 2
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 License: BSD
 Essential: yes
@@ -11,10 +11,10 @@ CustomMirror: <<
 Source: mirror:custom:%n60.tgz
 Source-MD5: 62b490407489521db863b523a7f86375
 SourceDirectory: %n60
-BuildDepends: fink (>= 0.24.12)
+BuildDepends: fink (>= 0.30.0)
 InfoTest: TestScript: make -k check || exit 2
 DocFiles: BUGS INSTALL LICENSE README ToDo WHERE
-Homepage: http://www.info-zip.org/pub/infozip/UnZip.html
+Homepage: http://infozip.sourceforge.net/UnZip.html
 Description: Decompression compatible with pkunzip
 DescDetail: <<
 Zip is different from gzip in that it allows packing multiple files into a
@@ -24,6 +24,10 @@ pkunzip, and other Windows zip utilities.
 This utility is necessary to install several packages in a pure Darwin
 installation, as Darwin does not come with zip/unzip.
 <<
+DescPackaging: <<
+	Debian's patches are a separate patchfile because we can't use an .xz source
+	in an essential package (at this time).
+<<
 CompileScript: make -f unix/Makefile macosx D_USE_BZ2=-DUSE_BZIP2 L_BZ2=-lbz2
 InstallScript: make -f unix/Makefile install BINDIR=%i/bin MANDIR=%i/share/man/man1
 Suggests: zip
@@ -31,3 +35,5 @@ Suggests: zip
 # prevent 'struct direntry' name conflict
 PatchFile: %n.patch
 PatchFile-MD5: a7476ebe93118a849634d80f47e25478
+PatchFile2: %n-debian.patch
+PatchFile2-MD5: 16e5eaaa2e9a19538b0ef3b203207527

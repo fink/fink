@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -193,7 +193,7 @@ sub choose_misc {
 	my $v_distribution = version->parse('v'.$config->param("Distribution"));
 	if ($v_distribution >= version->parse("v10.7")) {
 		print_breaking(
-			"Note: As of the OS X 10.7 distribution, fink no longer ".
+			"Note: As of the Mac OS X 10.7 distribution, fink no longer ".
 			"has a separate \"unstable\" tree. All development and ".
 			"releases happen in the \"stable\" tree, the only public ".
 			"tree that exists."

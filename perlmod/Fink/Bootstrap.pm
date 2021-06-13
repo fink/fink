@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -138,7 +138,7 @@ from postinstall.pl).  It defaults to the empty string.
 This function also warns the user about certain bad configurations, or
 incorrect versions of gcc.
 
-After every release of Mac OS X, fink should be tested against the new
+After every release of macOS, fink should be tested against the new
 release and then this function should be updated.
 
 Called by bootstrap and fink's postinstall.pl.
@@ -206,8 +206,8 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin13\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
-			 "guarantees.");
+			"of OS X might work with Fink, but there are no " .
+			"guarantees.");
 		$distribution = "10.9";
 	} elsif ($host =~ /^i386-apple-darwin14\.[0-5]/) {
 		&print_breaking("This system is supported and tested.");
@@ -215,8 +215,8 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin14\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
-			 "guarantees.");
+			"of OS X might work with Fink, but there are no " .
+			"guarantees.");
 		$distribution = "10.10";
 	} elsif ($host =~ /^i386-apple-darwin15\.[0-6]/) {
 		&print_breaking("This system is supported and tested.");
@@ -224,7 +224,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin15\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of OS X might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.11";
 	} elsif ($host =~ /^i386-apple-darwin16\.[0-7]/) {
@@ -233,7 +233,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin16\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.12";
 	} elsif ($host =~ /^i386-apple-darwin17\.[0-7]/) {
@@ -242,7 +242,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin17\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.13";
 	} elsif ($host =~ /^i386-apple-darwin18\.[0-5]/) {
@@ -254,7 +254,7 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin18\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.14.5";
 	} elsif ($host =~ /^i386-apple-darwin19\.[0-6]/) {
@@ -263,13 +263,28 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin19\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10.15";
+	} elsif ($host =~ /^i386-apple-darwin20\.[0-4]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "11.0";
+	} elsif ($host =~ /^i386-apple-darwin20\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of macOS might work with Fink, but there are no " .
+			"guarantees.");
+		$distribution = "11.0";
+	} elsif ($host =~ /^i386-apple-darwin2(\d+)\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of macOS might work with Fink, but there are no " .
+			"guarantees.");
+		$distribution = "11." . ($1-1);
 	} elsif ($host =~ /^i386-apple-darwin(\d+)\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
-			"of Mac OS X might work with Fink, but there are no " .
+			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "10." . ($1-4);
 	} else {
@@ -437,14 +452,16 @@ sub additional_packages {
 # way, we don't risk running out of sync.
 
 	my @addlist = (
-		"apt",
-		"apt-shlibs",
-		"apt-dev",
 		"bzip2-dev",
+		"expat1",
 		"gettext-bin",
+		"gettext-tools",
 		"libgettext8-dev",
 		"libiconv-dev",
+		"liblzma5",
 		"libncurses5",
+		"libncursesw5",
+		"libncursesw5-shlibs",
 	);
 
 	return \@addlist;
@@ -476,6 +493,7 @@ sub is_perl_supported {
 	} elsif ("$]" == "5.016002") {
 	} elsif ("$]" == "5.018002") {
 	} elsif ("$]" == "5.018004") {
+	} elsif ("$]" == "5.028002") {
 	} else {
 		# unsupported version of perl
 		return 0;
@@ -515,9 +533,16 @@ sub bootstrap1 {
 	}
 	mkdir_p "$bsbase/bin", "$bsbase/sbin", "$bsbase/lib";
 
+	# copy f-v-p bootstrap
+	my $cmd = "cp fink-virtual-pkgs-bootstrap $bsbase/bin/fink-virtual-pkgs";
+	if (&execute($cmd)) {
+		die "ERROR: Can't install f-v-p.\n";
+	}
+
 	# create empty dpkg database
 	mkdir_p "$basepath/var/lib/dpkg";
 	touch "$basepath/var/lib/dpkg/status",
+	      "$basepath/var/lib/dpkg/status-fink",
 	      "$basepath/var/lib/dpkg/available",
 	      "$basepath/var/lib/dpkg/diversions";
 
@@ -1100,6 +1125,7 @@ sub get_selfupdatetrees {
 		"10.14" => "10.9-libcxx",
 		"10.14.5" => "10.9-libcxx",
 		"10.15" => "10.9-libcxx",
+		"11.0" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};

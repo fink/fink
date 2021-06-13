@@ -3,7 +3,7 @@
 # Fink::Scanpackages module
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2006-2016 The Fink Package Manager Team
+# Copyright (c) 2006-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -631,7 +631,7 @@ if (exists &Fink::Services::lock_wait) {
 	require Fcntl;
 	*_lock = sub {
 		open my $fh, '+>>', $_[0] or return 0;
-		# OS X specific!
+		# macOS specific!
 		my $struct_flock = pack("lllliss", (0, 0), (0, 0), 0,
 			&Fcntl::F_WRLCK, &Fcntl::SEEK_SET);
 		unless (fcntl($fh, &Fcntl::F_SETLK, $struct_flock)) { # No waiting

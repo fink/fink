@@ -173,5 +173,9 @@ our build system.
  
  https://stackoverflow.com/questions/24288691/
  why-does-hexadecimal-floating-point-need-to-have-a-specified-exponent
+
+2020-09-30 Hanspeter Niederstrasser
+* Bump included gperf to latest 3.1 to build with Xcode11 (avoid
+  implicit declarations)
 <<
 Homepage: http://www.gnu.org/software/libiconv/

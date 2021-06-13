@@ -2,7 +2,7 @@
 #
 # fink-virtual-pkgs
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,10 +22,13 @@
 require 5.008_001;  # perl 5.8.1 or newer required
 use strict;
 use Getopt::Long;
+use File::Temp qw/ tempfile /;
 use Fcntl;
 
 my $standalone = 0;
-my $basepath = '@BASEPATH@';
+my $basepath = "@BASEPATH@";
+my $libpath = "@LIBPATH@";
+my $tmpfile = 0;
 my $config;
 
 our $VERSION = 1.28;
@@ -38,26 +41,38 @@ my %options =
 		"apt" => 0,
 		"debug" => 0,
 		"dpkg" => 0,
+		"outfile" => undef,
    );
 GetOptions(
 	'apt|a' => \$options{apt},
 	'debug' => \$options{debug},
 	'dpkg|d' => \$options{dpkg},
+	'outfile|o=s' => \$options{outfile},
 	'help|h' => \&usage,
 	'version|v' => \&version,
 	) or die "Unknown option\n";
-if ($options{dpkg} and $options{apt}) { die "Can only specify one option dpkg or apt\n" }
-if ($options{apt}) {
-	sysopen(FH,'/tmp/finkaptstatus', O_WRONLY | O_EXCL | O_CREAT) || die "Can not open file /tmp/finkaptstatus for writing: $!\n";
+if ($options{dpkg} and $options{apt}) {
+	die "Can only specify one option dpkg or apt\n";
+}
+if (defined $options{outfile}) {
+	# "-" as explicit request for stdout
+	undef $options{outfile} if $options{outfile} eq '-';
+} else {
+	# legacy default behavior for apt mode
+	$options{outfile} = '/tmp/finkaptstatus' if $options{apt};
+}
+if (defined $options{outfile}) {
+	$tmpfile = tempfile();
+	sysopen(FH, $tmpfile, O_WRONLY | O_EXCL | O_CREAT) || die "Can not open file $tmpfile for writing: $!\n";
 	select FH;
-    }
-if ($standalone == 0)
-{
+}
+if ($standalone == 0) {
 	$dlist = Fink::VirtPackage->list(%options);
 	foreach $pkgname (sort keys %$dlist) {
 		$hash = $dlist->{$pkgname};
+		next unless (exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+virtual$/i);
 		if ($options{dpkg}) {
-			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+installed$/i) {
+			if (@versions = parse_fullversion($hash->{version}) and exists $hash->{status} and $hash->{status} =~ /^\S+\s+ok\s+virtual$/i) {
 				# columns: package, epoch, version, revision
 				printf "%s\t%lu\t%s\t%s\n",$hash->{package},$versions[0],$versions[1],$versions[2];
 				# for provides we tell dpkg about them with the version as zero
@@ -115,7 +130,7 @@ if ($standalone == 0)
 }
 else
 {
-# We are running without fink modules, so just kernel and Mac OS X pkgs
+# We are running without fink modules, so just kernel and macOS pkgs
 	my $macosx_version = 0;
 	if (-x "/usr/bin/sw_vers") {
 		open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
@@ -140,19 +155,23 @@ else
 	else
 	{
 		print "Package: ".lc((uname())[0])."\n";
-		print "Status: install ok installed\n";
+		print "Status: install ok virtual\n";
 		print "Version: ".lc((uname())[2])."-1\n", ;
 		print "Provides: kernel\n\n";
 		if ($macosx_version ne 0) {
 			print "Package: macosx\n";
-			print "Status: install ok installed\n";
+			print "Status: install ok virtual\n";
 			print "Version: ".$macosx_version."-1\n", ;
 		}
 	}
 }
-if ($options{apt}) {
+if (defined $options{outfile}) {
 	select STDOUT;
 	close FH;
+
+	if ($tmpfile) {
+		rename $tmpfile, $options{outfile} || die "Can not rename $tmpfile to $options{outfile}: $!\n";
+	}
 }
 
 sub version {
@@ -169,11 +188,12 @@ sub version {
 
 sub usage {
 	print <<END;
-usage: $0 [--debug] [-a|--apt] [-d|--dpkg] [-h|--help] [-v|--version]
+usage: $0 [--debug] [-a|--apt] [-d|--dpkg] [-o|--outfile <filename>] [-h|--help] [-v|--version]
 
 	--debug       Print debugging info to STDERR
 	-a/--apt      [called by apt, for internal use only]
 	-d/--dpkg     [called by dpkg, for internal use only]
+	-o/--outfile  Send output to given filename ("-" to force stdout)
 	-h/--help     This help
 	-v/--version  Print the version
 
@@ -184,9 +204,9 @@ END
 sub UseFinkModules {
 	# Be careful about using fink modules
 	eval { 
-        die unless -d "$basepath/lib/perl5";
+        die unless -d "$libpath";
         require lib;
-        import lib "$basepath/lib/perl5";
+        import lib "$libpath";
 
 		require Fink::FinkVersion;
 		require Fink::VirtPackage;

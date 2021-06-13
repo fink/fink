@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1098,6 +1098,12 @@ else implicitly by certain Type: field tokens.
 sub get_defaultscript_type {
 	my $self = shift;
 
+	my $ptype = '';
+	if ($self->has_parent) {
+		my $parent = $self->get_parent;
+		$ptype = $parent->get_defaultscript_type;
+	}
+
 	if (!exists $self->{_defaultscript_type}) {
 		# Cached because if we did it once, we are probably going to
 		# do it again for for each phase of the build process.
@@ -1106,7 +1112,7 @@ sub get_defaultscript_type {
 			# first try explicit DefaultScript: control
 			$type = $self->param('DefaultScript');
 
-			unless ($type =~ /^(autotools|makemaker|ruby|modulebuild)$/i) {
+			unless ($type =~ /^(autotools|makemaker|ruby|modulebuild|debhelper)$/i) {
 				# don't fall through to unintended if typo, etc.
 				die "this version of fink does not know how to handle DefaultScript:$type to build package ".$self->get_fullname()."\n";
 			}
@@ -1118,6 +1124,8 @@ sub get_defaultscript_type {
 			# is data present only in the .info
 
 			$type = lc $type;	# canonical lowercase
+		} elsif ($ptype eq 'debhelper') {
+			$type = $ptype;
 		} else {
 			# otherwise fall back to legacy Type: control
 			if ($self->is_type('perl')) {
@@ -1160,6 +1168,13 @@ sub get_script {
 			$default_script .= "/usr/bin/patch -p1 < \%{PatchFile$suffix}\n";
 		}
 
+		my $type = $self->get_defaultscript_type();
+		if ($type eq 'debhelper') {
+			$default_script =
+				"perl -pi -e 's,(^dh_|[ \t]+dh_)(gencontrol|md5sums|builddeb|usrlocal|testroot),#\$1\$2,g' debian/rules\n" .
+				"BASE=\$(echo %p | sed -e 's,/,,'); for i in `find debian -type f`; do perl -pi -e 's,((['\"'\"'\"/]+)usr(['\"'\"'\"/]+)|(['\"'\"'\"/]+)usr|usr(['\"'\"'\"/]+)|usr/|/usr|([\\s\\t]+)usr),\$6\$2\$4'\"\${BASE}\"'\$5\$3,g' \$i; perl -pi -e 's,((['\"'\"'\"/]+)etc(['\"'\"'\"/]+)|(['\"'\"'\"/]+)etc|etc(['\"'\"'\"/]+)|etc/|/etc|([\\s\\t]+)etc),\$6\$2\$4'\"\${BASE}\"'/etc\$5\$3,g' \$i; perl -pi -e 's,((['\"'\"'\"/]+)var(['\"'\"'\"/]+)|(['\"'\"'\"/]+)var|var(['\"'\"'\"/]+)|var/|/var|([\\s\\t]+)var),\$6\$2\$4'\"\${BASE}\"'/var\$5\$3,g' \$i; done; \n";
+		}
+
 	} elsif ($field eq 'compilescript') {
 		return "" if $self->has_parent;  # shortcut: SplitOffs do not compile
 		return "" if $self->is_type('bundle'); # Type:bundle never compile
@@ -1195,6 +1210,18 @@ sub get_script {
 			$default_script =
 				"$rubycmd extconf.rb\n".
 				"/usr/bin/make\n";
+		} elsif ($type eq 'debhelper') {
+			# If UseMaxBuildJobs is absent or set to True, turn on MaxBuildJobs
+			my $mbj = 1;
+			if ((!$self->has_param('UseMaxBuildJobs') || $self->param_boolean('UseMaxBuildJobs')) && $config->has_param('MaxBuildJobs')) {
+				if ($mbj =~ /^\d+$/ && $mbj > 0) {
+					$mbj = $config->param('MaxBuildJobs');
+				} else {
+					warn "Ignoring invalid MaxBuildJobs value in fink.conf: " .
+						"$mbj is not a positive integer\n";
+				}
+			}
+			$default_script = "DEB_BUILD_OPTIONS='nocheck parallel=" . $mbj . "' debian/rules binary\n";
 		} elsif ($self->is_type('dummy')) {
 			$default_script = "";
 		} else {
@@ -1233,6 +1260,15 @@ sub get_script {
 		} elsif ($type eq 'modulebuild') {
 			$default_script =
 				"./Build install\n";
+		} elsif ($type eq 'debhelper' && $self->has_parent) {
+			$field_value = $self->param_default($field, '%{default_script}');
+			$default_script =
+				"/bin/cp -R debian/%n%p/* %i\n" .
+				"/bin/cp debian/%n/DEBIAN/* %d/DEBIAN/ 2>/dev/null || :\n";
+		} elsif ($type eq 'debhelper') {
+			$default_script =
+				"/bin/cp -R debian/%N%p/* %i\n" .
+				"/bin/cp debian/%N/DEBIAN/* %d/DEBIAN/ 2>/dev/null || :\n";
 		} elsif ($self->is_type('bundle')) {
 			$default_script =
 				"/bin/mkdir -p \%i/share/doc/\%n\n".
@@ -1255,6 +1291,8 @@ sub get_script {
 		} elsif ($type eq 'modulebuild' && !$self->param_boolean('NoPerlTests')) {
 			$default_script =
 				"./Build test || exit 2\n";
+		} elsif ($type eq 'debhelper') {
+			$default_script = "dh_auto_test || exit 2\n";
 		}
 
 	} else {
@@ -4005,6 +4043,88 @@ sub phase_install {
 		$splitoff->phase_install(1);
 	}
 
+	chdir "$buildpath";
+	my $destdir = $self->get_install_directory();
+	my $ddir = basename $destdir;
+
+	if (not -d "$destdir/DEBIAN") {
+		if (not mkdir_p "$destdir/DEBIAN") {
+			my $error = "can't create directory for control files for package ".$self->get_fullname();
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		}
+	}
+
+	### create debconf script and templates (needs to happen before %b rm)
+	if ($self->has_param("Debconf")) {
+		my $sub_properties = &read_properties_var(
+			"Debconf of ".$self->get_fullname,
+			$self->param_default('Debconf', ''),
+			{remove_space => 1}
+		);
+
+		# write out config script
+		if (exists $sub_properties->{configscript}) {
+			my $scriptbody = &expand_percent($sub_properties->{configscript}, $self->{_expand}, $self->get_info_filename." \"ConfigScript\"");
+			my $scriptfile = "$destdir/DEBIAN/config";
+
+			print "Writing debconf config script...\n";
+
+			my $write_okay;
+			# NB: if change the automatic #! line here, must adjust
+			#     validator
+			if ( $write_okay = open(SCRIPT,">$scriptfile") ) {
+				my $pkgname = $self->get_name();
+				print SCRIPT <<EOF;
+#!/bin/sh
+# debconf config script for package $pkgname, auto-created by fink
+
+set -e
+
+. $basepath/share/debconf/confmodule
+
+$scriptbody
+
+exit 0
+EOF
+				close(SCRIPT) or $write_okay = 0;
+				chmod 0755, $scriptfile;
+			}
+			if (not $write_okay) {
+				my $error = "can't write debconf config script for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			}
+		}
+
+		if (exists $sub_properties->{templatesfile}) {
+			# if PO then translate with po-debconf before adding
+			# templates
+			my $templatesfile = "$destdir/DEBIAN/templates";
+			my $templatesfileexpanded = &expand_percent($sub_properties->{templatesfile}, $self->{_expand}, $self->get_info_filename." \"TemplatesFile\"");
+			if (exists $sub_properties->{podirectory} && -e "$basepath/bin/po2debconf") {
+				my $podirectoryexpanded = &expand_percent($sub_properties->{podirectory}, $self->{_expand}, $self->get_info_filename." \"PODirectory\"");
+				print "Translating debconf templates...\n";
+				$cmd = "po2debconf --podir=$podirectoryexpanded --output $templatesfile $templatesfileexpanded";
+				if (&execute($cmd)) {
+					my $error = "can't translate templates file for ".$self->get_fullname().": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			} else {
+				$cmd = "cp $templatesfileexpanded $templatesfile";
+				if (&execute($cmd)) {
+					my $error = "can't create templates file for ".$self->get_fullname().": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			}
+
+			print "Writing debconf templates...\n";
+			chmod 0644, $templatesfile;
+		}
+	}
+
 	### remove build dir
 
 	if (not $do_splitoff) {
@@ -4053,6 +4173,9 @@ sub phase_build {
 			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
 			die $error . "\n";
 		}
+	} else {
+		### check perms as debconf could have created this during
+		### the install phase and could have been "nobody"
 	}
 
 	# switch everything back to root ownership if we were --build-as-nobody
@@ -4175,6 +4298,41 @@ EOF
 		die $error . "\n";
 	}
 
+	### triggers file
+
+	if (length(my $triggersbody = $self->get_triggers_fields)) {
+		chomp $triggersbody;
+
+# Since this is also used in shlibs, maybe this should be moved to a common
+# sub function or instead of shlibs_error or triggers_error, just fpb_error
+# and reuse it
+		my $triggers_error = sub {
+			my $self = shift;
+			my $type = shift;
+			my $error = "can't write to $type file for " . $self->get_fullname() . ": $!";
+			$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+			die $error . "\n";
+		};
+
+		print "Writing triggers file...\n";
+
+# FIXME:
+#    * Make sure each interest/activate is actutally in fink base
+
+		my @triggerlines;
+		for my $line (split(/\n/, $triggersbody)) {
+			push @triggerlines, $line."\n";
+		}
+
+		if (@triggerlines) {
+			my $triggersfile = IO::Handle->new();
+			open $triggersfile, ">$destdir/DEBIAN/triggers" or &{$triggers_error}($self, 'triggers');
+			print $triggersfile @triggerlines;
+			close $triggersfile or &{$triggers_error}($self, 'triggers');
+			chmod 0644, "$destdir/DEBIAN/triggers";
+		}
+	}
+
 	### create scripts as neccessary
 	## TODO: refactor more of this stuff to fink-instscripts
 
@@ -4264,7 +4422,7 @@ EOF
 		$scriptbody{postrm}   .= $scriptbody;
 	}
 
-	# add Fink symlink Code for .app OS X applications
+	# add Fink symlink Code for .app macOS applications
 	if ($self->has_param("AppBundles")) {
 		# shell-escape app names and parse down to just the .app dirname
 		my @apps = map { s/\'/\\\'/gsi; basename($_) } split(/\s+/, $self->param("AppBundles"));
@@ -4400,6 +4558,37 @@ EOF
 			print $shlibsfile @shlibslines;
 			close $shlibsfile or &{$shlibs_error}($self, 'shlibs');
 			chmod 0644, "$destdir/DEBIAN/shlibs";
+
+			my @lib_files;
+			my $shlib_ver = "";
+			my $shlib_name = "";
+			foreach my $shlibsline (@shlibslines) {
+				chomp $shlibsline;
+				my @shlib_parts;
+
+				# strip off leading/trailing whitespace
+				$shlibsline =~ m/^\s*(.*?)\s*$/;
+				next unless $shlibsline =~ m/\S/;
+
+				@shlib_parts = split ' ', $shlibsline, 3;
+
+				push(@lib_files, $destdir.$shlib_parts[0]);
+
+				# only need to run till set (hopefully once)
+				if ($shlib_name eq "" or $shlib_ver eq "") {
+					my @shlib_deps = split /\s*\|\s*/, $shlib_parts[2], -1;
+					# we need to weed through this and pick one now
+					foreach my $shlib_dep (@shlib_deps) {
+						if ($shlib_dep =~ m/(\S)\s+\(\s*[>|<]?=[>|<]?\s*([0-9.-]+)\s*\)/) {
+							if ($1 eq $self->get_name()) {
+								$shlib_name = $1;
+								$shlib_ver = $2;
+							}
+						}
+					}
+				}
+
+			}
 		}
 		if (@privateshlibslines) {
 			my $shlibsfile = IO::Handle->new();
@@ -4409,6 +4598,77 @@ EOF
 			chmod 0644, "$destdir/DEBIAN/private-shlibs";
 		}
 
+		### Create symbol file
+
+		chomp(my $otool = `which otool 2>/dev/null`);
+		undef $otool unless -x $otool;
+		chomp(my $otool64 = `which otool64 2>/dev/null`); # older OSX has separate tool for 64-bit
+		undef $otool64 unless -x $otool64;		  # binaries (otool itself cannot handle them)
+		my @symbol_files;
+		File::Find::find({
+			preprocess => sub {
+				# Don't descend into the .deb control directory
+				return () if $File::Find::dir eq "$destdir/DEBIAN";
+				return @_;
+			},
+			wanted => sub {
+				if (-f $_ && ! -l $_ && $_ =~ m/\.dylib$/) {
+					if (defined $otool) {
+						if (open (OTOOL, "$otool -L '$_' |")) {
+							<OTOOL>; # skip the first line
+							my ($install_name, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+							close (OTOOL);
+
+							if (!defined $install_name or !defined $compat_version) {
+								if (defined $otool64) {
+									if (open (OTOOL, "$otool64 -L '$_' |")) {
+										<OTOOL>; # skip the first line
+										($install_name, $compat_version) = <OTOOL> =~ /^\s*(\/.+?)\s*\(compatibility version ([\d\.]+)/;
+										close (OTOOL);
+									}
+								}
+							}
+							if (defined $install_name) {
+								if (grep {/^\s*$install_name\s/} @shlibslines) {
+									push(@symbol_files, $File::Find::name);
+								}
+							}
+						} else {
+							print "Warning: otool -L failed on $_.\n";
+						}
+					}
+				}
+			},
+		}, $destdir
+		);
+
+		# make sure we got some libs and a newer dpkg
+		if (@symbol_files && -e "$basepath/bin/dpkg-gensymbols") {
+			$cmd = "dpkg-gensymbols -q -p".$self->get_name();
+
+			# check for user symbols from info file
+			# FIXME NOT IMPLEMENTED
+			if ($self->has_param("Symbols")) {
+				# Create temp file with the user content
+				# FIXME
+				#my $symbols = $self->has_param("Symbols");
+				#$cmd .= " -I$symbols";
+			}
+
+			my $libs_string = "-e".join(" -e", @symbol_files);
+			$cmd .= " -P$destdir -v".$self->get_version()." -O$destdir/DEBIAN/symbols $libs_string";
+
+			print "Writing symbols file...\n";
+			if (&execute($cmd)) {
+				my $error = "can't create symbols file for ".$self->get_fullname().": $!";
+				$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+				die $error . "\n";
+			} else {
+				# should check the size here, if 0 then
+				# remove it
+				chmod 0644, "$destdir/DEBIAN/symbols";
+			}
+		}
 	}
 
 	### config file list
@@ -4473,6 +4733,53 @@ EOF
 		}
 	}
 
+	### Check and modify .la files, must happen before md5sums file
+	### creation
+	File::Find::find({
+		preprocess => sub {
+			# Don't descend into the .deb control directory
+			return () if $File::Find::dir eq "$destdir/DEBIAN";
+			return @_;
+
+		},
+		wanted => sub {
+			if (-f $_ && ! -l $_ && $_ =~ m/\.la$/) {
+				print "Reading ".$_.".\n";
+				my $filechanged = 0;
+				if ( open(LA,"<$File::Find::name") ) {
+					my @lalines;
+					while (my $laline = <LA>) {
+						if ($laline =~ m/^dependency_libs=/) {
+							print "Clearing dependency_lib from ".$_.".\n";
+							$laline =~ s/^(dependency_libs)=.*/$1=''/;
+							$filechanged = 1;
+						}
+						push(@lalines, $laline);
+					}
+					close(LA) or die "can't clear dependency_libs of ".$_.": $!\n";
+					if ($filechanged) {
+						print "Writing new ".$_.".\n";
+						if ( open(NEWLA,">$File::Find::name") ) {
+							foreach my $newlaline (@lalines) {
+								print NEWLA $newlaline;
+							}
+							close(NEWLA) or die "can't clear dependency_libs of ".$_.": $!\n";
+						} else {
+							my $error = "can't clear dependency_libs of ".$_.": $!";
+							$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+							die $error . "\n";
+						}
+					}
+				} else {
+					my $error = "can't clear dependency_libs of ".$_.": $!";
+					$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
+					die $error . "\n";
+				}
+			}
+		},
+	}, $destdir
+	);
+
 	### Create md5sum for deb, this is done as part of the debian package
 	### policy and so that tools like debsums can check the consistancy
 	### of installed file, this will also help for trouble shooting, since
@@ -4532,9 +4839,13 @@ EOF
 		Fink::Config::set_options(\%saved_options);
 	}
 
+	# make sure fink and dpkg use gz compression for bindist upgrades
+	my $dpkgdebextra = ($parentpkgname eq 'fink' || $parentpkgname eq 'dpkg')
+		? ' -Zgzip'
+		: '';
 	# Set ENV so for tar on 10.9+, dpkg-deb calls tar and thus requires it
 	# as well.
-	$cmd = "env LANG=C LC_ALL=C dpkg-deb -b $ddir ".$self->get_debpath();
+	$cmd = "env LANG=C LC_ALL=C dpkg-deb".$dpkgdebextra." -b $ddir ".$self->get_debpath();
 	if (&execute($cmd)) {
 		my $error = "can't create package ".$self->get_debname();
 		$notifier->notify(event => 'finkPackageBuildFailed', description => $error);
@@ -5092,12 +5403,17 @@ sub get_env {
 		"LDFLAGS"                  => "-L\%p/lib",
 	);
 
-# for building 64bit libraries, we change LDFLAGS:
-
+	# for building 64bit libraries, we change LDFLAGS:
 	if (exists $self->{_type_hash}->{"-64bit"}) {
 		if ($self->{_type_hash}->{"-64bit"} eq "-64bit") {
 			$defaults{"LDFLAGS"} = "-L\%p/\%lib -L\%p/lib";
 		}
+	}
+
+	# for dpkg 1.16.2+ and multiarch, we change LDFLAGS:
+	my $host_arch = Fink::Services::get_host_multiarch();
+	if (defined $host_arch) {
+		$defaults{"LDFLAGS"} = "-L\%p/lib/" . $host_arch . " -L\%p/lib";
 	}
 
 	# uncomment this to be able to use distcc -- not officially supported!
@@ -5450,6 +5766,10 @@ sub get_perl_dir_arch {
 				# 10.15 system-perl is 5.18.4, but the only supplied
 				# interpreter is /usr/bin/perl5.18 (not perl5.18.4)
 				$perlcmd = "/usr/bin/arch -%m perl5.18";
+			} elsif ($perlversion eq  "5.28.2" and Fink::Services::get_kernel_vers() eq '20') {
+				# 11.0 system-perl is 5.28.2, but the only supplied
+				# interpreter is /usr/bin/perl5.28 (not perl5.28.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.28";
 			}
 		} else {
 			$perlcmd = get_path('perl'.$perlversion);
@@ -5857,6 +6177,50 @@ sub get_shlibs_field {
 	$shlibs_cooked;
 }
 
+=item get_triggers_field
+
+	my $triggers_field = $pv->get_triggers_field;
+
+Returns a multiline string of the Triggers entries. The string will
+always be defined, but will be null if no entries, and every entry
+(even last) will have trailing newline.
+
+=cut
+
+sub get_triggers_fields {
+	my $self = shift;
+
+	my @triggertypes = (
+		"activate",
+		"activate-noawait",
+		"interest",
+		"interest-noawait",
+	);
+	
+	my $expand = $self->{_expand};
+	my $triggers_cooked = '';  # processed results
+	my $triggers = $self->param_default("Triggers", "");
+	my $trigger_properties = &read_properties_var(
+		"Triggers of ".$self->get_fullname,
+		$self->param_default('Triggers', ''), {remove_space => 1});
+	while (my($key, $val) = each(%$trigger_properties)) {
+		if (grep $_ eq lc($key), @triggertypes) {
+			my $triggertype = lc($key);
+			my $triggers_raw = &expand_percent($val, $expand, $self->get_info_filename." \"$val\"", 2);
+			$triggers_raw =~ s/\s+/ /g; # Make it one line
+			$triggers_raw = $self->conditional_space_list($triggers_raw,
+				ucfirst($triggertype)."Triggers of ".$self->get_fullname()." in ".$self->get_info_filename
+			);
+			foreach my $info_line (split /\s+/, $triggers_raw) {
+				next if $info_line =~ /^#/;  # skip comments
+				$info_line =~ /^\s*(.*?)\s*$/;  # strip off leading/trailing whitespace
+				$triggers_cooked .= "$triggertype $1\n" if length $1;
+			}
+		}
+	}
+	$triggers_cooked;
+}
+
 =item scanpackages
 
   scanpackages;
@@ -5871,7 +6235,7 @@ sub scanpackages {
 		my $autoscan = !$config->has_param("AutoScanpackages")
 			|| $config->param_boolean("AutoScanpackages");
 
-		if ($autoscan && apt_available) {
+		if ($autoscan) {
 			require Fink::Engine; # yuck
 			Fink::Engine::scanpackages({}, [ keys %built_trees ]);
 			Fink::Engine::aptget_update();

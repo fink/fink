@@ -41,6 +41,7 @@ clean:
 	rm -f fink
 	rm -f fink-dpkg-status-cleanup
 	rm -f fink-virtual-pkgs
+	rm -f fink-virtual-pkgs-bootstrap
 	rm -f fink-instscripts
 	rm -f fink-scanpackages
 	rm -f fink.8

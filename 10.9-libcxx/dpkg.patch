@@ -1,2863 +1,2041 @@
-diff -ruN dpkg-1.10.21.orig/Makefile.conf.in dpkg-1.10.21/Makefile.conf.in
---- dpkg-1.10.21.orig/Makefile.conf.in	2003-09-13 18:43:49.000000000 -0500
-+++ dpkg-1.10.21/Makefile.conf.in	2020-10-01 05:01:21.000000000 -0500
-@@ -60,15 +60,15 @@
- 
- CPPFLAGS		= @CPPFLAGS@
- LD			= @LD@
--LDFLAGS			= @LDFLAGS@ -L../lib -L../optlib
--LIBS			= @LIBS@ -ldpkg -lopt $(ZLIB_LIBS)
-+LDFLAGS			= @LDFLAGS@ -framework CoreFoundation
-+LIBS			= @LIBS@ ../lib/libdpkg.a ../optlib/libopt.a $(ZLIB_LIBS)
- 
- RANLIB			= @RANLIB@
- 
- DEFS			= @DEFS@ -D_GNU_SOURCE
--INCLUDE_CFLAGS		= -I$(top_srcdir)/include -I$(top_srcdir) -I$(srcdir) -I../include -I.. -I. -I$(top_srcdir)/optlib
-+INCLUDE_CFLAGS		= -I$(top_srcdir)/include -I$(top_srcdir) -I$(srcdir) -I../include -I.. -I. -I$(top_srcdir)/optlib -F/System/Library/Frameworks/CoreFoundation.framework
- 
--NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir)/intl -I../intl
-+NLS_CFLAGS		= -DLOCALEDIR=\"$(localedir)\"
- NLS_LIBS		= @INTLLIBS@ 
- 
- SSD_LIBS		= @SSD_LIBS@
-@@ -79,7 +79,7 @@
- ZLIB_LIBS		= @ZLIB_LIBS@
- ZLIB_LIBS_ALSO_STATIC	= @ZLIB_LIBS_ALSO_STATIC@
- 
--ALL_CFLAGS		= $(CPPFLAGS) $(CFLAGS) $(DEFS) $(NLS_CFLAGS) $(INCLUDE_CFLAGS) $(ZLIB_CFLAGS)
-+ALL_CFLAGS		= $(CFLAGS) $(DEFS) $(NLS_CFLAGS) $(INCLUDE_CFLAGS) $(ZLIB_CFLAGS) $(CPPFLAGS)
- ALL_CXXFLAGS		= $(ALL_CFLAGS) $(CXXFLAGS)
- 
- ALSO_STATIC		= @ALSO_STATIC@
-diff -ruN dpkg-1.10.21.orig/config.h.in dpkg-1.10.21/config.h.in
---- dpkg-1.10.21.orig/config.h.in	2004-04-25 13:01:02.000000000 -0500
-+++ dpkg-1.10.21/config.h.in	2020-10-01 05:18:32.000000000 -0500
-@@ -203,8 +203,15 @@
- #include <sys/cdefs.h>
- #endif
- 
--#ifdef HAVE_STDDEF_H
--#include <stddef.h>
-+#ifdef __PTRDIFF_TYPE__
-+# define PTR_INT_TYPE __PTRDIFF_TYPE__
-+#else
-+# ifdef HAVE_STDDEF_H
-+#  include <stddef.h>
-+#  define PTR_INT_TYPE ptrdiff_t
-+# else
-+#  define PTR_INT_TYPE long
-+# endif
- #endif
- 
- /* Use the definitions: */
-diff -ruN dpkg-1.10.21.orig/configure dpkg-1.10.21/configure
---- dpkg-1.10.21.orig/configure	2004-04-25 13:01:03.000000000 -0500
-+++ dpkg-1.10.21/configure	2020-10-01 05:32:01.000000000 -0500
-@@ -7974,6 +7974,7 @@
- cat >>conftest.$ac_ext <<_ACEOF
- /* end confdefs.h.  */
- $ac_includes_default
-+#include <stddef.h>
- int
- main ()
- {
-@@ -9241,6 +9242,7 @@
- cat >>conftest.$ac_ext <<_ACEOF
- /* end confdefs.h.  */
- 
-+#include <stdlib.h>
- #include <stdarg.h>
- main(){
- va_list v1,v2;
-diff -ruN dpkg-1.10.21.orig/dpkg-deb/Makefile.in dpkg-1.10.21/dpkg-deb/Makefile.in
---- dpkg-1.10.21.orig/dpkg-deb/Makefile.in	2002-05-19 23:40:29.000000000 -0500
-+++ dpkg-1.10.21/dpkg-deb/Makefile.in	2020-10-01 05:01:21.000000000 -0500
-@@ -51,5 +51,5 @@
- dpkg-deb-static: LDFLAGS += -static
- dpkg-deb-static: ZLIB_LIBS = $(ZLIB_LIBS_ALSO_STATIC)
- dpkg-deb dpkg-deb-static: $(OBJECTS) ../lib/libdpkg.a
--	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
-+	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
- 
-diff -ruN dpkg-1.10.21.orig/dpkg-deb/build.c dpkg-1.10.21/dpkg-deb/build.c
---- dpkg-1.10.21.orig/dpkg-deb/build.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/dpkg-deb/build.c	2020-10-01 05:01:21.000000000 -0500
-@@ -275,9 +275,11 @@
-       warns++;
-     }
-     for (field= checkedinfo->available.arbs; field; field= field->next) {
-+	  if (strncmp("BuildDependsOnly",field->name,16)) {
-       fprintf(stderr, _("warning, `%s' contains user-defined field `%s'\n"),
-               controlfile, field->name);
-       warns++;
-+	  }
-     }
-     checkversion(checkedinfo->available.version.version,"(upstream) version",&errs);
-     checkversion(checkedinfo->available.version.revision,"Debian revision",&errs);
-@@ -445,7 +447,7 @@
-     m_dup2(p1[0],0); close(p1[0]); close(p1[1]);
+diff -ruN dpkg-1.17.6.orig/dpkg-deb/build.c dpkg-1.17.6/dpkg-deb/build.c
+--- dpkg-1.17.6.orig/dpkg-deb/build.c	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/dpkg-deb/build.c	2013-06-22 20:26:06.000000000 -0600
+@@ -599,7 +599,7 @@
      m_dup2(p2[1],1); close(p2[0]); close(p2[1]);
-     if (chdir(directory)) ohshite(_("failed to chdir to `%.255s'"),directory);
--    execlp(TAR,"tar","-cf", "-", "-T", "-", "--null", "--no-recursion", (char*)0);
-+    execlp(TAR,"tar","-cf", "-", "--null", "--no-recursion", "-T", "-", (char*)0);
-     ohshite(_("failed to exec tar -cf"));
+     if (chdir(dir))
+       ohshite(_("failed to chdir to `%.255s'"), dir);
+-    execlp(TAR, "tar", "-cf", "-", "--format=gnu", "--null", "-T", "-", "--no-recursion", NULL);
++    execlp(TAR, "tar", "-cf", "-", "--format=gnu", "--null", "--no-recursion", "-T", "-", NULL);
+     ohshite(_("unable to execute %s (%s)"), "tar -cf", TAR);
    }
    close(p1[0]);
-diff -ruN dpkg-1.10.21.orig/dpkg-deb/dpkg-deb.1 dpkg-1.10.21/dpkg-deb/dpkg-deb.1
---- dpkg-1.10.21.orig/dpkg-deb/dpkg-deb.1	2001-08-01 19:59:31.000000000 -0500
-+++ dpkg-1.10.21/dpkg-deb/dpkg-deb.1	2020-10-01 05:01:21.000000000 -0500
-@@ -244,7 +244,8 @@
- Copyright (C)1995-1996
- by him and released under the GNU General Public Licence; there is NO
- WARRANTY.  See
--.B /usr/share/doc/dpkg/copyright
-+.B @PREFIX@/share/doc/dpkg/copyright
- and
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- for details.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/dpkg-deb/main.c dpkg-1.10.21/dpkg-deb/main.c
---- dpkg-1.10.21.orig/dpkg-deb/main.c	2004-04-24 17:18:29.000000000 -0500
-+++ dpkg-1.10.21/dpkg-deb/main.c	2020-10-01 19:47:59.000000000 -0500
-@@ -40,6 +40,7 @@
- 
- #include "dpkg-deb.h"
- 
-+void nffreeall();
- const char* showformat	= "${Package}\t${Version}\n";
- 
- static void printversion(void) {
-diff -ruN dpkg-1.10.21.orig/dselect/Makefile.in dpkg-1.10.21/dselect/Makefile.in
---- dpkg-1.10.21.orig/dselect/Makefile.in	2003-09-14 17:28:18.000000000 -0500
-+++ dpkg-1.10.21/dselect/Makefile.in	2020-10-01 05:01:21.000000000 -0500
-@@ -47,7 +47,7 @@
- 	done
- 
- dselect: $(OBJECTS) ../lib/libdpkg.a
--	$(CXX) $(LDFLAGS) -o $@ $(OBJECTS) $(CURSES_LIBS) $(LIBS) $(NLS_LIBS)
-+	$(CXX) $(LDFLAGS) $(EXEFLAGS) -o $@ $(OBJECTS) $(CURSES_LIBS) $(LIBS) $(NLS_LIBS)
- 
- basecmds.o: helpmsgs.h
- curkeys.o: curkeys.h
-diff -ruN dpkg-1.10.21.orig/dselect/dselect.8 dpkg-1.10.21/dselect/dselect.8
---- dpkg-1.10.21.orig/dselect/dselect.8	2003-09-13 20:49:08.000000000 -0500
-+++ dpkg-1.10.21/dselect/dselect.8	2020-10-01 05:01:21.000000000 -0500
-@@ -34,7 +34,7 @@
- of \fBdselect\fP or show additional information about the program.
- .SH OPTIONS 
- All options can be specified both on the commandline and in the \fBdselect\fP 
--configuration file \fI/etc/dpkg/dselect.cfg\fP. Each line in the 
-+configuration file \fI@PREFIX@/etc/dpkg/dselect.cfg\fP. Each line in the 
- configuration file is either an option (exactly the same as the
- commandline option but without leading dashes) or a comment (if it starts
- with a \fB#\fR).
-@@ -42,7 +42,7 @@
- .TP
- .B --admindir <directory>
- Changes the directory where the dpkg `status', `available' and similar
--files are located. This defaults to \fI/var/lib/dpkg\fP
-+files are located. This defaults to \fI@PREFIX@/var/lib/dpkg\fP
- and normally there shouldn't be any need to change it.
- .TP
- .B --debug <file> | -D<file>
-@@ -437,4 +437,5 @@
- .br
- This manual page was written by Juho Vuori <javuori@cc.helsinki.fi>,
- Josip Rodin and Joost kooij.
--
-+.br
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/dselect/main.cc dpkg-1.10.21/dselect/main.cc
---- dpkg-1.10.21.orig/dselect/main.cc	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/dselect/main.cc	2020-10-01 05:01:21.000000000 -0500
-@@ -43,6 +43,11 @@
- #include <dpkg-db.h>
- #include <version.h>
- #include <myopt.h>
-+/* FINK LOCAL begin */
-+#include <sys/utsname.h>
-+#include <CoreFoundation/CoreFoundation.h>
-+static void finkinit();
-+/* FINK LOCAL end */
- }
- #include "dselect.h"
- #include "bindings.h"
-@@ -466,6 +471,155 @@
-   return urqr_quitmenu;
-   /* fixme: check packages OK */
- }
-+/* FINK LOCAL begin */
-+extern "C" {
-+struct FinkVirtualPkgs {
-+  struct FinkVirtualPkgs *next;
-+  char *pkgname;
-+  struct versionrevision version;
-+};
+diff -ruN dpkg-1.17.6.orig/fink/buildflags.conf dpkg-1.17.6/fink/buildflags.conf
+--- dpkg-1.17.6.orig/fink/buildflags.conf	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/buildflags.conf	2013-06-22 20:26:06.000000000 -0600
+@@ -0,0 +1,30 @@
++# defaults
++APPEND CFLAGS -g -O2
++APPEND CXXFLAGS -g -O2
++APPEND FFLAGS -g -O2
 +
-+struct FinkVirtualPkgs *fink_virt_pkg = NULL;
-+}
-+static void finkinit()
++# debian stackprotector
++APPEND CFLAGS -fstack-protector         
++APPEND CXXFLAGS -fstack-protector         
++
++# debian pie
++APPEND CFLAGS -fPIE
++APPEND CXXFLAGS -fPIE
++APPEND LDFLAGS -fPIE -Wl,-pie
++
++# debian relro
++APPEND LDFLAGS -Wl,-read_only_stubs
++
++# debian bindnow
++APPEND LDFLAGS -Wl,-bind_at_load
++
++# debian fortify
++APPEND CPPFLAGS -D_FORTIFY_SOURCE=2
++
++# debian format
++PREPEND CFLAGS -Wformat -Werror=format-security
++PREPEND CXXFLAGS -Wformat -Werror=format-security
++
++# fink defaults
++PREPEND CPPFLAGS -I@FINKPREFIX@/include
++PREPEND LDFLAGS -L@FINKPREFIX@/lib
+diff -ruN dpkg-1.17.6.orig/fink/dpkg.cron.daily dpkg-1.17.6/fink/dpkg.cron.daily
+--- dpkg-1.17.6.orig/fink/dpkg.cron.daily	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/dpkg.cron.daily	2013-09-10 09:13:20.000000000 -0600
+@@ -0,0 +1,10 @@
++#!/bin/sh
++
++# Backup the 7 last versions of dpkg's status file
++if cd @FINKPREFIX@/var/backups ; then
++    if ! cmp -s dpkg.status.0 @FINKPREIFX@/var/lib/dpkg/status ; then
++            cp -p @FINKPREFIX@/var/lib/dpkg/status dpkg.status
++            savelog -c 7 dpkg.status >/dev/null
++    fi
++fi
++
+diff -ruN dpkg-1.17.6.orig/fink/md5sum dpkg-1.17.6/fink/md5sum
+--- dpkg-1.17.6.orig/fink/md5sum	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/md5sum	2013-05-28 08:30:00.000000000 -0600
+@@ -0,0 +1,322 @@
++#!/usr/bin/perl
++use strict;
++use warnings;
++
++## md5sum wrapper for Mac md5 tool ##
++# This wrapper should be installed in bin/md5sum. Since dpkg 1.10, md5sum was
++# removed, this script is intended to replace it for fink systems.
++#
++# Written by Sjors Gielen, licensed under the same license as dpkg, the
++# GNU General Public License version 2.
++
++my $md5_bin = "/sbin/md5";
++my $binary_mode = "";
++my $check_mode = 0;
++my $quiet = 0;
++my $warn  = 0;
++my $return = 0;
++my @files;
++
++read_args(@ARGV);
++
++if( @files == 0 )
 +{
-+	FILE *virt_pkg_stream = NULL;
-+	struct stat sb;
-+	struct FinkVirtualPkgs *pkg;
-+	char name[256];
-+	char version[256];
-+	char revision[256];
-+	unsigned int  epoch;
-+    Boolean status;
-+    SInt32 errorCode;
-+    CFURLRef fileURL = NULL;
-+    CFDataRef resourceData = NULL;
-+    CFPropertyListRef propertyList = NULL;
-+    CFStringRef string;
-+    static char buffer[256];	// This is static, to ensure the buffer stays around
-+
-+    static struct utsname ver;	// This is static, to ensure the buffer stays around
-+	if (0 == stat("@PREFIX@/bin/fink-virtual-pkgs", &sb))
-+	{
-+	  virt_pkg_stream =popen("@PREFIX@/bin/fink-virtual-pkgs --dpkg","r");
-+  	  if (virt_pkg_stream)
-+	  {
-+	    while (fscanf(virt_pkg_stream,"%s\t%u\t%s\t%s\n",name,&epoch,version, revision) == 4)
-+	    {
-+	      pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	      if (pkg)
-+	      {
-+			  pkg->next = fink_virt_pkg;
-+			  pkg->pkgname = strdup(name);
-+			  pkg->version.epoch = epoch;
-+			  pkg->version.version = strdup(version);
-+			  pkg->version.revision = strdup(revision);
-+			  /* Quick and simple sanity check */
-+			  if ((NULL != pkg->pkgname) && (0 != strlen(pkg->pkgname)) &&
-+			      (NULL != pkg->version.version) && (0 != strlen(pkg->version.version)) &&
-+			      (NULL != pkg->version.revision) && (0 != strlen(pkg->version.revision)))
-+			  {
-+			  	/* We are leaking here if something fails the sanity check above */
-+			  	fink_virt_pkg = pkg;
-+			  }
-+	      }
-+	    }
-+	    if (pclose(virt_pkg_stream))
-+	    {
-+	    	/* The fink-virtual-pkgs script returned a non zero exit status *
-+	    	 * clean up and try the old way.                                */
-+	    	while(NULL != fink_virt_pkg)
-+	    	{
-+	    		pkg = fink_virt_pkg;
-+	    		if (NULL != pkg->pkgname) free(pkg->pkgname);
-+	    		if (NULL != pkg->version.version) free((void*)pkg->version.version);
-+	    		if (NULL != pkg->version.revision) free((void*)pkg->version.revision);
-+	    		fink_virt_pkg = pkg->next;
-+	    		free(pkg);
-+	    	}
-+	    }
-+	  }
-+	} 
-+	if (NULL == fink_virt_pkg)
-+	{
-+	  /* Determine system version */
-+	  /* TODO - should maybe check if this is really Darwin? */
-+	  if (!uname(&ver)) {
-+	      pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	      if (pkg) {
-+			  pkg->next = fink_virt_pkg;
-+			  pkg->pkgname = strdup("darwin");
-+			  pkg->version.epoch = 0;
-+			  pkg->version.version = ver.release;
-+			  pkg->version.revision = NULL;
-+			  fink_virt_pkg = pkg;
-+	      }  
-+	  }
-+	
-+	  /* Check whether this is Mac OS X, and which version of it */
-+
-+	  fileURL = CFURLCreateWithFileSystemPath( NULL, 	
-+			CFSTR("/System/Library/CoreServices/SystemVersion.plist"),
-+			kCFURLPOSIXPathStyle,				
-+			false );
-+	  if (!fileURL)
-+		goto BAIL;
-+	  
-+	  /* Read the XML */
-+	  status = CFURLCreateDataAndPropertiesFromResource(
-+			NULL,
-+			fileURL,
-+			&resourceData,
-+			NULL,		
-+			NULL,
-+			&errorCode);
-+	  if (!status || errorCode != 0)
-+		goto BAIL;
-+	  
-+	  /* Reconstitute the dictionary using the XML data. */
-+	  propertyList = CFPropertyListCreateFromXMLData( NULL,
-+			resourceData,
-+			kCFPropertyListImmutable,
-+			&string);
-+	  if (!propertyList)
-+		goto BAIL;
-+	  
-+	  /* Try to read the system version from it. */
-+	  status = CFDictionaryGetValueIfPresent( 
-+			(CFDictionaryRef)propertyList,
-+			(const void*)CFSTR("ProductVersion"),
-+			(const void**)&string);
-+	  if (!status)
-+		goto BAIL;
-+	  
-+	  /* Convert into a C string */
-+	  status = CFStringGetCString( string,
-+			buffer,
-+			sizeof(buffer),
-+			kCFStringEncodingISOLatin1);
-+	  if (!status)
-+		goto BAIL;
-+	  pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	  if (pkg)
-+	  {
-+		  pkg->next = fink_virt_pkg;
-+		  pkg->pkgname = strdup("macosx");
-+		  pkg->version.epoch = 0;
-+		  pkg->version.version = buffer;
-+		  pkg->version.revision = NULL;
-+		  fink_virt_pkg = pkg;
-+	  }
-+	BAIL:
-+	  // Release all of the CF objects we're responsible for.
-+	  if (fileURL)
-+		CFRelease(fileURL);
-+	  if (resourceData)
-+		CFRelease(resourceData);
-+	  if (propertyList)
-+		CFRelease(propertyList);
-+	}
++  push @files, "-";
 +}
-+/* FINK LOCAL end */
- 
- int main(int, const char *const *argv) {
-   jmp_buf ejbuf;
-@@ -473,7 +627,9 @@
-   setlocale(LC_ALL, "");
-   bindtextdomain(PACKAGE, LOCALEDIR);
-   textdomain(PACKAGE);
--
-+  /* FINK LOCAL begin */
-+  finkinit();
-+  /* FINK LOCAL end */
-   if (setjmp(ejbuf)) { /* expect warning about possible clobbering of argv */
-     cursesoff();
-     error_unwind(ehflag_bombout); exit(2);
-diff -ruN dpkg-1.10.21.orig/dselect/pkgdepcon.cc dpkg-1.10.21/dselect/pkgdepcon.cc
---- dpkg-1.10.21.orig/dselect/pkgdepcon.cc	2003-10-26 08:02:05.000000000 -0600
-+++ dpkg-1.10.21/dselect/pkgdepcon.cc	2020-10-01 05:01:21.000000000 -0500
-@@ -198,12 +198,20 @@
- 
-   return 2;
- }
--
-+/* FINK LOCAL begin */
-+extern "C" {
-+struct FinkVirtualPkgs {
-+  struct FinkVirtualPkgs *next;
-+  char *pkgname;
-+  struct versionrevision version;
-+};
-+extern struct FinkVirtualPkgs *fink_virt_pkg;
-+}
-+/* FINK LOCAL end */
- int packagelist::resolvedepcon(dependency *depends) {
-   perpackagestate *best, *fixbyupgrade;
-   deppossi *possi, *provider;
-   int r, foundany;
--
-   if (depdebug && debug) {
-     fprintf(debug,"packagelist[%p]::resolvedepcon([%p] %s --%s-->",
-           this,depends,depends->up->name,gettext(relatestrings[depends->type]));
-@@ -214,7 +222,7 @@
-             ? gettext(wantstrings[depends->up->clientdata->suggested])
-             : _("(no clientdata)"));
-   }
--  
 +
-   if (!depends->up->clientdata) return 0;
- 
-   switch (depends->type) {
-@@ -354,7 +362,28 @@
- int packagelist::deppossatisfied(deppossi *possi, perpackagestate **fixbyupgrade) {
-   int would;
-   pkginfo::pkgwant want= pkginfo::want_purge;
--  
-+/* FINK LOCAL begin */
++if( $check_mode )
++{
++  # `md5` doesn't have a check mode, so we have to implement it ourselves
++  run_check_mode( @files );
++  exit $return;
++}
++
++if( $quiet || $warn )
++{
++  print STDERR <<"NOCHECKMODE";
++$0: the --status, --warn and -w options are meaningful only when verifying checksums
++Try `md5sum --help' for more information.
++NOCHECKMODE
++  exit $return;
++}
++
++my $stdin_done = 0;
++for my $file( @files )
++{
++  if( $file eq "-" and $stdin_done )
 +  {
-+      int interestingwarnings;
-+      struct varbuf oemsgs;
-+      struct FinkVirtualPkgs *virt_pkg = NULL; 
-+      varbufinit(&oemsgs);
-+      interestingwarnings= 0;
-+      virt_pkg = fink_virt_pkg;
-+      while (virt_pkg)
-+      {
-+            if (0==strcmp(possi->ed->name,virt_pkg->pkgname)) {
-+            if (depdebug && debug)
-+                fprintf(debug,"Found package : %s from VirtPackages.pm, depended by %s\n",virt_pkg->pkgname, possi->up->up->name);
-+            if (versionsatisfied3(&virt_pkg->version,&possi->version,possi->verrel))
-+            {
-+                return 1;
-+            }
-+            }
-+        virt_pkg = virt_pkg->next;
-+      }
-+  }    
-+// FINK_LOCAL_END      
-   if (possi->ed->clientdata) {
-     want= possi->ed->clientdata->selected;
-     would= would_like_to_install(want,possi->ed);
-@@ -413,5 +442,6 @@
-         *fixbyupgrade= provider->up->up->clientdata;
-     }
-   }
-+
-   return 0;
- }
-diff -ruN dpkg-1.10.21.orig/include/dpkg.h.in dpkg-1.10.21/include/dpkg.h.in
---- dpkg-1.10.21.orig/include/dpkg.h.in	2004-04-24 16:14:21.000000000 -0500
-+++ dpkg-1.10.21/include/dpkg.h.in	2020-10-01 05:01:21.000000000 -0500
-@@ -96,7 +96,7 @@
- #define SHELLENV            "SHELL"
- #define DEFAULTSHELL        "sh"
- #define PAGERENV            "PAGER"
--#define DEFAULTPAGER        "pager"
-+#define DEFAULTPAGER        "less"
- 
- #define IMETHODMAXLEN        50
- #define IOPTIONMAXLEN        IMETHODMAXLEN
-@@ -118,13 +118,13 @@
- 
- #define ARCHIVE_FILENAME_PATTERN "*.deb"
- 
--#define BACKEND		"dpkg-deb"
--#define DPKGQUERY	"dpkg-query"
--#define SPLITTER	"dpkg-split"
--#define MD5SUM		"md5sum"
--#define DSELECT		"dselect"
--#define DPKG		"dpkg"
--#define DEBSIGVERIFY	"/usr/bin/debsig-verify"
-+#define BACKEND		"@PREFIX@/bin/dpkg-deb"
-+#define DPKGQUERY	"@PREFIX@/bin/dpkg-query"
-+#define SPLITTER	"@PREFIX@/bin/dpkg-split"
-+#define MD5SUM		"@PREFIX@/bin/md5sum"
-+#define DSELECT		"@PREFIX@/bin/dselect"
-+#define DPKG		"@PREFIX@/bin/dpkg"
-+#define DEBSIGVERIFY	"@PREFIX@/bin/debsig-verify"
- 
- #define TAR		"tar"
- #define GZIP		"gzip"
-@@ -148,6 +148,7 @@
-   setlocale(LC_ALL, "");\
-   bindtextdomain(PACKAGE, LOCALEDIR);\
-   textdomain(PACKAGE);\
-+  gettext("");\
-   if (setjmp(*ejbuf)) { /* expect warning about possible clobbering of argv */\
-     error_unwind(ehflag_bombout); exit(2);\
-   }\
-diff -ruN dpkg-1.10.21.orig/include/parsedump.h dpkg-1.10.21/include/parsedump.h
---- dpkg-1.10.21.orig/include/parsedump.h	2002-05-06 11:18:16.000000000 -0500
-+++ dpkg-1.10.21/include/parsedump.h	2020-10-01 05:01:21.000000000 -0500
-@@ -30,7 +30,6 @@
-   const char *canon;
- };
- 
--extern const struct fieldinfo fieldinfos[];
- extern const struct nickname nicknames[];
- extern const int nfields; /* = elements in fieldinfos, including the sentinels */
- 
-@@ -68,6 +67,8 @@
-   unsigned int integer;
- };
- 
-+extern const struct fieldinfo fieldinfos[];
-+
- void parseerr(FILE *file, const char *filename, int lno, FILE *warnto, int *warncount,
-               const struct pkginfo *pigp, int warnonly,
-               const char *fmt, ...) PRINTFFORMAT(8,9);
-diff -ruN dpkg-1.10.21.orig/lib/mlib.c dpkg-1.10.21/lib/mlib.c
---- dpkg-1.10.21.orig/lib/mlib.c	2004-03-08 11:13:09.000000000 -0600
-+++ dpkg-1.10.21/lib/mlib.c	2020-10-01 05:01:21.000000000 -0500
-@@ -110,7 +110,9 @@
-   if (WIFEXITED(status)) {
-     n= WEXITSTATUS(status); if (!n) return n;
-     if(!(flags & PROCNOERR)) {
--      if(flags & PROCWARN)
-+      /* FINK LOCAL: Tar status 1 is a warning. */
-+      if((flags & PROCWARN) || (n == 1 && strncmp(description, "tar", 3) == 0))
-+      /* FINK LOCAL */
-         fprintf(stderr, _("dpkg: warning - %s returned error exit status %d\n"),description,n);
-       else
-         ohshit(_("subprocess %s returned error exit status %d"),description,n);
-@@ -189,7 +191,7 @@
-   switch(data->type) {
-     case BUFFER_WRITE_BUF:
-       memcpy(data->data.ptr, buf, length);
--      (char*)data->data.ptr += length;
-+      data->data.ptr = (char*)data->data.ptr + length;
-       break;
-     case BUFFER_WRITE_VBUF:
-       varbufaddbuf((struct varbuf *)data->data.ptr, buf, length);
-diff -ruN dpkg-1.10.21.orig/lib/nfmalloc.c dpkg-1.10.21/lib/nfmalloc.c
---- dpkg-1.10.21.orig/lib/nfmalloc.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/lib/nfmalloc.c	2020-10-01 05:01:21.000000000 -0500
-@@ -26,7 +26,7 @@
- #include <dpkg.h>
- #include <dpkg-db.h>
- 
--#include <obstack.h>
-+#include "obstack.h"
- 
- #define obstack_chunk_alloc m_malloc
- #define obstack_chunk_free free
-diff -ruN dpkg-1.10.21.orig/lib/tarfn.c dpkg-1.10.21/lib/tarfn.c
---- dpkg-1.10.21.orig/lib/tarfn.c	2004-03-08 11:31:16.000000000 -0600
-+++ dpkg-1.10.21/lib/tarfn.c	2020-10-01 05:01:21.000000000 -0500
-@@ -57,8 +57,12 @@
- {
- 	int	len;
- 	char *	str;
--
--	len = strnlen(s, size);
-+	char * cpystr;
-+	cpystr = malloc(size +1);
-+	memcpy(cpystr, s, size);
-+	cpystr[size] = 0;
-+	len = strlen(cpystr);
-+	free(cpystr);
- 	str = malloc(len + 1);
- 	memcpy(str, s, len);
- 	str[len] = 0;
-diff -ruN dpkg-1.10.21.orig/main/Makefile.in dpkg-1.10.21/main/Makefile.in
---- dpkg-1.10.21.orig/main/Makefile.in	2002-08-24 14:54:19.000000000 -0500
-+++ dpkg-1.10.21/main/Makefile.in	2020-10-01 05:01:21.000000000 -0500
-@@ -63,10 +63,10 @@
- dpkg-static: LDFLAGS += -static
- dpkg-static: ZLIB_LIBS = $(ZLIBS_LIBS_ALSO_STATIC)
- dpkg dpkg-static: $(OBJECTS) ../lib/libdpkg.a
--	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
-+	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(OBJECTS) $(LIBS) $(NLS_LIBS)
- 
- dpkg-query: $(QUERY_OBJECTS) ../lib/libdpkg.a
--	$(CC) $(LDFLAGS) -o $@ $(QUERY_OBJECTS) $(LIBS) $(NLS_LIBS)
-+	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(QUERY_OBJECTS) $(LIBS) $(NLS_LIBS)
- 
- enquiry.o: archtable.h
- 
-diff -ruN dpkg-1.10.21.orig/main/archives.c dpkg-1.10.21/main/archives.c
---- dpkg-1.10.21.orig/main/archives.c	2004-04-25 05:41:54.000000000 -0500
-+++ dpkg-1.10.21/main/archives.c	2020-10-01 05:01:21.000000000 -0500
-@@ -553,12 +553,10 @@
-     debug(dbg_eachfiledetail,"tarobject SymbolicLink creating");
- #ifdef HAVE_LCHOWN
-     if (lchown(fnamenewvb.buf,
--#else
--    if (chown(fnamenewvb.buf,
--#endif
- 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->uid : ti->UserID,
- 	    nifd->namenode->statoverride ? nifd->namenode->statoverride->gid : ti->GroupID))
-       ohshite(_("error setting ownership of symlink `%.255s'"),ti->Name);
-+#endif
-     break;
-   case Directory:
-     /* We've already checked for an existing directory. */
-@@ -614,10 +612,8 @@
-         ohshite(_("unable to make backup symlink for `%.255s'"),ti->Name);
- #ifdef HAVE_LCHOWN
-       if (lchown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
--#else
--      if (chown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
--#endif
-         ohshite(_("unable to chown backup symlink for `%.255s'"),ti->Name);
-+#endif
-     } else {
-       debug(dbg_eachfiledetail,"tarobject nondirectory, `link' backup");
-       if (link(fnamevb.buf,fnametmpvb.buf))
-diff -ruN dpkg-1.10.21.orig/main/configure.c dpkg-1.10.21/main/configure.c
---- dpkg-1.10.21.orig/main/configure.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/main/configure.c	2020-10-01 05:01:21.000000000 -0500
-@@ -476,9 +476,10 @@
- static void suspend(void) {
- 	const char*	s;
- 	int		pid;
--
-+#ifndef __APPLE__
- 	s= getenv(NOJOBCTRLSTOPENV);
- 	if (s && *s) {
-+#endif
- 		/* Do not job control to suspend but fork and start a new shell
- 		 * instead.
- 		 */
-@@ -506,11 +507,13 @@
- 			onerr_abort++;
- 			ohshite(_("wait for shell failed"));
- 		}
-+#ifndef __APPLE__
- 	} else {
- 		fputs(_("Don't forget to foreground (`fg') this "
- 					"process when you're done !\n"), stderr);
- 		kill(-getpgid(0),SIGTSTP);
- 	}
-+#endif
- }
- 
- 
-diff -ruN dpkg-1.10.21.orig/main/dpkg-query.8 dpkg-1.10.21/main/dpkg-query.8
---- dpkg-1.10.21.orig/main/dpkg-query.8	2003-09-13 20:49:08.000000000 -0500
-+++ dpkg-1.10.21/main/dpkg-query.8	2020-10-01 05:01:21.000000000 -0500
-@@ -14,7 +14,7 @@
- .TP
- \fB-l\fP | \fB--list\fP \fIpackage-name-pattern\fP ...
- List packages matching given pattern. If no \fIpackage-name-pattern\fP
--is given, list all packages in \fI/var/lib/dpkg/available\fP.  Normal
-+is given, list all packages in \fI@PREFIX@/var/lib/dpkg/available\fP.  Normal
- shell wildchars are allowed in \fIpackage-name-pattern\fP. Please note
- you will probably have to quote \fIpackage-name-pattern\fP to prevent
- the shell from performing filename expansion. For example this will
-@@ -47,7 +47,7 @@
- .TP
- \fB-p\fP |\fB--print-avail\fP package
- Display details about \fIpackage\fP, as found in
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fB--licence\fP | \fB--license\fP
- Display licence and copyright information.
-@@ -59,7 +59,7 @@
- .TP
- \fB--admindir=\fIdir\fP
- Change the location of the \fBdpkg\fR database. The default location is
--\fI/var/lib/dpkg\fP.
-+\fI@PREFIX@/var/lib/dpkg\fP.
- .TP
- \fB--showformat=\fP\fIformat\fR
- This option is used to specify the format of the output \fB--show\fP
-@@ -81,6 +81,7 @@
- .UR mailto:wakkerma@debian.org
- <wakkerma@debian.org>
- .UE
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- This is free software; see the GNU General Public Licence version 2 or
- later for copying conditions.  There is NO warranty.
-diff -ruN dpkg-1.10.21.orig/main/dpkg.8 dpkg-1.10.21/main/dpkg.8
---- dpkg-1.10.21.orig/main/dpkg.8	2003-09-20 20:43:40.000000000 -0500
-+++ dpkg-1.10.21/main/dpkg.8	2020-10-01 05:01:21.000000000 -0500
-@@ -154,7 +154,7 @@
- file).  \fB-P\fP or \fB--purge\fP removes everything, including configuration
- files.  If \fB-a\fP or \fB--pending\fP is given instead of a package
- name, then all packages unpacked, but marked to be removed or purged
--in file \fI/var/lib/dpkg/status\fP, are removed or purged,
-+in file \fI@PREFIX@/var/lib/dpkg/status\fP, are removed or purged,
- respectively.
- 
- Removing of a package consists of the following steps:
-@@ -176,7 +176,7 @@
- \fB--update-avail\fP, old information is replaced with the information
- in the \fIPackages-file\fP.  The \fIPackages-file\fP distributed with
- Debian is simply named \fIPackages\fP.  \fBdpkg\fP keeps its
--record of available packages in \fI/var/lib/dpkg/available\fP.
-+record of available packages in \fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fBdpkg -A\fP | \fB--record-avail\fP \fIpackage_file\fP ...
- Update \fBdpkg\fP and \fBdselect\fP's idea of which packages are
-@@ -286,14 +286,14 @@
- \fBdpkg -S\fP | \fB--search\fP \fIfilename-search-pattern\fP ...
-     Search for a filename from installed packages.
- \fBdpkg -p\fP | \fB--print-avail\fP \fIpackage\fP
--    Display details about \fIpackage\fP, as found in \fI/var/lib/dpkg/available\fP.
-+    Display details about \fIpackage\fP, as found in \fI@PREFIX@/var/lib/dpkg/available\fP.
- .fi
- 
- 
- 
- .SH OPTIONS
- All options can be specified both on the commandline and in the \fBdpkg\fP
--configuration file \fI/etc/dpkg/dpkg.cfg\fP. Each line in the configuration
-+configuration file \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP. Each line in the configuration
- file is either an option (exactly the same as the commandline option but
- without leading dashes) or a comment (if it starts with a \fB#\fR).
- .br
-@@ -453,14 +453,14 @@
- .TP
- \fB--root=\fP\fIdir\fP | \fB--admindir=\fP\fIdir\fP | \fB--instdir=\fP\fIdir\fP
- Change default directories.  \fBadmindir\fP defaults to
--\fI/var/lib/dpkg\fP and contains many files that give information
-+\fI@PREFIX@/var/lib/dpkg\fP and contains many files that give information
- about status of installed or uninstalled packages, etc.  \fBinstdir\fP
- defaults to \fI/\fP and refers to the directory where packages are to
- be installed.  \fBinstdir\fP is also the directory passed to
- \fBchroot\fP(2) before running \fIpackage\fP's installation scripts, which
- means that the scripts see \fBinstdir\fP as a root directory.
- Changing \fBroot\fP changes \fBinstdir\fP to \fIdir\fP and
--\fBadmindir\fP to \fIdir\fP\fB/var/lib/dpkg\fP.
-+\fBadmindir\fP to \fIdir\fP\fB@PREFIX@/var/lib/dpkg\fP.
- .TP
- \fB-O\fP | \fB--selected-only\fP
- Only process the packages that are selected for installation. The
-@@ -477,16 +477,16 @@
- multiple times.  Status updates are of the form `status: <pkg>: <pkg qstate>'.
- .SH FILES
- .TP
--.I /etc/dpkg/dpkg.cfg
-+.I @PREFIX@/etc/dpkg/dpkg.cfg
- Configuration file with default options.
- .P
- The other files listed below are in their default directories, see option
- \fB--admindir\fP to see how to change locations of these files.
- .TP
--.I /var/lib/dpkg/available
-+.I @PREFIX@/var/lib/dpkg/available
- List of available packages.
- .TP
--.I /var/lib/dpkg/status
-+.I @PREFIX@/var/lib/dpkg/status
- Statuses of available packages. This file contains information about
- whether a package is marked for removing or not, whether it is
- installed or not, etc. See section \fBINFORMATION ABOUT PACKAGES\fP
-@@ -536,14 +536,14 @@
- \fB     dpkg -l '*vi*'\fP
- .br
- 
--To see the entries in \fI/var/lib/dpkg/available\fP on two packages:
-+To see the entries in \fI@PREFIX@/var/lib/dpkg/available\fP on two packages:
- .br
- \fB     dpkg --print-avail elvis vim | less\fP
- .br
- 
- To search the listing of packages yourself:
- .br
--\fB     less /var/lib/dpkg/available\fP
-+\fB     less @PREFIX@/var/lib/dpkg/available\fP
- .br
- 
- To remove an installed elvis package:
-@@ -590,6 +590,6 @@
- 
- .SH AUTHORS
- .nf
--See \fB/usr/share/doc/dpkg/THANKS.gz\fP for the list of people who have
-+See \fB@PREFIX@/share/doc/dpkg/THANKS.gz\fP for the list of people who have
- contributed to \fBdpkg\fP .
- .fi
-diff -ruN dpkg-1.10.21.orig/main/enquiry.c dpkg-1.10.21/main/enquiry.c
---- dpkg-1.10.21.orig/main/enquiry.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/main/enquiry.c	2020-10-01 20:42:13.000000000 -0500
-@@ -33,6 +33,7 @@
- #include <sys/ioctl.h>
- #include <sys/termios.h>
- #include <fcntl.h>
-+#include <stddef.h>
- 
- #include <dpkg.h>
- #include <dpkg-db.h>
-@@ -402,7 +403,7 @@
-   FILE *ccpipe;
-   struct varbuf vb;
-   ptrdiff_t ll;
--  char *p, *q;
-+  char *p;
- 
-   if (*argv) badusage(_("--print-architecture does not take any argument"));
- 
-@@ -445,7 +446,7 @@
-   default: internerr("unknown action in printarch");
-   }
-   if (!arch) {
--    *q= 0; arch= p;
-+    arch= p;
-     fprintf(stderr, _("dpkg: warning, architecture `%s' not in remapping table\n"),arch);
-   }
-   if (printf("%s\n",arch) == EOF) werr("stdout");
-diff -ruN dpkg-1.10.21.orig/main/filesdb.c dpkg-1.10.21/main/filesdb.c
---- dpkg-1.10.21.orig/main/filesdb.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/main/filesdb.c	2020-10-01 05:01:21.000000000 -0500
-@@ -25,6 +25,7 @@
- #include <unistd.h>
- #include <fcntl.h>
- #include <string.h>
-+#include <ctype.h>
- #include <errno.h>
- #include <sys/stat.h>
- 
-@@ -566,7 +567,7 @@
- 
- static int hash(const char *name) {
-   int v= 0;
--  while (*name) { v *= 1787; v += *name; name++; }
-+  while (*name) { v *= 1787; v += tolower(*name); name++; }
-   return v;
- }
- 
-@@ -581,7 +582,7 @@
-   while (*pointerp) {
- /* Why is this assert nescessary?  It is checking already added entries. */
-     assert((*pointerp)->name[0] == '/');
--    if (!strcmp((*pointerp)->name+1,name)) break;
-+    if (!strcasecmp((*pointerp)->name+1,name)) break;
-     pointerp= &(*pointerp)->next;
-   }
-   if (*pointerp) return *pointerp;
-diff -ruN dpkg-1.10.21.orig/main/help.c dpkg-1.10.21/main/help.c
---- dpkg-1.10.21.orig/main/help.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/main/help.c	2020-10-01 05:01:21.000000000 -0500
-@@ -69,11 +69,18 @@
- 
- void checkpath(void) {
- /* Verify that some programs can be found in the PATH. */
--  static const char *const checklist[]= { "ldconfig", 
-+  static const char *const checklist[]= { 
-+#ifndef __APPLE__
-+    "ldconfig", 
-+#endif
- #ifdef USE_START_STOP_DAEMON
-     "start-stop-daemon",
- #endif    
--    "install-info", "update-rc.d", 0
-+    "install-info",
-+#ifndef __APPLE__
-+   "update-rc.d",
-+#endif
-+    0
-   };
- 
-   struct stat stab;
-@@ -180,7 +187,7 @@
-   }
-   if (f_debug & dbg_scripts) {
-     fprintf(stderr,"D0%05o: fork/exec %s (",dbg_scripts,path);
--    while (*argv) fprintf(stderr," %s",*argv++);
-+    while (*++argv) fprintf(stderr," %s",*argv);
-     fputs(" )\n",stderr);
-   }
-   instdirl= strlen(instdir);
-@@ -256,17 +263,75 @@
- static int do_script(const char *pkg, const char *scriptname, const char *scriptpath, struct stat *stab, char *const arglist[], const char *desc, const char *name, int warn) {
-   const char *scriptexec;
-   int c1, r;
-+  if (scriptpath) // if NULL, just want wrapper side-effect, no actual .deb script present
-   setexecute(scriptpath,stab);
- 
-   c1= m_fork();
-   if (!c1) {
-     const char **narglist;
-+    /* FINK LOCAL begin */
-+    const char **full_narglist;
-+    char *path_wrapper;
-+    struct stat stab_wrapper;
-+    const char *null_script_path = "";  // must be blank string (NULL is end-of-array sentinel)
-+    /* FINK LOCAL end */
-     for (r=0; arglist[r]; r++) ;
--    narglist=nfmalloc((r+1)*sizeof(char*));
-+    // narglist=nfmalloc((r+1)*sizeof(char*));
-+    /* FINK LOCAL begin */
-+    full_narglist=nfmalloc((r+2)*sizeof(char*));  // leave space for wrapper-script-name, add NULL terminator
-+    narglist=full_narglist+1;  // orig pointer points to orig array
-+    /* FINK LOCAL end */
-     for (r=1; arglist[r-1]; r++)
-       narglist[r]= arglist[r];
-+    if (scriptpath) { // FINK LOCAL
-     scriptexec= preexecscript(scriptpath,narglist);
-+    } else { scriptexec = null_script_path; }; // FINK LOCAL was called with no actual script path to run
-     narglist[0]= scriptexec;
-+    /* FINK LOCAL begin */
-+    // try to set up with wrapper
-+#define FINK_DPKG_SCRIPT_DIR "@PREFIX@/lib/fink/dpkg-base-files"
-+    // determine wrapper-script pathname
-+    asprintf(&path_wrapper, "%s/%s", FINK_DPKG_SCRIPT_DIR, scriptname);
-+    if (path_wrapper == NULL) {
-+      ohshite(_("dpkg - error: could not allocate for fink script wrapper for %s.\n"), scriptpath);
-+    } else {
-+      if (!stat(path_wrapper, &stab_wrapper)) {
-+	if ((stab_wrapper.st_mode & 0555) == 0555) {
-+	  // only use it if it exists and is chmod a+rx
-+	  debug(dbg_scripts,"Wrapper script '%s' will be used around '%s'", path_wrapper, scriptpath);
-+	  // it's good! set wrapper as actual runnable thing in narglist array
-+	  narglist=full_narglist;
-+	  scriptexec= preexecscript(path_wrapper,narglist);
-+	  narglist[0]= scriptexec;
-+
-+	  /*
-+	    Global wrapper needs way to introspect name of package
-+	    being manipulated. Normal .deb scripts could have this
-+	    hard-coded in their script because this info is known at
-+	    the time the .deb is constructed. Pass the name as an
-+	    env var to the wrapper.
-+	  */
-+	  setenv("FINK_PACKAGE_NAME", pkg, 1);
-+	} else {
-+	  debug(dbg_scripts,"Wrapper script '%s' wrong perms", path_wrapper);
-+	  if (scriptpath) {
-+	    debug(dbg_scripts,"...falling back to real script '%s'", scriptpath);
-+	  } else {
-+	    debug(dbg_scripts,"...skipping over because no real script '%s'", scriptpath);
-+	    exit(0);
-+	  }
-+	}
-+      } else {
-+	debug(dbg_scripts,"Wrapper script '%s' does not exist", path_wrapper);
-+	if (scriptpath) {
-+	  debug(dbg_scripts,"...falling back to real script '%s'", scriptpath);
-+	} else {
-+	  debug(dbg_scripts,"...skipping over because no real script '%s'", scriptpath);
-+	  exit(0);
-+	}
-+      }
-+    }
-+    /* FINK LOCAL end */
-     execv(scriptexec,narglist);
-     ohshite(desc,name);
-   }
-@@ -294,8 +359,13 @@
-   if (stat(scriptpath,&stab)) {
-     if (errno == ENOENT) {
-       debug(dbg_scripts,"maintainer_script_installed nonexistent %s",scriptname);
--      return 0;
--    }
-+//    return 0;
-+      /* FINK LOCAL begin */
-+      // always call do_script (fink adds side-effects), but pass NULL if no actual script
-+      scriptpath = NULL;
-+//  }
-+    } else
-+      /* FINK LOCAL end */
-     ohshite(_("unable to stat installed %s script `%.250s'"),description,scriptpath);
-   }
-   do_script(pkg->name, scriptname, scriptpath, &stab, arglist, _("unable to execute %s"), buf, 0);
-@@ -320,8 +390,14 @@
-   if (stat(cidir,&stab)) {
-     if (errno == ENOENT) {
-       debug(dbg_scripts,"maintainer_script_new nonexistent %s `%s'",scriptname,cidir);
--      return 0;
--    }
-+//    return 0;
-+      //    }
-+      /* FINK LOCAL begin */
-+      // always call do_script (fink adds side-effects), but pass NULL if no actual script
-+      cidir = NULL;
-+//  }
-+    } else
-+      /* FINK LOCAL end */
-     ohshite(_("unable to stat new %s script `%.250s'"),description,cidir);
-   }
-   do_script(pkgname, scriptname, cidir, &stab, arglist, _("unable to execute new %s"), buf, 0);
-@@ -348,16 +424,19 @@
-     if (errno == ENOENT) {
-       debug(dbg_scripts,"maintainer_script_alternative nonexistent %s `%s'",
-             scriptname,oldscriptpath);
--      return 0;
--    }
-+      /* FINK LOCAL begin */
-+      // always call do_script (fink adds side-effects), but pass NULL if no actual script
-+      oldscriptpath = NULL;
-+    } else {
-+      /* FINK LOCAL end */
-     fprintf(stderr,
-             _("dpkg: warning - unable to stat %s `%.250s': %s\n"),
-             buf,oldscriptpath,strerror(errno));
--  } else {
-+    }
-+  }
-     if (!do_script(pkg->name, scriptname, oldscriptpath, &stab, arglist, _("unable to execute %s"), buf, PROCWARN))
-       return 1;
-     ensure_diversions();
--  }
-   fprintf(stderr, _("dpkg - trying script from the new package instead ...\n"));
- 
-   arglist= buildarglist(scriptname,
-@@ -367,6 +446,9 @@
-   strcpy(cidirrest,scriptname);
-   sprintf(buf,_("new %s script"),description);
- 
-+  // FINK if old-pkg fails, don't want to allow "success" of new
-+  // solely because wrapper worked in new-pkg: loses important
-+  // error-state that *should* fail loudly
-   if (stat(cidir,&stab)) {
-     if (errno == ENOENT)
-       ohshit(_("there is no script in the new version of the package - giving up"));
-@@ -410,6 +492,26 @@
-     
-   debug(dbg_veryverbose, "isdirectoryinuse `%s' (except %s)", file->name,
-         pkg ? pkg->name : "<none>");
-+
-+  /* FINK LOCAL begin */
-+
-+  /*
-+   * Darwin has symlinks /etc -> /private/etc and /var -> /private/var
-+   * instead of actual /etc and /var dirs. If dpkg removes the last
-+   * pkg that it has record of having installed a file in one of those
-+   * top-level dirs, it will try to remove the dir (since it thinks
-+   * it's an empty dir) and it will succeed (since it's just unlinking
-+   * a symlink, not trying to remove a dir that is not actually
-+   * empty). That's Bad. Here we make sure these top-level dirs are
-+   * never thought to be empty.
-+   */
-+  if( !strcmp(file->name,"/etc") || !strcmp(file->name,"/tmp") || !strcmp(file->name,"/var") ) {
-+    debug(dbg_veryverbose, "isdirectoryinuse precious!");
-+    return 1;
++    # second - is empty, so md5sum is of the empty string
++    print "d41d8cd98f00b204e9800998ecf8427e  $binary_mode-\n";
++    next;
 +  }
 +
-+  /* FINK LOCAL end */
++  my $checksum = checksum_for( $file );
++  if( !$checksum ) {
++    # error was already printed
++    next;
++  }
 +
-   for (packageslump= file->packages; packageslump; packageslump= packageslump->more) {
-     debug(dbg_veryverbose, "isdirectoryinuse packageslump %s ...",
-           packageslump->pkgs[0] ? packageslump->pkgs[0]->name : "<none>");
-diff -ruN dpkg-1.10.21.orig/main/main.c dpkg-1.10.21/main/main.c
---- dpkg-1.10.21.orig/main/main.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/main/main.c	2020-10-01 05:01:21.000000000 -0500
-@@ -38,6 +38,12 @@
- #include <version.h>
- #include <myopt.h>
- 
-+/* FINK LOCAL begin */
-+#include <sys/utsname.h>
-+#include <CoreFoundation/CoreFoundation.h>
-+static void finkinit();
-+/* FINK LOCAL end */
++  # the old md5sum, nor md5, understand binary mode, so...
++  print "$checksum  $binary_mode$file\n";
 +
- #include "main.h"
- 
- static void printversion(void) {
-@@ -546,6 +552,153 @@
-   }
- }
- 
-+/* FINK LOCAL begin */
-+struct FinkVirtualPkgs {
-+  struct FinkVirtualPkgs *next;
-+  char *pkgname;
-+  struct versionrevision version;
-+};
++  if( $file eq "-" )
++  {
++    $stdin_done = 1;
++  }
++}
 +
-+struct FinkVirtualPkgs *fink_virt_pkg = NULL;
-+static void finkinit()
++exit;
++
++sub help_and_exit()
 +{
-+	FILE *virt_pkg_stream = NULL;
-+	struct stat sb;
-+	struct FinkVirtualPkgs *pkg;
-+	char name[256];
-+	char version[256];
-+	char revision[256];
-+	unsigned int  epoch;
-+    Boolean status;
-+    SInt32 errorCode;
-+    CFURLRef fileURL = NULL;
-+    CFDataRef resourceData = NULL;
-+    CFPropertyListRef propertyList = NULL;
-+    CFStringRef string;
-+    static char buffer[256];	// This is static, to ensure the buffer stays around
++  print <<"HELP";
++Usage: $0 [OPTION] [FILE]...
++Print or check MD5 (128-bit) checksums.
++With no FILE, or when FILE is -, read standard input.
++This md5sum is a wrapper around Mac's md5. If you can use md5 instead, please
++do, since this script is likely to be removed at some point.
 +
-+    static struct utsname ver;	// This is static, to ensure the buffer stays around
-+	if (0 == stat("@PREFIX@/bin/fink-virtual-pkgs", &sb))
-+	{
-+	  virt_pkg_stream =popen("@PREFIX@/bin/fink-virtual-pkgs --dpkg","r");
-+  	  if (virt_pkg_stream)
-+	  {
-+	    while (fscanf(virt_pkg_stream,"%s\t%u\t%s\t%s\n",name,&epoch,version, revision) == 4)
-+	    {
-+	      pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	      if (pkg)
-+	      {
-+			  pkg->next = fink_virt_pkg;
-+			  pkg->pkgname = strdup(name);
-+			  pkg->version.epoch = epoch;
-+			  pkg->version.version = strdup(version);
-+			  pkg->version.revision = strdup(revision);
-+			  /* Quick and simple sanity check */
-+			  if ((NULL != pkg->pkgname) && (0 != strlen(pkg->pkgname)) &&
-+			      (NULL != pkg->version.version) && (0 != strlen(pkg->version.version)) &&
-+			      (NULL != pkg->version.revision) && (0 != strlen(pkg->version.revision)))
-+			  {
-+			  	/* We are leaking here if something fails the sanity check above */
-+			  	fink_virt_pkg = pkg;
-+			  }
-+	      }
-+	    }
-+	    if (pclose(virt_pkg_stream))
-+	    {
-+	    	/* The fink-virtual-pkgs script returned a non zero exit status *
-+	    	 * clean up and try the old way.                                */
-+	    	while(NULL != fink_virt_pkg)
-+	    	{
-+	    		pkg = fink_virt_pkg;
-+	    		if (NULL != pkg->pkgname) free(pkg->pkgname);
-+	    		if (NULL != pkg->version.version) free(pkg->version.version);
-+	    		if (NULL != pkg->version.revision) free(pkg->version.revision);
-+	    		fink_virt_pkg = pkg->next;
-+	    		free(pkg);
-+	    	}
-+                fink_virt_pkg = NULL;
-+	    }
-+	  }
-+	} 
-+	if (NULL == fink_virt_pkg)
-+	{
-+	  /* Determine system version */
-+	  /* TODO - should maybe check if this is really Darwin? */
-+	  if (!uname(&ver)) {
-+	      pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	      if (pkg) {
-+			  pkg->next = fink_virt_pkg;
-+			  pkg->pkgname = strdup("darwin");
-+			  pkg->version.epoch = 0;
-+			  pkg->version.version = ver.release;
-+			  pkg->version.revision = NULL;
-+			  fink_virt_pkg = pkg;
-+	      }  
-+	  }
-+	
-+	  /* Check whether this is Mac OS X, and which version of it */
++  -b, --binary            no difference on Mac platforms
++  -c, --check             read MD5 sums from the FILEs and check them
++  -t, --text              no difference on Mac platforms
 +
-+	  fileURL = CFURLCreateWithFileSystemPath( NULL, 	
-+			CFSTR("/System/Library/CoreServices/SystemVersion.plist"),
-+			kCFURLPOSIXPathStyle,				
-+			false );
-+	  if (!fileURL)
-+		goto BAIL;
-+	  
-+	  /* Read the XML */
-+	  status = CFURLCreateDataAndPropertiesFromResource(
-+			NULL,
-+			fileURL,
-+			&resourceData,
-+			NULL,		
-+			NULL,
-+			&errorCode);
-+	  if (!status || errorCode != 0)
-+		goto BAIL;
-+	  
-+	  /* Reconstitute the dictionary using the XML data. */
-+	  propertyList = CFPropertyListCreateFromXMLData( NULL,
-+			resourceData,
-+			kCFPropertyListImmutable,
-+			&string);
-+	  if (!propertyList)
-+		goto BAIL;
-+	  
-+	  /* Try to read the system version from it. */
-+	  status = CFDictionaryGetValueIfPresent( propertyList,
-+			CFSTR("ProductVersion"),
-+			(void*)&string);
-+	  if (!status)
-+		goto BAIL;
-+	  
-+	  /* Convert into a C string */
-+	  status = CFStringGetCString( string,
-+			buffer,
-+			sizeof(buffer),
-+			kCFStringEncodingISOLatin1);
-+	  if (!status)
-+		goto BAIL;
-+	  pkg = (struct FinkVirtualPkgs *)malloc(sizeof(struct FinkVirtualPkgs));
-+	  if (pkg)
-+	  {
-+		  pkg->next = fink_virt_pkg;
-+		  pkg->pkgname = strdup("macosx");
-+		  pkg->version.epoch = 0;
-+		  pkg->version.version = buffer;
-+		  pkg->version.revision = NULL;
-+		  fink_virt_pkg = pkg;
-+	  }
-+	BAIL:
-+	  // Release all of the CF objects we're responsible for.
-+	  if (fileURL)
-+		CFRelease(fileURL);
-+	  if (resourceData)
-+		CFRelease(resourceData);
-+	  if (propertyList)
-+		CFRelease(propertyList);
-+	}
++The following two options are useful only when verifying checksums:
++      --status            don't output anything, status code shows success
++  -w, --warn              warn about improperly formatted checksum lines
++
++      --help     display this help and exit
++      --version  output version information and exit
++
++The sums are computed as described in RFC 1321.  When checking, the input
++should be a former output of this program.  The default mode is to print
++a line with checksum, a character indicating type (`*' for binary, ` ' for
++text), and name for each FILE.
++
++Report bugs to <http://fink.sourceforge.net>.
++HELP
++  exit;
 +}
-+/* FINK LOCAL end */
- 
- int main(int argc, const char *const *argv) {
-   jmp_buf ejbuf;
-@@ -556,7 +709,9 @@
- 
-   setvbuf(stdout,0,_IONBF,0);
-   filesdbinit();
--
-+  /* FINK LOCAL begin */
-+  finkinit();
-+  /* FINK LOCAL end */
-   actionfunction= (void (*)(const char* const*))cipaction->farg;
- 
-   actionfunction(argv);
-diff -ruN dpkg-1.10.21.orig/main/main.h dpkg-1.10.21/main/main.h
---- dpkg-1.10.21.orig/main/main.h	2002-05-20 00:56:02.000000000 -0500
-+++ dpkg-1.10.21/main/main.h	2020-10-01 05:01:21.000000000 -0500
-@@ -93,6 +93,11 @@
- extern const char *instdir;
- extern struct packageinlist *ignoredependss;
- extern const char architecture[];
-+ 
-+/* FINK LOCAL begin */
-+extern struct versionrevision darwin_version;
-+extern struct versionrevision macosx_version;
-+/* FINK LOCAL end */
- 
- /* from filesdb.c */
- 
-diff -ruN dpkg-1.10.21.orig/main/packages.c dpkg-1.10.21/main/packages.c
---- dpkg-1.10.21.orig/main/packages.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/main/packages.c	2020-10-01 05:01:21.000000000 -0500
-@@ -331,6 +331,30 @@
-     return thisf;
-   }
- }
-+ 
-+/* FINK LOCAL begin */
-+static int check_pseudo_package(const struct versionrevision *versrev, const struct deppossi *possi,
-+                                int *interestingwarnings, struct varbuf *oemsgs) {
 +
-+  if (versionsatisfied3(versrev,&possi->version,possi->verrel)) {
-+    return 3;
-+  } else {
-+    varbufaddstr(oemsgs, _("  Version of "));
-+    varbufaddstr(oemsgs, possi->ed->name);
-+    varbufaddstr(oemsgs, _(" on system is "));
-+    varbufaddstr(oemsgs, versiondescribe(versrev, vdew_nonambig));
-+    varbufaddstr(oemsgs, ".\n");
-+    (*interestingwarnings)++;
-+    return 0;
++sub version_and_exit
++{
++  print <<"VERSION";
++md5sum (Fink md5sum) 1.0
++Copyright (C) 2010 Sjors Gielen
++This wrapper should be installed in bin/md5sum. Since dpkg 1.10, md5sum was
++removed, this script is intended to replace it for fink systems.
++License from dpkg: GNU GPL version 2.
++This is free software: you are free to change and redistribute it.
++There is NO WARRENTY, to the extent permitted by law.
++
++Written by Sjors Gielen.
++VERSION
++  exit;
++}
++
++sub read_args
++{
++  my $no_opts = 0;
++  for(@_)
++  {
++    if( !$no_opts and /^--(.*)$/ )
++    {
++      my $opt = $1;
++      if( $opt eq "help" )
++      {
++        help_and_exit();
++      }
++      elsif( $opt eq "version" )
++      {
++        version_and_exit();
++      }
++      elsif( $opt eq "text" )
++      {
++        # ignore
++      }
++      elsif( $opt eq "binary" )
++      {
++        $binary_mode = "*";
++      }
++      elsif( $opt eq "check" )
++      {
++        $check_mode = 1;
++      }
++      elsif( $opt eq "status" )
++      {
++        $quiet = 1;
++      }
++      elsif( $opt eq "warn" )
++      {
++        $warn = 1;
++      }
++      elsif( $opt eq "" )
++      {
++        $no_opts = 1;
++      }
++      else
++      {
++        print STDERR <<"HELPMSG";
++$0: unrecognised option `--$opt'
++Try `$0 --help' for more information.
++HELPMSG
++        exit;
++      }
++    }
++    elsif( !$no_opts and /^-(.+)$/ )
++    {
++      my @opts = split //, $1;
++      for(@opts) {
++        if( $_ eq "t" )
++        {
++          # ignore
++        }
++        elsif( $_ eq "b" )
++        {
++          $binary_mode = "*";
++        }
++        elsif( $_ eq "c" )
++        {
++          $check_mode = 1;
++        }
++        elsif( $_ eq "w" )
++        {
++          $warn = 1;
++        }
++        elsif( $_ eq "" )
++        {
++          # - here is just STDIN
++          push @files, '-';
++        }
++        else
++        {
++          print STDERR <<"ERRORMSG";
++$0: invalid option -- $_
++Try `md5sum --help' for more information.
++ERRORMSG
++          exit;
++        }
++      }
++    }
++    else
++    {
++      push @files, $_;
++    }
 +  }
 +}
-+struct FinkVirtualPkgs {
-+  struct FinkVirtualPkgs *next;
-+  char *pkgname;
-+  struct versionrevision version;
-+};
-+extern struct FinkVirtualPkgs *fink_virt_pkg;
-+/* FINK LOCAL end */
- 
- int dependencies_ok(struct pkginfo *pkg, struct pkginfo *removing,
-                     struct varbuf *aemsgs) {
-@@ -338,7 +362,7 @@
-   struct varbuf oemsgs;
-   struct dependency *dep;
-   struct deppossi *possi, *provider;
--
-+  struct FinkVirtualPkgs *virt_pkg = NULL; 
-   varbufinit(&oemsgs);
-   interestingwarnings= 0;
-   ok= 2; /* 2=ok, 1=defer, 0=halt */
-@@ -352,6 +376,29 @@
-     found= 0; /* 0=none, 1=defer, 2=withwarning, 3=ok */
-     for (possi= dep->list; found != 3 && possi; possi= possi->next) {
-       debug(dbg_depcondetail,"    checking possibility  -> %s",possi->ed->name);
-+      /* FINK LOCAL begin */
-+      virt_pkg = fink_virt_pkg;
-+      while (virt_pkg)
-+      {
-+        if (0==strcmp(possi->ed->name,virt_pkg->pkgname)) {
-+          debug(dbg_depcondetail,"        pseudo package");
-+          found= check_pseudo_package(&virt_pkg->version,possi,&interestingwarnings,&oemsgs);
++
++sub checksum_for
++{
++  my ($file) = @_;
++  my $sum;
++  if( $file eq "-" )
++  {
++    # read from stdin
++    $sum = `$md5_bin -p`;
++    1 while(chomp $sum);
++    # take only the last line, that's the checksum
++    $sum = (split /\n/, $sum)[-1];
++    return $sum;
++  }
++
++  # try to open the file to get the system error ourselves
++  eval {
++    open my $f, $file or die "$!\n";
++    close $f;
++  };
++  if( $@ ) {
++    print STDERR "$0: $file: $@";
++    $return = 1;
++    return "";
++  }
++
++  $sum = `$md5_bin -q "$file"`;
++  1 while(chomp $sum);
++  return $sum;
++}
++
++sub run_check_mode
++{
++  my @files = @_;
++  my $read_stdin = 0;
++  my $f;
++
++  for my $md5file( @files )
++  {
++    eval { open $f, $md5file or die $! };
++    if( $@ )
++    {
++      print STDERR "$0: $md5file: $@\n";
++      next;
++    }
++
++    my $lines = 0;
++    my $actual_lines = 0;
++    my $valid = 0;
++    my $errors = 0;
++    while(<$f>) {
++      my $line = $_;
++      $actual_lines++;
++
++      # check this line
++      my ($sum, $file) = $line =~ /^([0-9a-fA-F]{32}) (?: |\*)(.+)$/;
++      if( !defined($sum) || !defined($file)) {
++        if( $warn && $line !~ /^#/ )
++        {
++          warn "$0: $md5file: $actual_lines: improperly formatted MD5 checksum line\n";
 +        }
-+        virt_pkg = virt_pkg->next;
++        next;
 +      }
-+/*      
-+      if (0==strcmp(possi->ed->name,"darwin") && darwin_version.version) {
-+        debug(dbg_depcondetail,"        pseudo package darwin");
-+        found= check_pseudo_package(&darwin_version,possi,&interestingwarnings,&oemsgs);
-+        break;
++
++      $lines++;
++      my $checksum = checksum_for($file);
++      if( !$checksum )
++      {
++        if( !$quiet )
++        {
++          print "$file: FAILED open or read\n";
++        }
++        $errors++;
 +      }
-+      else if (0==strcmp(possi->ed->name,"macosx") && macosx_version.version) {
-+        debug(dbg_depcondetail,"        pseudo package macosx");
-+        found= check_pseudo_package(&macosx_version,possi,&interestingwarnings,&oemsgs);
-+        break;
++      elsif( lc($checksum) eq lc($sum) )
++      {
++        if( !$quiet )
++        {
++          print "$file: OK\n";
++        }
++        $valid++;
 +      }
-+*/      
-+      /* FINK LOCAL end */
-       if (possi->cyclebreak) {
-         debug(dbg_depcondetail,"      break cycle so ok and found");
-         found= 3; break;
-diff -ruN dpkg-1.10.21.orig/man/en/dpkg.cfg.5 dpkg-1.10.21/man/en/dpkg.cfg.5
---- dpkg-1.10.21.orig/man/en/dpkg.cfg.5	2002-02-09 18:37:01.000000000 -0600
-+++ dpkg-1.10.21/man/en/dpkg.cfg.5	2020-10-01 05:01:21.000000000 -0500
-@@ -8,10 +8,11 @@
- here. Comments are allowed by starting a line with a hash sign
- ("\fB#\fR").
- .SH FILES
--.I /etc/dpkg/dpkg.cfg
-+.I @PREFIX@/etc/dpkg/dpkg.cfg
- ~/.dpkg.cfg
- .SH AUTHOR
--See \fB/usr/share/doc/dpkg/THANKS\fP for the list of people who have
-+See \fB@PREFIX@/share/doc/dpkg/THANKS\fP for the list of people who have
- contributed to \fBdpkg\fP .
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .SH SEE ALSO
- .BR dpkg (8)
-diff -ruN dpkg-1.10.21.orig/man/en/dselect.cfg.5 dpkg-1.10.21/man/en/dselect.cfg.5
---- dpkg-1.10.21.orig/man/en/dselect.cfg.5	2002-02-16 08:10:50.000000000 -0600
-+++ dpkg-1.10.21/man/en/dselect.cfg.5	2020-10-01 05:01:21.000000000 -0500
-@@ -8,10 +8,11 @@
- here. Comments are allowed by starting a line with a hash sign
- ("\fB#\fR").
- .SH FILES
--.I /etc/dpkg/dselect.cfg
-+.I @PREFIX@/etc/dpkg/dselect.cfg
- ~/.dselect.cfg
- .SH AUTHOR
--See \fB/usr/share/doc/dpkg/THANKS\fP for the list of people who have
-+See \fB@PREFIX@/share/doc/dpkg/THANKS\fP for the list of people who have
- contributed to \fBdselect\fP .
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .SH SEE ALSO
- .BR dselect (8)
-diff -ruN dpkg-1.10.21.orig/man/fr/cleanup-info.8 dpkg-1.10.21/man/fr/cleanup-info.8
---- dpkg-1.10.21.orig/man/fr/cleanup-info.8	2002-02-02 09:57:09.000000000 -0600
-+++ dpkg-1.10.21/man/fr/cleanup-info.8	2020-10-01 05:01:21.000000000 -0500
-@@ -38,7 +38,7 @@
- Affiche la version et se termine normalement.
- .SH FICHIERS
- .TP
--.I "/usr/info/dir ou <nom-de-rep>/dir"
-+.I "@PREFIX@/share/info/dir ou <nom-de-rep>/dir"
- Le fichier ´ dir ª du rÈpertoire ´ info ª. Le fichier verrouillÈ porte le mÍme
- nom suivi de ´ .lock ª.
- .SH BOGUES
-@@ -54,4 +54,6 @@
- .B pas
- de garantie.
- .SH TRADUCTION
--Philippe Batailler, Janvier 2001.
-\ No newline at end of file
-+Philippe Batailler, Janvier 2001.
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/man/fr/dpkg-deb.1 dpkg-1.10.21/man/fr/dpkg-deb.1
---- dpkg-1.10.21.orig/man/fr/dpkg-deb.1	2002-02-02 09:57:09.000000000 -0600
-+++ dpkg-1.10.21/man/fr/dpkg-deb.1	2020-10-01 05:01:21.000000000 -0500
-@@ -245,9 +245,11 @@
- Le copyright (C) date de 1995-1996 et ils ont paru sous la licence
- ´ GNU General Public Licence ª ; il n'y a PAS de garantie.
- Voyez
--.B /usr/share/doc/dpkg/copyright
-+.B @PREFIX@/share/doc/dpkg/copyright
- et
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- pour des prÈcisions.
- .SH "TRADUCTION"
--Philippe Batailler, Dec 2000.
-\ No newline at end of file
-+Philippe Batailler, Dec 2000.
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/man/fr/dpkg-divert.8 dpkg-1.10.21/man/fr/dpkg-divert.8
---- dpkg-1.10.21.orig/man/fr/dpkg-divert.8	2002-02-02 09:57:09.000000000 -0600
-+++ dpkg-1.10.21/man/fr/dpkg-divert.8	2020-10-01 05:01:21.000000000 -0500
-@@ -41,7 +41,7 @@
- .TP
- .I --admindir <rÈpertoire>
- DÈfinit le rÈpertoire de donnÈes de Dpkg comme <rÈpertoire> (par dÈfaut c'est 
--/var/lib/dpkg).
-+@PREFIX@/var/lib/dpkg).
- .TP
- .I --divert <dÈvier-dans>
- <dÈvier-dans> est le nom utilisÈ pour les autres versions des paquets.
-@@ -76,7 +76,7 @@
- On ne peut pas dÈvier des rÈpertoires avec dpkg-divert.
- .SH FICHIERS
- .TP
--.I /var/lib/dpkg/diversions
-+.I @PREFIX@/var/lib/dpkg/diversions
- Ce fichier contient la liste actuelle des diversions en oeuvre sur le
- systËme. Il se trouve dans le rÈpertoire d'administration de Dpkg, avec
- d'autres fichiers importants comme ´\ status\ ª ou ´\ available\ ª.
-@@ -94,4 +94,6 @@
- C'est un logiciel libre ; voyez la ´ GNU General Public Licence ª
- version 2 ou supÈrieure pour le copyright. Il n'y a PAS de garantie.
- .SH TRADUCTION
--Philippe Batailler, Jan 2001.
-\ No newline at end of file
-+Philippe Batailler, Jan 2001.
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/man/fr/dpkg-query.8 dpkg-1.10.21/man/fr/dpkg-query.8
---- dpkg-1.10.21.orig/man/fr/dpkg-query.8	2004-03-10 18:03:19.000000000 -0600
-+++ dpkg-1.10.21/man/fr/dpkg-query.8	2020-10-01 05:01:21.000000000 -0500
-@@ -15,7 +15,7 @@
- \fB-l\fP | \fB--list\fP \fIpaquet-nom-motif\fP ...
- Liste les paquets correspondant au motif donnÈ. Quand on ne donne aucun
- \fIpaquet-nom-motif\fP, tous les paquets listÈs dans 
--\fI/var/lib/dpkg/available\fP sont affichÈs. Les mÈtacaractËres ordinaires du
-+\fI@PREFIX@/var/lib/dpkg/available\fP sont affichÈs. Les mÈtacaractËres ordinaires du
- shell sont autorisÈs dans \fIpaquet-nom-motif\fP. Il faudra sans doute mettre
- \fIpaquet-nom-motif\fP entre apostrophes pour Èviter l'expansion des noms de
- fichier par le shell. Par exemple, tous les paquets dont le nom commence par
-@@ -48,7 +48,7 @@
- .TP
- \fB-p\fP |\fB--print-avail\fP paquet
- Affiche des renseignements dÈtaillÈs sur \fIpaquet\fP, tels qu'ils sont
--trouvÈs dans le fichier \fI/var/lib/dpkg/available\fP.
-+trouvÈs dans le fichier \fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fB--licence\fP | \fB--license\fP
- Affiche des renseignements sur la licence et le copyright.
-@@ -60,7 +60,7 @@
- .TP
- \fB--admindir=\fIdir\fP
- Changer l'endroit o˘ se trouve la base de donnÈes de \fBdpkg\fR. Par
--dÈfaut, c'est \fI/var/lib/dpkg\fP.
-+dÈfaut, c'est \fI@PREFIX@/var/lib/dpkg\fP.
- .TP
- \fB--showformat=\fP\fIformat\fR
- On se sert de cette option pour prÈciser le format de la sortie que produit la
-diff -ruN dpkg-1.10.21.orig/man/fr/dpkg-scanpackages.8 dpkg-1.10.21/man/fr/dpkg-scanpackages.8
---- dpkg-1.10.21.orig/man/fr/dpkg-scanpackages.8	2004-03-10 18:03:19.000000000 -0600
-+++ dpkg-1.10.21/man/fr/dpkg-scanpackages.8	2020-10-01 05:01:21.000000000 -0500
-@@ -43,7 +43,7 @@
- .PP
- .I rep-de-binaires
- est le nom de l'arborescence binaire (par exemple
--.BR contrib/binary-i386)
-+.BR main/binary-darwin-powerpc)
- que l'on veut traiter.
- Il vaut mieux qu'elle soit relative ‡ la racine de l'archive Debian\ ;
- ainsi chaque champ ´\ Filename\ ª dans le nouveau fichier ´\ Packages\ ª
-diff -ruN dpkg-1.10.21.orig/man/fr/dpkg-source.1 dpkg-1.10.21/man/fr/dpkg-source.1
---- dpkg-1.10.21.orig/man/fr/dpkg-source.1	2004-03-10 18:03:19.000000000 -0600
-+++ dpkg-1.10.21/man/fr/dpkg-source.1	2020-10-01 05:01:21.000000000 -0500
-@@ -58,13 +58,13 @@
- lit les informations concernant les dÈpendances envers les bibliothËques 
- partagÈes dans les fichiers suivants :
- .BR debian/shlibs.local,
--.BR /etc/dpkg/shlibs.override,
-+.BR @PREFIX@/etc/dpkg/shlibs.override,
- le fichier
- .B shlibs,
- (fichier du paquet contenant un fichier qui, selon
- .B objdump,
- satisfait au systËme de dÈpendance envers les bibliothËques) ou bien
--.BR /etc/dpkg/shlibs.default.
-+.BR @PREFIX@/etc/dpkg/shlibs.default.
- Le premier trouvÈ est utilisÈ. Voyez le
- .I Debian packaging manual
- pour des dÈtails sur le format des fichiers qui traitent des dÈpendances 
-@@ -845,9 +845,7 @@
- version 2 ou supÈrieure pour le copyright. Il n'y a
- .B pas
- de garantie. Voyez
--.B /usr/share/doc/dpkg/copyright
--et
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/doc/dpkg/copyright
- pour des prÈcisions.
- .SH TRADUCTION
- Philippe Batailler, Octobre 2003.
-diff -ruN dpkg-1.10.21.orig/man/fr/dpkg-split.8 dpkg-1.10.21/man/fr/dpkg-split.8
---- dpkg-1.10.21.orig/man/fr/dpkg-split.8	2002-02-02 09:57:09.000000000 -0600
-+++ dpkg-1.10.21/man/fr/dpkg-split.8	2020-10-01 05:01:21.000000000 -0500
-@@ -162,7 +162,7 @@
- .BI --depotdir " rÈpertoire"
- Indique un rÈpertoire diffÈrent pour la file comprenant les parties en attente
- d'une recomposition automatique. Par dÈfaut, c'est le rÈpertoire
--.BR /var/lib/dpkg .
-+.BR @PREFIX@/var/lib/dpkg .
- .TP
- .BI --partsize\fR|\fB-S " kbytes"
- Indique (en kilooctets (1024 octets)) la taille maximum d'une partie lors 
-@@ -233,7 +233,7 @@
- pas prÈsente dans les fichiers produits.
- .SH FICHIERS
- .TP
--.B /var/lib/dpkg/parts
-+.B @PREFIX@/var/lib/dpkg/parts
- Le rÈpertoire par dÈfaut de la file contenant les fichiers qui attendent une
- recomposition automatique.
- 
-@@ -254,7 +254,9 @@
- Ils ont ÈtÈ ÈditÈs sous la ´ GNU General Public Licence ª ; il n'y a
- PAS de GARANTIE.
- Voyez
--.B /usr/share/dpkg/copyright
-+.B @PREFIX@/share/dpkg/copyright
- et
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- pour des prÈcisions.
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/man/fr/dpkg-statoverride.8 dpkg-1.10.21/man/fr/dpkg-statoverride.8
---- dpkg-1.10.21.orig/man/fr/dpkg-statoverride.8	2002-02-02 09:57:09.000000000 -0600
-+++ dpkg-1.10.21/man/fr/dpkg-statoverride.8	2020-10-01 05:01:21.000000000 -0500
-@@ -55,10 +55,10 @@
- .TP
- .I --admindir
- Changer le rÈpertoire de la base de donnÈes de dpkg, o˘ se trouve aussi le
--fichier statoverride. par dÈfaut, c'est /var/lib/dpkg.
-+fichier statoverride. par dÈfaut, c'est @PREFIX@/var/lib/dpkg.
- .SH FICHIERS
- .TP
--.I /var/lib/dpkg/statoverride
-+.I @PREFIX@/var/lib/dpkg/statoverride
- Ce fichier contient la liste actuelle des annulations concernant le systËme.
- Il se trouve dans le rÈpertoire d'administration de Dpkg, avec les autres 
- fichiers importants comme ´\ status\ ª ou ´\ available\ ª.
-@@ -76,4 +76,6 @@
- C'est un logiciel libre ; voyez la licence publique gÈnÈrale du projet GNU
- version 2 ou supÈrieure pour les droits de copie. Il n'y a PAS de garantie.
- .SH TRADUCTEUR
--Philippe Batailler, Ao˚t 2001.
-\ No newline at end of file
-+Philippe Batailler, Ao˚t 2001.
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/man/fr/dpkg.8 dpkg-1.10.21/man/fr/dpkg.8
---- dpkg-1.10.21.orig/man/fr/dpkg.8	2004-03-10 18:03:19.000000000 -0600
-+++ dpkg-1.10.21/man/fr/dpkg.8	2020-10-01 05:01:21.000000000 -0500
-@@ -165,7 +165,7 @@
- configuration. Si l'on donne l'option \fB-a\fP ou \fB--pending\fP ‡ la 
- place d'un nom de paquet, tous les paquets non dÈpaquetÈs, mais qui sont
- marquÈs comme devant Ítre supprimÈs ou purgÈs
--dans le file \fI/var/lib/dpkg/status\fP, sont respectivement
-+dans le file \fI@PREFIX@/var/lib/dpkg/status\fP, sont respectivement
- supprimÈs et purgÈs.
- 
- La suppression des paquets comporte les Ètapes suivantes : 
-@@ -188,7 +188,7 @@
- proviennent de \fIfichier-paquet\fP. Le \fIfichier-paquet\fP
- distribuÈ avec Debian est appelÈ simplement \fIpaquet\fP.
- \fBdpkg\fP garde son propre enregistrement des paquets disponibles dans
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fBdpkg -A\fP | \fB--record-avail\fP \fIfichier-paquet\fP ...
- Met ‡ jour les idÈes de \fBdpkg\fP et de \fBdselect\fP sur les paquets
-@@ -306,7 +306,7 @@
- 
- .SH OPTIONS
- On peut spÈcifier une option ‡ la fois sur la ligne de commande et dans le
--fichier de configuration de dpkg, \fI/etc/dpkg/dpkg.cfg\fP. Chaque ligne de
-+fichier de configuration de dpkg, \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP. Chaque ligne de
- ce fichier est soit une option (identique ‡ une option en ligne de commande
- mais sans tiret), soit un commentaire, commenÁant par \fB#\fR.
- .br
-@@ -479,14 +479,14 @@
- .TP
- \fB--root=\fP\fIrep\fP | \fB--admindir=\fP\fIrep\fP | \fB--instdir=\fP\fIrep\fP
- Changer les rÈpertoires par dÈfaut. \fBadmindir\fP est par dÈfaut 
--\fI/var/lib/dpkg\fP et contient beaucoup de fichiers qui donnent des
-+\fI@PREFIX@/var/lib/dpkg\fP et contient beaucoup de fichiers qui donnent des
- informations sur l'Ètat des paquets installÈs ou non installÈs, etc. 
- \fBinstdir\fP est par dÈfaut \fI/\fP et se rÈfËre au rÈpertoire o˘ les 
- paquets doivent Ítre installÈs. \fBinstdir\fP est aussi le rÈpertoire 
- donnÈ ‡ \fBchroot\fP(2) avant que ne soient lancÈes les scripts d'installation
- du \fIpaquet\fP, ce qui signifie que ces scripts voient \fBinstdir\fP 
- comme le rÈpertoire de root. Changer \fBroot\fP change \fBinstdir\fP en
--\fIrep\fP et \fBadmindir\fP en \fIrep\fP\fB/var/lib/dpkg\fP.
-+\fIrep\fP et \fBadmindir\fP en \fIrep\fP\fB@PREFIX@/var/lib/dpkg\fP.
- .TP
- \fB-O\fP | \fB--selected-only\fP
- Traiter seulement les paquets qui sont sÈlectionnÈs pour l'installation. 
-@@ -505,16 +505,16 @@
- 
- .SH FICHIERS
- .TP
--.I /etc/dpkg/dpkg.cfg
-+.I @PREFIX@/etc/dpkg/dpkg.cfg
- Fichier de configuration contenant les options par dÈfaut.
- .P
- Les autres fichiers rÈpertoriÈs ici sont dans leur rÈpertoire par dÈfaut, voyez
- l'option \fB--admindir\fP pour savoir changer l'emplacement de ces fichiers.
- .TP
--.I /var/lib/dpkg/available
-+.I @PREFIX@/var/lib/dpkg/available
- Liste des paquets disponibles.
- .TP
--.I /var/lib/dpkg/status
-+.I @PREFIX@/var/lib/dpkg/status
- …tats des paquets disponibles. Ce fichier contient des informations qui
- permettent de savoir si un paquet est marquÈ comme devant Ítre supprimÈ
- ou pas, devant Ítre installÈ ou pas, etc. Voyez la section
-@@ -621,7 +621,7 @@
- .SH AUTEURS
- .nf
- \fBdpkg\fP fut d'abord Ècrit par Ian Jackson, puis mis ‡ jour par beaucoup
--d'autres gens. Voyez le fichier \fB/usr/share/doc/dpkg/THANKS.gz\fP pour la 
-+d'autres gens. Voyez le fichier \fB@PREFIX@/share/doc/dpkg/THANKS.gz\fP pour la 
- liste des personnes qui ont contribuÈ ‡ \fBdpkg\fP.
- .fi
- .SH "TRADUCTION"
-diff -ruN dpkg-1.10.21.orig/man/fr/install-info.8 dpkg-1.10.21/man/fr/install-info.8
---- dpkg-1.10.21.orig/man/fr/install-info.8	2002-02-02 09:57:09.000000000 -0600
-+++ dpkg-1.10.21/man/fr/install-info.8	2020-10-01 05:01:21.000000000 -0500
-@@ -157,7 +157,7 @@
- dans
- .IR rep-info . 
- Par dÈfaut, c'est
--.BR /usr/info .
-+.BR @PREFIX@/share/info .
- .TP
- .BI \-\-align= nnn " [dÈconseillÈ]"
- PrÈcise que l'espace d'indentation de la premiËre ligne de la description
-@@ -272,6 +272,8 @@
- emacs(1), info(1), gzip(1)
- .SH "TRADUCTION"
- Philippe Batailler. Dec 2000
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .SH COPYRIGHT
- Copyright 1994, Ian Jackson.
- .B install\-info
-diff -ruN dpkg-1.10.21.orig/man/fr/update-alternatives.8 dpkg-1.10.21/man/fr/update-alternatives.8
---- dpkg-1.10.21.orig/man/fr/update-alternatives.8	2004-03-10 18:03:19.000000000 -0600
-+++ dpkg-1.10.21/man/fr/update-alternatives.8	2020-10-01 05:01:21.000000000 -0500
-@@ -4,7 +4,7 @@
- .\" it under the terms of the GNU General Public License as published
- .\" by the Free Software Foundation; either version 2 of the License, or
- .\" (at your option) any later version.  There is NO WARRANTY.  You can
--.\" find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
-+.\" find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
- .\" traduction de la rÈvision CVS 1.8
- .TH UPDATE-ALTERNATIVES 8 "19 January 1998" "Debian Project" "dpkg utilities"
- .SH NOM
-@@ -81,11 +81,11 @@
- .BR nvi (1)
- sont tous les deux installÈs, le systËme des ´\ alternatives\ ª fait que le 
- nom gÈnÈrique 
--.I /usr/bin/editor
-+.I @PREFIX@/bin/editor
- renvoie par dÈfaut ‡
--.I /usr/bin/nvi.
-+.I @PREFIX@/bin/nvi.
- L'administrateur systËme peut remplacer cette assignation par
--.I /usr/bin/ed
-+.I @PREFIX@/bin/ed
- et le systËme des ´\ alternatives\ ª ne la changera pas tant qu'on ne lui
- aura pas demandÈ explicitement de le faire.
- .PP
-@@ -96,7 +96,7 @@
- lequel nom est ‡ son tour un lien symbolique vers le fichier rÈellement
- visÈ. Les modifications faites par l'administrateur systËme sont ainsi
- confinÈes dans le rÈpertoire 
--.I /etc :
-+.I @PREFIX@/etc :
- le FHS (lisez-le) donne de Bonnes Raisons de faire ainsi.
- .PP
- Chaque fois qu'un paquet proposant un fichier pour une fonction dÈterminÈe,
-@@ -117,9 +117,9 @@
- de 
- .BR vi (1) 
- sont installÈes, la page de manuel qui est visÈe par
--.I /usr/share/man/man1/vi.1
-+.I @PREFIX@/share/man/man1/vi.1
- devrait correspondre ‡ 
--.IR /usr/bin/vi.
-+.IR @PREFIX@/bin/vi.
- .B update-alternatives
- gËre ce problËme avec les liens
- .I principaux (´ master ª)
-@@ -175,7 +175,7 @@
- .TP
- nom gÈnÈrique
- C'est un nom, par exemple
--.IR /usr/bin/editor,
-+.IR @PREFIX@/bin/editor,
- qui renvoie, ‡ travers le systËme des ´ alternatives ª, ‡ l'un des fichiers qui
- remplissent des fonctions similaires.
- .TP
-@@ -190,13 +190,13 @@
- rÈpertoire des alternatives 
- C'est le rÈpertoire qui contient les liens symboliques ; il s'agit 
- par dÈfaut de
--.IR /etc/alternatives.
-+.IR @PREFIX@/etc/alternatives.
- .TP
- rÈpertoire administratif
- C'est le rÈpertoire qui contient des renseignements sur l'Ètat de
- .BR update-alternatives. 
- Il s'agit par dÈfaut de
--.IR /var/lib/dpkg/alternatives.
-+.IR @PREFIX@/var/lib/dpkg/alternatives.
- .TP
- groupe de liens
- C'est un ensemble de liens symboliques corrÈlÈs, de maniËre qu'on puisse les
-@@ -387,12 +387,12 @@
- est dÈsactivÈ.
- .SH FICHIERS
- .TP
--.I /etc/alternatives/
-+.I @PREFIX@/etc/alternatives/
- Le rÈpertoire des ´ alternatives ª par dÈfaut.
- Peut Ítre remplacÈ avec l'option
- .B --altdir.
- .TP
--.I /var/lib/dpkg/alternatives/
-+.I @PREFIX@/var/lib/dpkg/alternatives/
- Le rÈpertoire administratif par dÈfaut.
- Peut Ítre remplacÈ avec l'option
- .B --admindir
-@@ -432,7 +432,7 @@
- version 2 ou supÈrieure pour les conditions du copyright. Il n'y a
- AUCUNE garantie.
- .PP
--On peut trouver la licence GNU GPL dans /usr/share/common-licenses/GPL 
-+On peut trouver la licence GNU GPL dans @PREFIX@/share/doc/dpkg/copyright 
- sur tous les systËmes Debian.
- .\" .SH REMERCIEMENTS
- .SH "VOIR AUSSI"
-diff -ruN dpkg-1.10.21.orig/man/ja/cleanup-info.8 dpkg-1.10.21/man/ja/cleanup-info.8
---- dpkg-1.10.21.orig/man/ja/cleanup-info.8	2004-04-25 11:14:26.000000000 -0500
-+++ dpkg-1.10.21/man/ja/cleanup-info.8	2020-10-01 05:01:21.000000000 -0500
-@@ -37,7 +37,7 @@
- •–°º•∏•Á•Û§Ú…Ωº®§∑°¢¿µæÔΩ™Œª§π§Î°£
- .SH •’•°•§•Î
- .TP
--.I "/usr/info/dir §ﬁ§ø§œ <•«•£•Ï•Ø•»•ÍÃæ>/dir"
-+.I "@PREFIX@/share/info/dir §ﬁ§ø§œ <•«•£•Ï•Ø•»•ÍÃæ>/dir"
- info •«•£•Ï•Ø•»•Í•’•°•§•Î°£•Ì•√•Ø•’•°•§•Î§œ∆±§∏Ãæ¡∞§« ".lock" ≥»ƒ•ª“§¨
- §ƒ§§§ø§‚§Œ§À§ §Î°£
- .SH •–•∞
-@@ -47,6 +47,8 @@
- .BR info (1).
- .SH √¯º‘
- Copyright (C) 1996 Kim-Minh Kaplan.
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- This is free software; see the GNU General Public Licence
- version 2 or later for copying conditions.  There is NO warranty.
-diff -ruN dpkg-1.10.21.orig/man/ja/dpkg-deb.1 dpkg-1.10.21/man/ja/dpkg-deb.1
---- dpkg-1.10.21.orig/man/ja/dpkg-deb.1	2004-04-25 11:14:26.000000000 -0500
-+++ dpkg-1.10.21/man/ja/dpkg-deb.1	2020-10-01 05:01:21.000000000 -0500
-@@ -260,9 +260,9 @@
- §»§≥§Œ•ﬁ•À•Â•¢•Î•⁄°º•∏§œ Ian Jackson §¨∫Ó¿Æ§∑§ø°£§≥§Ï§È§Œ√¯∫Ó∏¢§œ»‡§À
- §¢§Í(Copyright (C)1995-1996)°¢GNU ∞Ï»Ã∏¯Õ≠ª»Õ—µˆ¬˙§À§Ë§Í»“…€§µ§Ï§Î°£
- §≥§Ï§È§œÃµ ›æ⁄§«§¢§Î°£æ‹∫Ÿ§œ
--.B /usr/share/doc/dpkg/copyright
-+.B @PREFIX@/share/doc/dpkg/copyright
- §»
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- §Úª≤æ»§π§Î§≥§»°£
- 
- (
-@@ -271,10 +271,13 @@
- Copyright (C)1995-1996
- by him and released under the GNU General Public Licence; there is NO
- WARRANTY.  See
--.B /usr/share/doc/dpkg/copyright
-+.B @PREFIX@/share/doc/dpkg/copyright
- and
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- for details.
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-+.PP
- )
- .SH À›Ãıº‘
- ¥Ó¿•π¿ <kise@fuyuneko.jp>
-diff -ruN dpkg-1.10.21.orig/man/ja/dpkg-divert.8 dpkg-1.10.21/man/ja/dpkg-divert.8
---- dpkg-1.10.21.orig/man/ja/dpkg-divert.8	2004-04-25 11:14:26.000000000 -0500
-+++ dpkg-1.10.21/man/ja/dpkg-divert.8	2020-10-01 05:01:21.000000000 -0500
-@@ -86,6 +86,7 @@
- overriding a package's version of a file" §Úª≤æ»§Œ§≥§»°£
- .SH √¯º‘
- Copyright (C) 1995 Ian Jackson.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- This is free software; see the GNU General Public Licence
- version 2 or later for copying conditions.  There is NO warranty.
-diff -ruN dpkg-1.10.21.orig/man/ja/dpkg-scanpackages.8 dpkg-1.10.21/man/ja/dpkg-scanpackages.8
---- dpkg-1.10.21.orig/man/ja/dpkg-scanpackages.8	2004-04-25 11:14:26.000000000 -0500
-+++ dpkg-1.10.21/man/ja/dpkg-scanpackages.8	2020-10-01 05:01:21.000000000 -0500
-@@ -103,6 +103,8 @@
- .I newmaintainer
- §ŒæÏπÁ§œ√÷¥π§µ§Ï§Î°£
- .PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-+.PP
- ∏¯º∞§Œ Packages •Í•π•»§Ú∫Ó¿Æ§π§Î§ø§·§Àª»§Ô§Ï§∆§§§Î override •’•°•§•Î§œ°¢
- Debian •ﬂ•È°º§Œ
- .I indices
-diff -ruN dpkg-1.10.21.orig/man/ja/dpkg-statoverride.8 dpkg-1.10.21/man/ja/dpkg-statoverride.8
---- dpkg-1.10.21.orig/man/ja/dpkg-statoverride.8	2002-02-02 09:57:09.000000000 -0600
-+++ dpkg-1.10.21/man/ja/dpkg-statoverride.8	2020-10-01 05:01:21.000000000 -0500
-@@ -99,14 +99,14 @@
- .TP
- .I --admindir
- .\"O Change the directory of the dpkg database where the statoverride file is
--.\"O also stored. Defaults to /var/lib/dpkg.
-+.\"O also stored. Defaults to @PREFIX@/var/lib/dpkg.
- dpkg •«°º•ø•Ÿ°º•π§Œ•«•£•Ï•Ø•»•Í§Ú —ππ§π§Î°£
- statoverride §Œ•’•°•§•Î§‚§≥§≥§À ›¬∏§µ§Ï§Î°£
--•«•’•©•Î•»§œ /var/lib/dpkg°£
-+•«•’•©•Î•»§œ @PREFIX@/var/lib/dpkg°£
- .\"O .SH FILES
- .SH •’•°•§•Î
- .TP
--.I /var/lib/dpkg/statoverride
-+.I @PREFIX@/var/lib/dpkg/statoverride
- .\"O File which contains the current list of stat overrides of the system. It
- .\"O is located in the dpkg administration directory, along with other files
- .\"O important to dpkg, such as `status' or `available'.
-@@ -127,6 +127,8 @@
- .UR mailto:wakkerma@debian.org
- <wakkerma@debian.org>
- .UE
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- This is free software; see the GNU General Public Licence version 2 or
- later for copying conditions.  There is NO warranty.
-diff -ruN dpkg-1.10.21.orig/man/ja/dpkg.8 dpkg-1.10.21/man/ja/dpkg.8
---- dpkg-1.10.21.orig/man/ja/dpkg.8	2004-04-25 11:14:26.000000000 -0500
-+++ dpkg-1.10.21/man/ja/dpkg.8	2020-10-01 05:01:21.000000000 -0500
-@@ -188,7 +188,7 @@
- \fB--remove\fP §œ°¢¿ﬂƒÍ•’•°•§•Î§ÚΩ¸§§§ø§π§Ÿ§∆§Ú∫ÔΩ¸§π§Î(¿ﬂƒÍ•’•°•§•Î§Œ∞ÏÕ˜§œ°¢
- \fIconffiles\fP •≥•Û•»•Ì°º•Î•’•°•§•Î§À§¢§Î)°£
- ∞˙§≠øÙ§»§∑§∆°¢•—•√•±°º•∏Ãæ§Œ¬Â§Ô§Í§À \fB-a\fP §ﬁ§ø§œ \fB--pending\fP §¨
--ªÿƒÍ§µ§Ï§øæÏπÁ§À§œ°¢\fI/var/lib/dpkg/status\fP •’•°•§•Î§À remove §ﬁ§ø§œ
-+ªÿƒÍ§µ§Ï§øæÏπÁ§À§œ°¢\fI@PREFIX@/var/lib/dpkg/status\fP •’•°•§•Î§À remove §ﬁ§ø§œ
- purge §Œ∞ı§Úª˝§ƒ§π§Ÿ§∆§Œ≈∏≥´∫—§ﬂ•—•√•±°º•∏§Ú°¢§Ω§Ï§æ§Ï remove §ﬁ§ø§œ
- purge §π§Î°£
- 
-@@ -211,7 +211,7 @@
- √÷§≠¥π§®§Î°£
- Debian §»∞ÏΩÔ§À«€…€§µ§Ï§∆§§§Î \fIPackages-file\fP §ŒÃæ¡∞§œ¥ √±§À
- \fIPackages\fP §«§¢§Î°£\fBdpkg\fP §œ°¢Õ¯Õ—≤ƒ«Ω§ •—•√•±°º•∏§Œæ Û§Ú
--\fI/var/lib/dpkg/available\fP §Àµ≠œø§π§Î°£
-+\fI@PREFIX@/var/lib/dpkg/available\fP §Àµ≠œø§π§Î°£
- .TP
- \fBdpkg -A\fP | \fB--record-avail\fP \fIpackage_file\fP ...
- \fBdpkg\fP §‰ \fBdselect\fP §¨¥…Õ˝§π§ÎÕ¯Õ—≤ƒ«Ω§ •—•√•±°º•∏§Œæ Û§Ú°¢
-@@ -326,7 +326,7 @@
- 
- .SS •™•◊•∑•Á•Û
- §π§Ÿ§∆§Œ•™•◊•∑•Á•Û§œ°¢•≥•ﬁ•Û•…•È•§•Û§‰ \fBdpkg\fP §Œ¿ﬂƒÍ•’•°•§•Î§«
--§¢§Î \fI/etc/dpkg/dpkg.cfg\fP §Œ√Ê§«ªÿƒÍ§«§≠§Î°£¿ﬂƒÍ•’•°•§•Î§œ°¢
-+§¢§Î \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP §Œ√Ê§«ªÿƒÍ§«§≠§Î°£¿ﬂƒÍ•’•°•§•Î§œ°¢
- 1 π‘§À 1 §ƒ§Œ•™•◊•∑•Á•Û(•≥•ﬁ•Û•…•È•§•Û•™•◊•∑•Á•Û§»§ﬁ§√§ø§Ø∆±§∏°¢
- §ø§¿§∑∆¨§Œ•¿•√•∑•Â§ÚºË§Î)§´°¢•≥•·•Û•»(∫«ΩÈ§À \fB#\fR §«ªœ§ﬁ§Î)
- §«πΩ¿Æ§µ§Ï§Î°£
-@@ -492,13 +492,13 @@
- •«•’•©•Î•»§Œ•«•£•Ï•Ø•»•Í§Ú —ππ§π§Î°£\fBadmindir\fP §œ•§•Û•π•»°º•Î∫—§ﬂ§Œ
- •—•√•±°º•∏§‰•§•Û•π•»°º•Î§µ§Ï§∆§§§ §§•—•√•±°º•∏§Œæı¬÷§À¥ÿ§π§Îæ Û§ §…§Ú
- ƒÛ∂°§π§Î°¢¬øøÙ§Œ•’•°•§•Î§¨≥ «º§µ§Ï§∆§§§Î•«•£•Ï•Ø•»•Í§«°¢•«•’•©•Î•»§œ
--\fI/var/lib/dpkg\fP §«§¢§Î°£\fBinstdir\fP §œ•—•√•±°º•∏§¨•§•Û•π•»°º•Î
-+\fI@PREFIX@/var/lib/dpkg\fP §«§¢§Î°£\fBinstdir\fP §œ•—•√•±°º•∏§¨•§•Û•π•»°º•Î
- §π§Î§»§≠§Àª≤æ»§µ§Ï§Î•«•£•Ï•Ø•»•Í§«°¢•«•’•©•Î•»§œ \fI/\fP §«§¢§Î°£
- §ﬁ§ø°¢\fBinstdir\fP §œ°¢•—•√•±°º•∏§Œ•§•Û•π•»°º•Î•π•Ø•Í•◊•»§¨º¬π‘
- §µ§Ï§Î¡∞§À \fBchroot\fP(2) §π§Î•«•£•Ï•Ø•»•Í§Œ•—•π§«§¢§Î°£§ƒ§ﬁ§Í°¢
- •π•Ø•Í•◊•»§œ \fBinstdir\fP §Ú•Î°º•»•«•£•Ï•Ø•»•Í§»§ﬂ§ §π°£
- \fBroot\fP §Ú —ππ§π§Î§»°¢\fBinstdir\fP §Ú \fIdir\fP §À°¢\fBadmindir\fP
--§Ú \fIdir\fP\fB/var/lib/dpkg\fP §À —ππ§π§Î°£
-+§Ú \fIdir\fP\fB@PREFIX@/var/lib/dpkg\fP §À —ππ§π§Î°£
- .TP
- \fB-O\fP | \fB--selected-only\fP
- •§•Û•π•»°º•Î(§ﬁ§ø§œ∫ÔΩ¸)∫Ó∂»§Ú§π§Î§Ë§¶§À¡™¬Ú§∑§ø•—•√•±°º•∏§Œ§ﬂ§ÚΩËÕ˝§π§Î°£
-@@ -516,17 +516,17 @@
- 
- .SH •’•°•§•Î
- .TP
--.I /etc/dpkg.cfg
-+.I @PREFIX@/etc/dpkg.cfg
- •™•◊•∑•Á•Û§Œ•«•’•©•Î•»√Õ§Úµ≠Ω“§π§Î¿ﬂƒÍ•’•°•§•Î°£
- .P
- §≥§Œ§€§´§Œ°¢∞ ≤º§Àº®§π•’•°•§•Î∞ÏÕ˜§œ•«•’•©•Î•»§Œ√Õ§«§¢§Î°£§…§Œ§Ë§¶§À§∑§∆
- •’•°•§•Î§Œ∞Ã√÷§Ú —ππ§π§Î§´§À§ƒ§§§∆§œ°¢\fB--admindir\fP •™•◊•∑•Á•Û§Œπ‡§Ú
- ª≤æ»§π§Î§≥§»°£
- .TP
--.I /var/lib/dpkg/available
-+.I @PREFIX@/var/lib/dpkg/available
- ª»Õ—§«§≠§Î•—•√•±°º•∏§Œ∞ÏÕ˜°£
- .TP
--.I /var/lib/dpkg/status
-+.I @PREFIX@/var/lib/dpkg/status
- ª»Õ—§«§≠§Î•—•√•±°º•∏§Œæı¬÷°£§≥§Œ•’•°•§•Î§œ°¢•—•√•±°º•∏§À∫ÔΩ¸§Œ∞ı§¨§¢§Î§´
- §…§¶§´°¢•§•Û•π•»°º•Î∫—§ﬂ§´§…§¶§´°¢§ §…§Œæ Û§¨¥ﬁ§ﬁ§Ï§∆§§§Î°£§Ø§Ô§∑§Ø§œ°¢
- \fB •—•√•±°º•∏§À¥ÿ§π§Îæ Û\fP §Œπ‡§Úª≤æ»§π§Î§≥§»°£
-diff -ruN dpkg-1.10.21.orig/man/ja/install-info.8 dpkg-1.10.21/man/ja/install-info.8
---- dpkg-1.10.21.orig/man/ja/install-info.8	2004-04-25 11:14:26.000000000 -0500
-+++ dpkg-1.10.21/man/ja/install-info.8	2020-10-01 05:01:21.000000000 -0500
-@@ -292,12 +292,12 @@
- .\"O be located in
- .\"O .IR infodir .
- .\"O The default is
--.\"O .BR /usr/info .
-+.\"O .BR @PREFIX@/share/info .
- .B dir
- •’•°•§•Î§»°¢•§•Û•π•»°º•Î§µ§Ï§Îø∑§ø§  Info •’•°•§•Î§Œ•≥•‘°º§»§¨
- .I infodir
- §À§¢§Î§≥§»§ÚªÿƒÍ§π§Î°£•«•’•©•Î•»§œ
--.B /usr/info
-+.B @PREFIX@/share/info
- §«§¢§Î°£
- .TP
- .\"O .BI \-\-align= nnn " [deprecated]"
-@@ -485,6 +485,8 @@
- later for copying conditions.  There is
- .I no
- warranty.
-+.PP
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .SH À›Ãıº‘
- ¥ÿ∏Õ π¨∞Ï <sekido@mbox.kyoto-inet.or.jp>
- .SH À›Ãıº‘√Ì
-diff -ruN dpkg-1.10.21.orig/man/ja/update-alternatives.8 dpkg-1.10.21/man/ja/update-alternatives.8
---- dpkg-1.10.21.orig/man/ja/update-alternatives.8	2004-04-25 11:14:26.000000000 -0500
-+++ dpkg-1.10.21/man/ja/update-alternatives.8	2020-10-01 05:01:21.000000000 -0500
-@@ -4,7 +4,7 @@
- .\" it under the terms of the GNU General Public License as published
- .\" by the Free Software Foundation; either version 2 of the License, or
- .\" (at your option) any later version.  There is NO WARRANTY.  You can
--.\" find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
-+.\" find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
- .\"
- .\" Original manpage cvs revision 1.8.2.2
- .\"WORD:	action		•¢•Ø•∑•Á•Û
-@@ -87,11 +87,11 @@
- .BR nvi (1)
- §ŒŒæ ˝§¨•∑•π•∆•‡§À•§•Û•π•»°º•Î§µ§Ï§∆§§§ø§»§π§Î§»°¢
- ∞Ï»ÃÃæ§«§¢§Î
--.I /usr/bin/editor
-+.I @PREFIX@/bin/editor
- §œ°¢•«•’•©•Î•»§«§œ
--.I /usr/bin/nvi
-+.I @PREFIX@/bin/nvi
- §Úª≤æ»§π§Î°£•∑•π•∆•‡¥…Õ˝º‘§œ§≥§Ï§ÚæÂΩÒ§≠§∑°¢
--.I /usr/bin/ed
-+.I @PREFIX@/bin/ed
- §Úª≤æ»§µ§ª§Î§Ë§¶§À§π§Î§≥§»§‚§«§≠§Î°£§≥§¶§π§Î§»°¢
- §Ω§Œ∏ÂÃ¿º®≈™§ •Í•Ø•®•π•»§¨§ §±§Ï§–°¢
- alternatives •∑•π•∆•‡§œ§Ω§Œ¿ﬂƒÍ§Ú —ππ§∑§ §§°£
-@@ -101,7 +101,7 @@
- •«•£•Ï•Ø•»•Í§À§¢§ÎÃæ¡∞§ÿ§Œ•∑•Û•‹•Í•√•Ø•Í•Û•Ø§À§ §√§∆§§§Î°£
- §Ω§∑§∆§Ω§ŒÃæ¡∞§¨º¬∫›§Àª≤æ»§µ§Ï§Î•’•°•§•Î§ÿ§Œ•∑•Û•‹•Í•√•Ø•Í•Û•Ø§À§ §√§∆§§§Î°£
- §≥§¶§ §√§∆§§§ÎÕ˝Õ≥§œ°¢•∑•π•∆•‡¥…Õ˝º‘§Œ —ππ§¨
--.I /etc
-+.I @PREFIX@/etc
- •«•£•Ï•Ø•»•Í∞ ≤º§«π‘§Ô§Ï§Î§Ë§¶§À§π§Î§ø§·§«§¢§Î°£
- § §º§≥§¶§π§Î§Œ§¨Œ…§§§´§À§ƒ§§§∆§œ FHS §À¿‚Ã¿§¨§¢§Î°£
- .PP
-@@ -120,9 +120,9 @@
- Œ„§®§–
- .BR vi (1)
- •®•«•£•ø§Œ§§§Ì§§§Ì§ «…¿∏•∑•π•∆•‡§¨∆±ª˛§À•§•Û•π•»°º•Î§µ§Ï§∆§§§ø§»§π§Î§»°¢
--.I /usr/share/man/man1/vi.1
-+.I @PREFIX@/share/man/man1/vi.1
- §¨ª≤æ»§π§Î man •⁄°º•∏§œ°¢
--.I /usr/bin/vi
-+.I @PREFIX@/bin/vi
- §¨ª≤æ»§π§Îº¬π‘•’•°•§•Î§À¬–±˛§∑§∆§§§Î§Ÿ§≠§«§¢§Ì§¶°£
- .B update-alternatives
- §œ°¢
-@@ -179,7 +179,7 @@
- ∆∞∫Ó§ŒÕ˝≤Ú§ŒΩı§±§»§∑§ø§§°£
- .TP
- ∞Ï»ÃÃæ (generic name)
--.I /usr/bin/editor
-+.I @PREFIX@/bin/editor
- §Œ§Ë§¶§ Ãæ¡∞°£ alternatives •∑•π•∆•‡§À§Ë§√§∆
- ∆±ÕÕ§Œµ°«Ω§Úª˝§ƒ £øÙ§Œ•’•°•§•Î§Œ§…§Ï§´§“§»§ƒ§Úª≤æ»§π§Î°£
- .TP
-@@ -194,12 +194,12 @@
- .TP
- alternatives •«•£•Ï•Ø•»•Í
- symlink §Ú ›ª˝§π§Î•«•£•Ï•Ø•»•Í°£•«•’•©•Î•»§œ
--.IR /etc/alternatives °£
-+.IR @PREFIX@/etc/alternatives °£
- .TP
- administrative •«•£•Ï•Ø•»•Í
- .B update-alternatives
- §Œæı¬÷æ Û§Ú ›ª˝§π§Î•«•£•Ï•Ø•»•Í°£•«•’•©•Î•»§œ
--.IR /var/lib/dpkg/alternatives °£
-+.IR @PREFIX@/var/lib/dpkg/alternatives °£
- .TP
- •Í•Û•Ø•∞•Î°º•◊
- ¥ÿœ¢§π§Î symlink §Œ•ª•√•»°£•∞•Î°º•◊§¥§»ππø∑§π§Î§ø§·§Œ§‚§Œ°£
-@@ -384,12 +384,12 @@
- •‚°º•…§«§œ§ §Ø§ §Î°£
- .SH •’•°•§•Î
- .TP
--.I /etc/alternatives/
-+.I @PREFIX@/etc/alternatives/
- •«•’•©•Î•»§Œ alternatives •«•£•Ï•Ø•»•Í°£
- .B --altdir
- •™•◊•∑•Á•Û§À§Ë§√§∆ —ππ§«§≠§Î°£
- .TP
--.I /var/lib/dpkg/alternatives/
-+.I @PREFIX@/var/lib/dpkg/alternatives/
- •«•’•©•Î•»§Œ administration •«•£•Ï•Ø•»•Í°£
- .B --admindir
- •™•◊•∑•Á•Û§À§Ë§√§∆ —ππ§«§≠§Î°£
-@@ -425,7 +425,9 @@
- This is free documentation; see the GNU General Public Licence
- version 2 or later for copying conditions.  There is NO WARRANTY.
- .PP
--You can find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-+.PP
-+You can find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
- .SH ¥ÿœ¢π‡Ã‹
- .BR ln (1),
- FHS, the Filesystem Hierarchy Standard.
-diff -ruN dpkg-1.10.21.orig/man/pt_BR/update-alternatives.8 dpkg-1.10.21/man/pt_BR/update-alternatives.8
---- dpkg-1.10.21.orig/man/pt_BR/update-alternatives.8	2002-02-02 11:58:58.000000000 -0600
-+++ dpkg-1.10.21/man/pt_BR/update-alternatives.8	2020-10-01 05:01:21.000000000 -0500
-@@ -4,7 +4,7 @@
- .\" sob os termos da LincenÁa P˙blica Geral GNU como publicado pela
- .\" Free Software Foundation; vers„o 2 da LicenÁa ou (a sua escolha)
- .\" qualquer vers„o posterior. N¬O existe garantia. VocÍ pode encontrar a
--.\" GNU GPL em /usr/share/common-licenses/GPL em qualquer sistema Debian.
-+.\" GNU GPL em @PREFIX@/share/common-licenses/GPL em qualquer sistema Debian.
- .TH UPDATE-ALTERNATIVES 8 "19 de Janeiro de 1998" "Projeto Debian" "utilit·rios dpkg"
- .SH NOME
- update-alternatives \- mantÈm ligaÁıes simbÛlicas determinando comandos padrıes
-@@ -66,12 +66,12 @@
- .BR nvi (1)
- estejam ambos instalados no sistema, o sistema de alternativas far· com
- que o nome genÈrico
--.I /usr/bin/editor
-+.I @PREFIX@/bin/editor
- refira-se a
--.I /usr/bin/nvi
-+.I @PREFIX@/bin/nvi
- por padr„o. O administrador do sistema pode sobreescrever isto e fazer com
- que refira-se a
--.I /usr/bin/ed
-+.I @PREFIX@/bin/ed
- e o sistema de alternativas n„o ir· alterar esta configuraÁ„o atÈ que
- explicitamente requisitado a fazÍ-lo.
- .PP
-@@ -82,7 +82,7 @@
- o qual È, por sua vez, uma ligaÁ„o simbÛlica para o arquivo atualmente
- referenciado. Isto È feito para que as mudanÁas do administrador do
- sistema possam ser confinadas dentro do diretÛrio
--.I /etc
-+.I @PREFIX@/etc
- : a FHS (q.v.) d· razıes de porquÍ isto È um Boa Coisa.
- .PP
- Quando cada pacote provendo um arquivo com uma funcionalidade particular
-@@ -102,9 +102,9 @@
- versıes do editor
- .BR vi (1)
- est„o instaladas, a p·gina de manual referenciada por
--.I /usr/share/man/man1/vi.1
-+.I @PREFIX@/share/man/man1/vi.1
- dever· corresponder ao execut·vel referenciado por
--.IR /usr/bin/vi .
-+.IR @PREFIX@/bin/vi .
- .B update-alternatives
- gerencia isso por meio de ligaÁıes
- .I master
-@@ -164,7 +164,7 @@
- nome genÈrico
- Um nome,  como
- A name, like
--.IR /usr/bin/editor ,
-+.IR @PREFIX@/bin/editor ,
- o qual refere-se, atravÈs do sistema de alternativas, a um ou a diversos
- arquivos de funÁ„o similar.
- .TP
-@@ -179,12 +179,12 @@
- .TP
- diretÛrio de alternativas
- Um diretÛrio, por padr„o
--.IR /etc/alternatives ,
-+.IR @PREFIX@/etc/alternatives ,
- contendo as ligaÁıes simbÛlicas.
- .TP
- diretÛrio administrativo
- Um diretÛrio, por padr„o
--.IR /var/lib/dpkg/alternatives ,
-+.IR @PREFIX@/var/lib/dpkg/alternatives ,
- contendo informaÁ„o de estado de
- .BR update-alternatives .
- .TP
-@@ -318,11 +318,11 @@
- Exibe todos os alvos de uma ligaÁ„o em grupo.
- .SH ARQUIVOS
- .TP
--.I /etc/alternatives/
-+.I @PREFIX@/etc/alternatives/
- O diretÛrio de alternativas padr„o. Pode ser sobreescrito pela opÁ„o
- .B --altdir
- .TP
--.I /var/lib/dpkg/alternatives/
-+.I @PREFIX@/var/lib/dpkg/alternatives/
- O diretÛrio de administraÁ„o padr„o. Pode ser sobreescrito pela opÁ„o
- .B --admindir
- .SH "STATUS DE SAÕDA"
-@@ -358,7 +358,9 @@
- Isto È documentaÁ„o livre; veja a LicenÁa P˙blica Geral GNU vers„o 2 ou
- posterior para condiÁıes de cÛpia. N¬O existe garantia.
- .PP
--VocÍ pode encontrar a GNU GPL em /usr/share/common-licenses/GPL em
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-+.PP
-+VocÍ pode encontrar a GNU GPL em @PREFIX@/share/common-licenses/GPL em
- qualquer sistema Debian.
- .SH "VEJA TAMB…M"
- .BR ln (1),
-diff -ruN dpkg-1.10.21.orig/man/ru/dpkg.8 dpkg-1.10.21/man/ru/dpkg.8
---- dpkg-1.10.21.orig/man/ru/dpkg.8	2002-02-02 09:57:09.000000000 -0600
-+++ dpkg-1.10.21/man/ru/dpkg.8	2020-10-01 05:01:21.000000000 -0500
-@@ -232,7 +232,7 @@
- …Ã… 
- .B --pending,
- ‘œ ◊”≈ –¡À≈‘Ÿ, “¡”–¡Àœ◊¡ŒŒŸ≈, Œœ œ‘Õ≈ﬁ≈ŒŒŸ≈ ◊ ∆¡ Ã≈
--.I /var/lib/dpkg/status
-+.I @PREFIX@/var/lib/dpkg/status
- ƒÃ— ’ƒ¡Ã≈Œ…— …Ã… –œÃŒœ  œﬁ…”‘À…, ”œœ‘◊≈‘”‘◊≈ŒŒœ, ’ƒ¡Ã—¿‘”— …Ã…
- –œÃŒœ”‘ÿ¿ œﬁ…›¡¿‘”—.
- 
-@@ -258,7 +258,7 @@
- ˜Ÿ◊œƒ…‘ ƒ≈‘¡ÃÿŒ’¿ …Œ∆œ“Õ¡√…¿ œ
- .IR –¡À≈‘≈ ,
- Àœ‘œ“’¿ …⁄◊Ã≈À¡≈‘ …⁄ ∆¡ Ã¡
--.IR /var/lib/dpkg/available .
-+.IR @PREFIX@/var/lib/dpkg/available .
- 
- .TP
- .BR "dpkg --update-avail" " | " "--merge-avail \fP\fI<∆¡ Ã Packages>"
-@@ -279,7 +279,7 @@
- œ¬ŸﬁŒœ “¡”–“œ”‘“¡Œ—≈‘”— ” Debian GNU/Linux.
- .B dpkg
- »“¡Œ…‘ …Œ∆œ“Õ¡√…¿ œ ƒœ”‘’–ŒŸ» –¡À≈‘¡» ◊
--.IR /var/lib/dpkg/available .
-+.IR @PREFIX@/var/lib/dpkg/available .
- 
- .TP
- .BR "dpkg -A" " | "  "--record-avail \fP\fI<…Õ— ∆¡ Ã¡ –¡À≈‘¡>" ...
-@@ -309,7 +309,7 @@
- œÀ¡⁄Ÿ◊¡≈‘ –¡À≈‘Ÿ, ”œœ‘◊≈‘”‘◊’¿›…≈ ƒ¡ŒŒœÕ’ œ¬“¡⁄√’. Â”Ã… 
- .I œ¬“¡⁄≈√ …Õ≈Œ… –¡À≈‘¡ 
- Œ≈ ⁄¡ƒ¡Œ, –œÀ¡⁄Ÿ◊¡≈‘ ◊”≈ –¡À≈‘Ÿ ◊ 
--.BR /var/lib/dpkg/available . 
-+.BR @PREFIX@/var/lib/dpkg/available . 
- ˜ 
- .I œ¬“¡⁄√≈ …Õ≈Œ… –¡À≈‘¡ 
- Õœ÷Œœ ’À¡⁄Ÿ◊¡‘ÿ œ¬ŸﬁŒŸ≈ ”…Õ◊œÃŸ €¡¬ÃœŒ¡ ÀœÕ¡ŒƒŒœ  œ¬œÃœﬁÀ….  (ÛÀœ“≈≈
-@@ -454,7 +454,7 @@
- ˜”≈ ÀÃ¿ﬁ… Õœ÷Œœ ’À¡⁄Ÿ◊¡‘ÿ À¡À ◊ ÀœÕ¡ŒƒŒœ  ”‘“œÀ≈, ‘¡À … ◊
- ÀœŒ∆…«’“¡√…œŒŒœÕ ∆¡ Ã≈
- .BR dpkg \~--
--.IR /etc/dpkg/dpkg.cfg .
-+.IR @PREFIX@/etc/dpkg/dpkg.cfg .
- Î¡÷ƒ¡— ”‘“œÀ¡ ◊ ÀœŒ∆…«’“¡√…œŒŒœÕ ∆¡ Ã≈ ƒœÃ÷Œ¡ ¬Ÿ‘ÿ Ã…¬œ ÀÃ¿ﬁœÕ (◊
- ‘œﬁŒœ”‘… À¡À ÀÃ¿ﬁ ÀœÕ¡ŒƒŒœ  ”‘“œÀ…, Œœ ¬≈⁄ Œ¡ﬁ¡ÃÿŒŸ» ƒ≈∆…”œ◊), …Ã… ÷≈
- ÀœÕÕ≈Œ‘¡“…≈Õ (≈”Ã… Œ¡ﬁ…Œ¡≈‘”— ”
-@@ -639,7 +639,7 @@
- \fB--root=\fP\fIdir\fP | \fB--admindir=\fP\fIdir\fP | \fB--instdir=\fP\fIdir\fP
- ı”‘¡Œ¡◊Ã…◊¡≈‘ À¡‘¡Ãœ«… –œ ’ÕœÃﬁ¡Œ…¿.  Î¡‘¡Ãœ« admindir –œ ’ÕœÃﬁ¡Œ…¿
- “¡◊≈Œ
--.B /var/lib/dpkg 
-+.B @PREFIX@/var/lib/dpkg 
- … ”œƒ≈“÷…‘ ÕŒœ«œ ∆¡ Ãœ◊, ◊ Àœ‘œ“Ÿ» ƒ¡≈‘”— …Œ∆œ“Õ¡√…— œ ”œ”‘œ—Œ…—» 
- ’”‘¡Œœ◊Ã≈ŒŒŸ» …Ã… ’ƒ¡Ã≈ŒŒŸ» –¡À≈‘œ◊ … ‘.\~ƒ. 
- Î¡‘¡Ãœ«
-@@ -660,7 +660,7 @@
- ¡ À¡‘¡Ãœ«¡
- .BR admindir \~--
- ◊ ⁄Œ¡ﬁ≈Œ…≈
--.IB dir /var/lib/dpkg \P.
-+.IB dir @PREFIX@/var/lib/dpkg \P.
- 
- .TP
- .BR -O " | " --selected-only
-@@ -688,7 +688,7 @@
- .SH Ê·ÍÏ˘
- 
- .TP
--.I /etc/dpkg/dpkg.cfg
-+.I @PREFIX@/etc/dpkg/dpkg.cfg
- Ê¡ Ã ÀœŒ∆…«’“¡√…… ” ÀÃ¿ﬁ¡Õ… –œ ’ÕœÃﬁ¡Œ…¿.
- .P
- Ô”‘¡ÃÿŒŸ≈ ∆¡ ÃŸ –≈“≈ﬁ…”Ã≈ŒŸ ” ’À¡⁄¡Œ…≈Õ …» À¡‘¡Ãœ«œ◊ –œ ’ÕœÃﬁ¡Œ…¿,
-@@ -697,11 +697,11 @@
- ﬁ‘œ¬Ÿ ’⁄Œ¡‘ÿ, À¡À …⁄Õ≈Œ…‘ÿ Õ≈”‘œ–œÃœ÷≈Œ…≈ ‹‘…» ∆¡ Ãœ◊.
- 
- .TP
--.I /var/lib/dpkg/available
-+.I @PREFIX@/var/lib/dpkg/available
- Û–…”œÀ ƒœ”‘’–ŒŸ» –¡À≈‘œ◊.
- 
- .TP
--.I /var/lib/dpkg/status
-+.I @PREFIX@/var/lib/dpkg/status
- Ûœ”‘œ—Œ…— ƒœ”‘’–ŒŸ» –¡À≈‘œ◊. ¸‘œ‘ ∆¡ Ã ”œƒ≈“÷…‘ …Œ∆œ“Õ¡√…¿ œ ‘œÕ,
- –œÕ≈ﬁ≈Œ Ã… –¡À≈‘ ƒÃ— ’ƒ¡Ã≈Œ…— …Ã… Œ≈‘, ’”‘¡Œœ◊Ã≈Œ œŒ …Ã… Œ≈‘, …
- ‘.\~ƒ.  ÛÕ. «Ã¡◊’
-@@ -756,14 +756,14 @@
- .br
- 
- ˛‘œ¬Ÿ –œ”Õœ‘“≈‘ÿ Œ¡ ⁄¡–…”… œ ƒ◊’» –¡À≈‘¡» ◊ ∆¡ Ã≈
--.BR /var/lib/dpkg/available :
-+.BR @PREFIX@/var/lib/dpkg/available :
- .br
- \fB     dpkg --print-avail elvis vim | less\fP
- .br
- 
- ˜“’ﬁŒ’¿ –“œ”Õœ‘“≈‘ÿ ”–…”œÀ –¡À≈‘œ◊:
- .br
--\fB     less /var/lib/dpkg/available\fP
-+\fB     less @PREFIX@/var/lib/dpkg/available\fP
- .br
- 
- 
-@@ -814,8 +814,9 @@
- 
- .SH ·˜ÙÔÚ˘
- ÛÕ.
--.BR /usr/share/doc/dpkg/THANKS ,
-+.BR @PREFIX@/share/doc/dpkg/THANKS ,
- «ƒ≈ –“…◊≈ƒ≈Œ ”–…”œÀ ‘≈», À‘œ ’ﬁ¡”‘◊œ◊¡Ã ◊ “¡⁄“¡¬œ‘À≈
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .BR dpkg .
- 
- .SH ÂÚÂ˜Ô‰
-diff -ruN dpkg-1.10.21.orig/man/sv/dpkg-deb.1 dpkg-1.10.21/man/sv/dpkg-deb.1
---- dpkg-1.10.21.orig/man/sv/dpkg-deb.1	2002-02-02 11:46:49.000000000 -0600
-+++ dpkg-1.10.21/man/sv/dpkg-deb.1	2020-10-01 05:01:21.000000000 -0500
-@@ -248,8 +248,9 @@
- och denna manualsida skrevs av Ian Jackson.
- De ‰r upphovsr‰ttsskyddade 1995-1996 av honom och sl‰ppta under
- GNU General Public Licence; det finns INGEN garanti.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- Se
--.B /usr/share/doc/dpkg/copyright
-+.B @PREFIX@/share/doc/dpkg/copyright
- och
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- fˆr detaljer.
-diff -ruN dpkg-1.10.21.orig/man/sv/dpkg-query.8 dpkg-1.10.21/man/sv/dpkg-query.8
---- dpkg-1.10.21.orig/man/sv/dpkg-query.8	2002-02-02 11:56:49.000000000 -0600
-+++ dpkg-1.10.21/man/sv/dpkg-query.8	2020-10-01 05:01:21.000000000 -0500
-@@ -16,7 +16,7 @@
- \fB-l\fP | \fB--list\fP \fIpaketnamnsmˆnster\fP ...
- Lista paket som matchar det givna mˆnstret.
- Om inget \fIpaketnamnsmˆnster\fP anges listas alla paket i
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- Skalets normala jokertecken tillÂts i \fIpaketnamnsmˆnster\fP.
- Observera att du sannolikt mÂste skriva \fIpaketnamnsmˆnster\fP inom
- citationstecken fˆr att fˆrhindra att skalet expanderar filnamnet.
-@@ -49,7 +49,7 @@
- .TP
- \fB-p\fP |\fB--print-avail\fP paket
- Visar detaljer om \fIpaket\fP frÂn
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fB--licence\fP | \fB--license\fP
- Visar licensvillkor och upphovsr‰ttsinformation.
-@@ -61,7 +61,7 @@
- .TP
- \fB--admindir=\fIkat\fP
- ƒndra platsen fˆr \fBdpkg\fR-databasen.
--Fˆrval ‰r \fI/var/lib/dpkg\fP.
-+Fˆrval ‰r \fI@PREFIX@/var/lib/dpkg\fP.
- .TP
- \fB--showformat=\fP\fIformat\fR
- Denna flagga anv‰nds fˆr att ange formatet pÂ det utdata \fB--show\fP
-@@ -85,6 +85,7 @@
- .UR mailto:wakkerma@debian.org
- <wakkerma@debian.org>
- .UE
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- Detta ‰r fri programvara; se GNU General Public License version 2 eller
- senare fˆr kopieringsvillkor. Det finns INGEN garanti.
-diff -ruN dpkg-1.10.21.orig/man/sv/dpkg-split.8 dpkg-1.10.21/man/sv/dpkg-split.8
---- dpkg-1.10.21.orig/man/sv/dpkg-split.8	2002-02-16 08:04:24.000000000 -0600
-+++ dpkg-1.10.21/man/sv/dpkg-split.8	2020-10-01 05:01:21.000000000 -0500
-@@ -169,7 +169,7 @@
- Anger en alternativ katalog fˆr kˆn av delar som v‰ntar pÂ automatisk
- sammanslagning.
- Fˆrvalet ‰r
--.BR /var/lib/dpkg .
-+.BR @PREFIX@/var/lib/dpkg .
- .TP
- .BI --partsize\fR|\fB-S " kbyte"
- Anger maximal storlek vid delning, i kilobyte (1024 byte).
-@@ -239,7 +239,7 @@
- som genereras.
- .SH FILER
- .TP
--.B /var/lib/dpkg/parts
-+.B @PREFIX@/var/lib/dpkg/parts
- Fˆrvald kˆ-katalog fˆr delfiler som v‰ntar pÂ automatisk sammanslagning.
- 
- Filnamnen som anv‰nds i denna katalog ‰r i ett internt format fˆr
-@@ -256,10 +256,11 @@
- och denna manualsida skrevs av Ian Jackson.
- Upphovsr‰tten © 1995-1996 ligger hos honom och de ‰r sl‰ppta under GNU
- General Public Licence; det finns INGEN GARANTI.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- Se
--.B /usr/share/dpkg/copyright
-+.B @PREFIX@/share/dpkg/copyright
- och
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- fˆr ytterligare detaljer.
- 
- Denna manualsida ˆversattes av Peter Karlsson.
-diff -ruN dpkg-1.10.21.orig/man/sv/dpkg.8 dpkg-1.10.21/man/sv/dpkg.8
---- dpkg-1.10.21.orig/man/sv/dpkg.8	2002-05-26 12:54:33.000000000 -0500
-+++ dpkg-1.10.21/man/sv/dpkg.8	2020-10-01 05:01:21.000000000 -0500
-@@ -157,7 +157,7 @@
- \fB-P\fP eller \fB--purge\fP tar bort allting, inklusive
- konfigurationsfiler.
- Om \fB-a\fP eller \fB--pending\fP anges ist‰llet fˆr ett paketnamn kommer
--alla uppackade paket som i filen \fI/var/lib/dpkg/status\fP markerats fˆr
-+alla uppackade paket som i filen \fI@PREFIX@/var/lib/dpkg/status\fP markerats fˆr
- att tas bort eller rensas att tas bort eller rensas, respektive.
- 
- Borttagning av ett paket bestÂr av fˆljande steg:
-@@ -174,7 +174,7 @@
- .TP
- .BI "dpkg  -p|--print-avail " paket
- Visar detaljer om \fIpaket\fP frÂn
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fBdpkg --update-avail\fP | \fB--merge-avail\fP \fIPackages-fil\fP
- Uppdatera \fBdpkg\fPs och \fBdselect\fPs lista ˆver vilka paket som finns
-@@ -186,7 +186,7 @@
- \fIPackages-filerna\fP som medfˆljer Debian heter helt enkelt
- \fIPackages\fP.
- \fBdpkg\fP behÂller sin lista ˆver tillg‰ngliga paket i
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- .TP
- \fBdpkg -A\fP | \fB--record-avail\fP \fIpaketfil\fP ...
- Uppdatera \fBdpkg\fPs och \fBdselect\fPs lista ˆver vilka paket som finns
-@@ -205,7 +205,7 @@
- \fBdpkg -l\fP | \fB--list\fP \fIpaketnamnsmˆnster\fP ...
- Lista paket som matchar det givna mˆnstret.
- Om inget \fIpaketnamnsmˆnster\fP anges listas alla paket i
--\fI/var/lib/dpkg/available\fP.
-+\fI@PREFIX@/var/lib/dpkg/available\fP.
- Skalets normala jokertecken tillÂts i \fIpaketnamnsmˆnster\fP.
- (Du mÂste sannolikt skriva \fIpaketnamnsmˆnster\fP inom citationstecken
- fˆr att fˆrhindra att skalet expanderar filnamnet.
-@@ -310,7 +310,7 @@
- 
- .SH FLAGGOR
- Alla flaggorna kan ges bÂde pÂ kommandoraden och i \fBdpkg\fPs
--konfigurationsfil \fI/etc/dpkg/dpkg.cfg\fP.
-+konfigurationsfil \fI@PREFIX@/etc/dpkg/dpkg.cfg\fP.
- En rad i konfigurationsfilen ‰r antingen en flagga (precis samma som pÂ
- kommandoraden, men utan inledande bindestreck) eller en kommentar (om den
- bˆrjar med ett \fB#\fR).
-@@ -472,13 +472,13 @@
- .TP
- \fB--root=\fP\fIkat\fP | \fB--admindir=\fP\fIkat\fP | \fB--instdir=\fP\fIkat\fP
- ƒndra standardkataloger.
--Fˆrval fˆr \fBadmindir\fP ‰r \fI/var/lib/dpkg\fP, och innehÂller filer som
-+Fˆrval fˆr \fBadmindir\fP ‰r \fI@PREFIX@/var/lib/dpkg\fP, och innehÂller filer som
- ger information om status fˆr installerade och ej installerade paket, osv.
- Fˆrval fˆr \fBinstdir\fP ‰r \fI/\fP och ‰r den katalog som skickas som
- parameter till \fBchroot\fP(2) innan paketets installationsfiler kˆrs,
- vilket betyder att skripten ser \fBinstdir\fP som rotkatalog.
- Om du ‰ndrar \fBroot\fP ‰ndrar du \fBinstdir\fP till \fIkat\fP och
--\fBadmindir\fP till \fIkat\fP\fB/var/lib/dpkg\fP.
-+\fBadmindir\fP till \fIkat\fP\fB@PREFIX@/var/lib/dpkg\fP.
- .TP
- \fB-O\fP | \fB--selected-only\fP
- Hantera endast paket som markerats fˆr installation.
-@@ -496,17 +496,17 @@
- 
- .SH FILER
- .TP
--.I /etc/dpkg/dpkg.cfg
-+.I @PREFIX@/etc/dpkg/dpkg.cfg
- Konfigurationsfil med fˆrvalda inst‰llningar.
- .P
- ÷vriga filer som listas h‰r finns i sina fˆrvalda kataloger, se flaggan
- \fB--admindir\fP fˆr information om hur du ‰ndrar placeringen av dessa
- filer.
- .TP
--.I /var/lib/dpkg/available
-+.I @PREFIX@/var/lib/dpkg/available
- Lista ˆver tillg‰ngliga paket.
- .TP
--.I /var/lib/dpkg/status
-+.I @PREFIX@/var/lib/dpkg/status
- Status fˆr tillg‰ngliga paket.
- Denna fil innehÂller information om huruvida ett paket ‰r markerat fˆr
- borttagning eller ej, om det ‰r installerat eller ej, osv.
-@@ -555,14 +555,14 @@
- \fB     dpkg -l '*vi*'\fP
- .br
- 
--Fˆr att se posterna i \fI/var/lib/dpkg/available\fP fˆr tvÂ paket:
-+Fˆr att se posterna i \fI@PREFIX@/var/lib/dpkg/available\fP fˆr tvÂ paket:
- .br
- \fB     dpkg --print-avail elvis vim | less\fP
- .br
- 
- Fˆr att sj‰lv sˆka i paketlistan:
- .br
--\fB     less /var/lib/dpkg/available\fP
-+\fB     less @PREFIX@/var/lib/dpkg/available\fP
- .br
- 
- Fˆr att ta bort det installerade paketet elvis:
-@@ -609,6 +609,7 @@
- 
- .SH F÷RFATTARE
- .nf
--Se filen \fB/usr/share/doc/dpkg/THANKS\fP fˆr en lista ˆver personer som
-+Se filen \fB@PREFIX@/share/doc/dpkg/THANKS\fP fˆr en lista ˆver personer som
- bidragit till \fBdpkg\fP .
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .fi
-diff -ruN dpkg-1.10.21.orig/man/sv/dpkg.cfg.5 dpkg-1.10.21/man/sv/dpkg.cfg.5
---- dpkg-1.10.21.orig/man/sv/dpkg.cfg.5	2002-02-16 08:14:15.000000000 -0600
-+++ dpkg-1.10.21/man/sv/dpkg.cfg.5	2020-10-01 05:01:21.000000000 -0500
-@@ -10,10 +10,11 @@
- Kommentarer ‰r tillÂtna genom att inleda en rad med nummertecken
- ("\fB#\fR").
- .SH FILER
--.I /etc/dpkg/dpkg.cfg
-+.I @PREFIX@/etc/dpkg/dpkg.cfg
- ~/.dpkg.cfg
- .SH F÷RFATTARE
--Se \fB/usr/share/doc/dpkg/THANKS\fP fˆr listan ˆver personer som har
-+Se \fB@PREFIX@/share/doc/dpkg/THANKS\fP fˆr listan ˆver personer som har
- bidragit till \fBdpkg\fP .
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .SH SE ƒVEN
- .BR dpkg (8)
-diff -ruN dpkg-1.10.21.orig/man/sv/dselect.8 dpkg-1.10.21/man/sv/dselect.8
---- dpkg-1.10.21.orig/man/sv/dselect.8	2002-02-02 11:46:49.000000000 -0600
-+++ dpkg-1.10.21/man/sv/dselect.8	2020-10-01 05:01:21.000000000 -0500
-@@ -39,7 +39,7 @@
- programmet.
- .SH FLAGGOR
- Alla flaggorna kan ges bÂde pÂ kommandoraden och i \fBdselect\fPs
--konfigurationsfil \fI/etc/dpkg/dselect.cfg\fP.
-+konfigurationsfil \fI@PREFIX@/etc/dpkg/dselect.cfg\fP.
- En rad i konfigurationsfilen ‰r antingen en flagga (precis samma som pÂ
- kommandoraden, men utan inledande bindestreck) eller en kommentar (om den
- bˆrjar med ett \fB#\fR).
-@@ -48,7 +48,7 @@
- .B --admindir <katalog>
- ƒndrar namnet pÂ katalogen d‰r dpkg letar efter filerna "status", "available"
- m.fl.
--Fˆrval ‰r \fI/var/lib/dpkg\fP
-+Fˆrval ‰r \fI@PREFIX@/var/lib/dpkg\fP
- och du bˆr normalt sett inte behˆva ‰ndra det.
- .TP
- .B --debug <fil> | -D<fil>
-@@ -465,3 +465,6 @@
- Josip Rodin och Joost Kooij.
- .br
- Dselect, och denna manualsida, ‰r ˆversatt av Peter Karlsson.
-+.br
-+Paths modified by Carsten Klapp to reflect fink distribution,
-+December 2002.
-diff -ruN dpkg-1.10.21.orig/man/sv/dselect.cfg.5 dpkg-1.10.21/man/sv/dselect.cfg.5
---- dpkg-1.10.21.orig/man/sv/dselect.cfg.5	2002-02-16 08:14:15.000000000 -0600
-+++ dpkg-1.10.21/man/sv/dselect.cfg.5	2020-10-01 05:01:21.000000000 -0500
-@@ -10,10 +10,11 @@
- Kommentarer ‰r tillÂtna genom att inleda en rad med nummertecken
- ("\fB#\fR").
- .SH FILER
--.I /etc/dpkg/dselect.cfg
-+.I @PREFIX@/etc/dpkg/dselect.cfg
- ~/.dselect.cfg
- .SH F÷RFATTARE
--Se \fB/usr/share/doc/dpkg/THANKS\fP fˆr listan ˆver personer som har
-+Se \fB@PREFIX@/share/doc/dpkg/THANKS\fP fˆr listan ˆver personer som har
- bidragit till \fBdselect\fP .
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .SH SE ƒVEN
- .BR dselect (8)
-diff -ruN dpkg-1.10.21.orig/origin.fink dpkg-1.10.21/origin.fink
---- dpkg-1.10.21.orig/origin.fink	1969-12-31 18:00:00.000000000 -0600
-+++ dpkg-1.10.21/origin.fink	2020-10-01 05:01:21.000000000 -0500
++      else
++      {
++        $return = 1;
++        if( !$quiet )
++        {
++          print "$file: FAILED\n";
++        }
++      }
++    }
++
++    close $f;
++    if( $lines == 0 )
++    {
++      warn "$0: $md5file: no properly formatted MD5 checksum lines found\n";
++      $return = 1;
++    }
++    if( $errors > 0 )
++    {
++      my $s = $lines == 1 ? "" : "s";
++      if( !$quiet )
++      {
++        warn "$0: WARNING: $errors of $lines listed file$s could not be read\n";
++      }
++    }
++    if( $valid < ($lines-$errors) )
++    {
++      my $checksums = $lines - $errors;
++      my $nomatch = $checksums - $valid;
++      if( !$quiet )
++      {
++        warn "$0: WARNING: $nomatch of $checksums computed checksums did NOT match\n";
++      }
++    }
++  }
++}
+diff -ruN dpkg-1.17.6.orig/fink/origins dpkg-1.17.6/fink/origins
+--- dpkg-1.17.6.orig/fink/origins	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/origins	2012-07-02 16:14:45.000000000 -0600
 @@ -0,0 +1,3 @@
 +Vendor: Fink
 +Vendor-URL: http://fink.sourceforge.net/
 +Bugs: http://fink.sourceforge.net/
-diff -ruN dpkg-1.10.21.orig/scripts/Makefile.in dpkg-1.10.21/scripts/Makefile.in
---- dpkg-1.10.21.orig/scripts/Makefile.in	2002-05-19 23:40:29.000000000 -0500
-+++ dpkg-1.10.21/scripts/Makefile.in	2020-10-01 05:01:21.000000000 -0500
-@@ -99,7 +99,7 @@
- 	pod2man --section=1 $^ > $@
- 
- %: %.pl
--	$(SED) -e "s:^#![:space:]*/usr/bin/perl:#! $(PERL):; \
-+	$(SED) -e "s:^#![[:space:]]*/usr/bin/perl:#! $(PERL):; \
- 		s:\$$dpkglibdir[[:space:]]*=[[:space:]]*['\"][^'\"]*['\"]:\$$dpkglibdir=\"$(dpkglibdir)\":; \
- 		s:\$$admindir[[:space:]]*=[[:space:]]*['\"][^'\"]*['\"]:\$$admindir=\"$(admindir)\":; \
- 		s:\$$version[[:space:]]*=[[:space:]]*['\"][^'\"]*[\"']:\$$version=\"$(VERSION)\":" \
-diff -ruN dpkg-1.10.21.orig/scripts/cleanup-info.8 dpkg-1.10.21/scripts/cleanup-info.8
---- dpkg-1.10.21.orig/scripts/cleanup-info.8	1999-12-05 11:49:04.000000000 -0600
-+++ dpkg-1.10.21/scripts/cleanup-info.8	2020-10-01 05:01:21.000000000 -0500
-@@ -34,7 +34,7 @@
- Output version and exit successfully.
- .SH FILES
- .TP
--.I "/usr/info/dir or <dirname>/dir"
-+.I "@PREFIX@/share/info/dir or <dirname>/dir"
- The info directory file. The lock file is named the same, with ".lock" suffix.
- .SH BUGS
- Probably many.
-@@ -43,6 +43,7 @@
- .BR info (1).
- .SH AUTHOR
- Copyright (C) 1996 Kim-Minh Kaplan.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- This is free software; see the GNU General Public Licence
- version 2 or later for copying conditions.  There is NO warranty.
-diff -ruN dpkg-1.10.21.orig/scripts/dpkg-divert.8 dpkg-1.10.21/scripts/dpkg-divert.8
---- dpkg-1.10.21.orig/scripts/dpkg-divert.8	2004-04-25 12:10:57.000000000 -0500
-+++ dpkg-1.10.21/scripts/dpkg-divert.8	2020-10-01 05:01:21.000000000 -0500
-@@ -37,7 +37,7 @@
- .SH OPTIONS
- .TP
- .I --admindir <directory>
--Set the dpkg data directory to <directory> (default: /var/lib/dpkg).
-+Set the dpkg data directory to <directory> (default: @PREFIX@/var/lib/dpkg).
- .TP
- .I --divert <divert-to>
- <divert-to> is the name used by other packages' versions.
-@@ -76,7 +76,7 @@
- pointing at the diverted library.
- .SH FILES
- .TP
--.I /var/lib/dpkg/diversions
-+.I @PREFIX@/var/lib/dpkg/diversions
- File which contains the current list of diversions of the system. It is
- located in the dpkg administration directory, along with other files
- important to dpkg, such as `status' or `available'.
-@@ -90,6 +90,7 @@
- overriding a package's version of a file" for more information.
- .SH AUTHOR
- Copyright (C) 1995 Ian Jackson.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- This is free software; see the GNU General Public Licence
- version 2 or later for copying conditions.  There is NO warranty.
-diff -ruN dpkg-1.10.21.orig/scripts/dpkg-name.sh dpkg-1.10.21/scripts/dpkg-name.sh
---- dpkg-1.10.21.orig/scripts/dpkg-name.sh	2000-12-24 06:34:20.000000000 -0600
-+++ dpkg-1.10.21/scripts/dpkg-name.sh	2020-10-01 05:01:21.000000000 -0500
-@@ -10,6 +10,7 @@
- license () {
- echo "# ${prog} ${version} -- ${purpose}
- # Copyright (C) 1995,1996 Erick Branderhorst <branderh@debian.org>.
-+# Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- 
- # This is free software; you can redistribute it and/or modify it
- # under the terms of the GNU General Public License as published by the
-@@ -19,7 +20,7 @@
- # This is distributed in the hope that it will be useful, but
- # WITHOUT ANY WARRANTY; without even the implied warranty of
- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
--# /usr/share/common-licenses/GPL for more details."
-+# @PREFIX@/share/common-licenses/GPL for more details."
- }
- 
- stderr () {
-diff -ruN dpkg-1.10.21.orig/scripts/dpkg-scanpackages.8 dpkg-1.10.21/scripts/dpkg-scanpackages.8
---- dpkg-1.10.21.orig/scripts/dpkg-scanpackages.8	2003-10-27 10:50:00.000000000 -0600
-+++ dpkg-1.10.21/scripts/dpkg-scanpackages.8	2020-10-01 05:01:21.000000000 -0500
-@@ -41,7 +41,7 @@
- .PP
- .I binarydir
- is the name of the binary tree to process (for example,
--.BR contrib/binary-i386 ).
-+.BR main/binary-darwin-powerpc ).
- It is best to make this relative to the root of the Debian archive,
- because every Filename field in the new Packages file will start with
- this string.
-@@ -114,4 +114,6 @@
- .SH SEE ALSO
- .BR dpkg (8),
- .BR dselect (8),
--.BR dpkg-scansources (8).
-\ No newline at end of file
-+.BR dpkg-scansources (8).
-+.SH AUTHOR
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/scripts/dpkg-source.1 dpkg-1.10.21/scripts/dpkg-source.1
---- dpkg-1.10.21.orig/scripts/dpkg-source.1	2003-09-13 20:49:08.000000000 -0500
-+++ dpkg-1.10.21/scripts/dpkg-source.1	2020-10-01 05:01:21.000000000 -0500
-@@ -806,6 +806,7 @@
- .BR pgp (1).
- .SH AUTHOR
- The utilities and this manpage were written by Ian Jackson.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .SH COPYRIGHT
- Copyright (C) 1995-1996 Ian Jackson
- .br
-@@ -813,7 +814,7 @@
- .br
- This is free software; see the GNU General Public Licence version 2 or later
- for copying conditions. There is NO WARRANTY.  See
--.B /usr/share/doc/dpkg/copyright
-+.B @PREFIX@/share/doc/dpkg/copyright
- and
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- for details.
-diff -ruN dpkg-1.10.21.orig/scripts/dpkg-statoverride.8 dpkg-1.10.21/scripts/dpkg-statoverride.8
---- dpkg-1.10.21.orig/scripts/dpkg-statoverride.8	2001-03-04 08:39:06.000000000 -0600
-+++ dpkg-1.10.21/scripts/dpkg-statoverride.8	2020-10-01 05:01:21.000000000 -0500
-@@ -51,10 +51,10 @@
- .TP
- .I --admindir
- Change the directory of the dpkg database where the statoverride file is
--also stored. Defaults to /var/lib/dpkg.
-+also stored. Defaults to @PREFIX@/var/lib/dpkg.
- .SH FILES
- .TP
--.I /var/lib/dpkg/statoverride
-+.I @PREFIX@/var/lib/dpkg/statoverride
- File which contains the current list of stat overrides of the system. It
- is located in the dpkg administration directory, along with other files
- important to dpkg, such as `status' or `available'.
-@@ -68,6 +68,7 @@
- .UR mailto:wakkerma@debian.org
- <wakkerma@debian.org>
- .UE
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .sp
- This is free software; see the GNU General Public Licence version 2 or
- later for copying conditions.  There is NO warranty.
-diff -ruN dpkg-1.10.21.orig/scripts/install-info.8 dpkg-1.10.21/scripts/install-info.8
---- dpkg-1.10.21.orig/scripts/install-info.8	2002-01-31 08:00:59.000000000 -0600
-+++ dpkg-1.10.21/scripts/install-info.8	2020-10-01 05:01:21.000000000 -0500
-@@ -156,7 +156,7 @@
- be located in
- .IR infodir .
- The default is
--.BR /usr/info .
-+.BR @PREFIX@/share/info .
- .TP
- .BI \-\-align= nnn " [deprecated]"
- Specifies that the first line of the description should be indented at
-@@ -266,6 +266,8 @@
- processing steps are shown.
- .SH "SEE ALSO"
- emacs(1), info(1), gzip(1)
-+.SH AUTHOR
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .SH COPYRIGHT
- Copyright 1994, Ian Jackson.
- .B install\-info
-diff -ruN dpkg-1.10.21.orig/scripts/install-info.pl dpkg-1.10.21/scripts/install-info.pl
---- dpkg-1.10.21.orig/scripts/install-info.pl	2004-04-25 12:31:35.000000000 -0500
-+++ dpkg-1.10.21/scripts/install-info.pl	2020-10-01 05:01:21.000000000 -0500
-@@ -29,11 +29,11 @@
- END
- }
- 
--$infodir='/usr/share/info';
-+$infodir='@PREFIX@/share/info';
- $maxwidth=79;
- $Text::Wrap::columns=$maxwidth;
--$backup='/var/backups/infodir.bak';
--$default='/usr/share/base-files/info.dir';
-+$backup='@PREFIX@/share/info/dir.bak';
-+$default='@PREFIX@/share/base-files/dir-base';
- 
- $menuentry="";
- $description="";
-diff -ruN dpkg-1.10.21.orig/scripts/update-alternatives.8 dpkg-1.10.21/scripts/update-alternatives.8
---- dpkg-1.10.21.orig/scripts/update-alternatives.8	2003-09-14 16:54:42.000000000 -0500
-+++ dpkg-1.10.21/scripts/update-alternatives.8	2020-10-01 05:01:21.000000000 -0500
-@@ -4,7 +4,7 @@
- .\" it under the terms of the GNU General Public License as published
- .\" by the Free Software Foundation; either version 2 of the License, or
- .\" (at your option) any later version.  There is NO WARRANTY.  You can
--.\" find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
-+.\" find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
- .TH UPDATE-ALTERNATIVES 8 "19 January 1998" "Debian Project" "dpkg utilities"
- .SH NAME
- update-alternatives \- maintain symbolic links determining default commands
-@@ -79,13 +79,13 @@
- .BR nvi (1)
- are both installed on the system, the alternatives system will cause
- the generic name
--.I /usr/bin/editor
-+.I @PREFIX@/bin/editor
- to refer to
--.I /usr/bin/nvi
-+.I @PREFIX@/bin/nvi
- by default.  The system administrator can override this and cause
- it
- to refer to
--.I /usr/bin/ed
-+.I @PREFIX@/bin/ed
- instead,
- and the alternatives system will not alter this setting until explicitly
- requested to do so.
-@@ -97,7 +97,7 @@
- which in turn is a symbolic link to the actual file referenced.
- This is done so that the system administrator's changes can be confined
- within the
--.I /etc
-+.I @PREFIX@/etc
- directory: the FHS (q.v.) gives reasons why this is a Good Thing.
- .PP
- When each package
-@@ -117,9 +117,9 @@
- of the
- .BR vi (1)
- editor are installed, the man page referenced by
--.I /usr/share/man/man1/vi.1
-+.I @PREFIX@/share/man/man1/vi.1
- should correspond to the executable referenced by
--.IR /usr/bin/vi .
-+.IR @PREFIX@/bin/vi .
- .B update-alternatives
- handles this by means of
- .I master
-@@ -182,7 +182,7 @@
- .TP
- generic name
- A name, like
--.IR /usr/bin/editor ,
-+.IR @PREFIX@/bin/editor ,
- which refers, via the alternatives system, to one of a number of
- files of similar function.
- .TP
-@@ -197,12 +197,12 @@
- .TP
- alternatives directory
- A directory, by default
--.IR /etc/alternatives ,
-+.IR @PREFIX@/etc/alternatives ,
- containing the symlinks.
- .TP
- administrative directory
- A directory, by default
--.IR /var/lib/dpkg/alternatives ,
-+.IR @PREFIX@/var/lib/dpkg/alternatives ,
- containing
- .BR update-alternatives '
- state information.
-@@ -401,13 +401,13 @@
- mode.
- .SH FILES
- .TP
--.I /etc/alternatives/
-+.I @PREFIX@/etc/alternatives/
- The default alternatives directory.
- Can be overridden by the
- .B --altdir
- option.
- .TP
--.I /var/lib/dpkg/alternatives/
-+.I @PREFIX@/var/lib/dpkg/alternatives/
- The default administration directory.
- Can be overridden by the
- .B --admindir
-@@ -439,12 +439,13 @@
- Debian update-alternatives is copyright 1995
- Ian Jackson.  It is free software; see the GNU General Public Licence
- version 2 or later for copying conditions.  There is NO warranty.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
- .PP
- This manual page is copyright 1997/98 Charles Briscoe-Smith.
- This is free documentation; see the GNU General Public Licence
- version 2 or later for copying conditions.  There is NO WARRANTY.
- .PP
--You can find the GNU GPL in /usr/share/common-licenses/GPL on any Debian system.
-+You can find the GNU GPL in @PREFIX@/share/common-licenses/GPL on any Debian system.
- .SH "SEE ALSO"
- .BR ln (1),
- FHS, the Filesystem Hierarchy Standard.
-diff -ruN dpkg-1.10.21.orig/scripts/update-alternatives.pl dpkg-1.10.21/scripts/update-alternatives.pl
---- dpkg-1.10.21.orig/scripts/update-alternatives.pl	2003-09-16 12:51:15.000000000 -0500
-+++ dpkg-1.10.21/scripts/update-alternatives.pl	2020-10-01 05:01:21.000000000 -0500
-@@ -59,7 +59,7 @@
- sub quit { print STDERR "update-alternatives: @_\n"; exit(2); }
- sub badusage { print STDERR "update-alternatives: @_\n\n"; &usageversion; exit(2); }
- 
--$altdir= '/etc/alternatives';
-+$altdir= '@PREFIX@/etc/alternatives';
- $admindir= $admindir . '/alternatives';
- $testmode= 0;
- $verbosemode= 0;
-diff -ruN dpkg-1.10.21.orig/split/Makefile.in dpkg-1.10.21/split/Makefile.in
---- dpkg-1.10.21.orig/split/Makefile.in	2002-05-19 23:40:29.000000000 -0500
-+++ dpkg-1.10.21/split/Makefile.in	2020-10-01 05:01:21.000000000 -0500
-@@ -42,7 +42,7 @@
- 	$(INSTALL_DATA) $(srcdir)/dpkg-split.8 $(DESTDIR)/$(man8dir)
- 
- dpkg-split: $(SPLIT_OBJECTS) 
--	$(CC) $(LDFLAGS) -o $@ $(SPLIT_OBJECTS) $(LIBS) $(NLS_LIBS)
-+	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(SPLIT_OBJECTS) $(LIBS) $(NLS_LIBS)
- 
- split.o: split.c
- 	$(CC) $(ALL_CFLAGS) -DMKSPLITSCRIPT=\"$(dpkglibdir)/mksplit\" -c $<
-diff -ruN dpkg-1.10.21.orig/split/dpkg-split.8 dpkg-1.10.21/split/dpkg-split.8
---- dpkg-1.10.21.orig/split/dpkg-split.8	2002-01-31 08:00:59.000000000 -0600
-+++ dpkg-1.10.21/split/dpkg-split.8	2020-10-01 05:01:21.000000000 -0500
-@@ -162,7 +162,7 @@
- .BI --depotdir " directory"
- Specifies an alternative directory for the queue of parts awaiting
- automatic reassembly.  The default is
--.BR /var/lib/dpkg .
-+.BR @PREFIX@/var/lib/dpkg .
- .TP
- .BI --partsize\fR|\fB-S " kbytes"
- Specifies the maximum part size when splitting, in kilobytes (1024
-@@ -234,7 +234,7 @@
- is not present in the filenames generated.
- .SH FILES
- .TP
--.B /var/lib/dpkg/parts
-+.B @PREFIX@/var/lib/dpkg/parts
- The default queue directory for part files awaiting automatic
- reassembly.
- 
-@@ -253,7 +253,8 @@
- Copyright (C) 1995-1996
- by him and released under the GNU General Public Licence; there is NO
- WARRANTY.  See
--.B /usr/share/dpkg/copyright
-+.B @PREFIX@/share/dpkg/copyright
- and
--.B /usr/share/common-licenses/GPL
-+.B @PREFIX@/share/common-licenses/GPL
- for details.
-+Paths modified by Carsten Klapp to reflect fink distribution, December 2002.
-diff -ruN dpkg-1.10.21.orig/split/main.c dpkg-1.10.21/split/main.c
---- dpkg-1.10.21.orig/split/main.c	2003-10-25 15:03:21.000000000 -0500
-+++ dpkg-1.10.21/split/main.c	2020-10-01 19:50:56.000000000 -0500
-@@ -25,6 +25,7 @@
- #include <stdlib.h>
- #include <limits.h>
- #include <assert.h>
-+#include <sys/stat.h>
- 
- #include <dpkg.h>
- #include <dpkg-db.h>
-diff -ruN dpkg-1.10.21.orig/utils/Makefile.in dpkg-1.10.21/utils/Makefile.in
---- dpkg-1.10.21.orig/utils/Makefile.in	2002-08-24 14:54:19.000000000 -0500
-+++ dpkg-1.10.21/utils/Makefile.in	2020-10-01 05:01:21.000000000 -0500
-@@ -72,9 +72,9 @@
- 	$(INSTALL_DATA) $(srcdir)/$(MD5_MANPAGES) $(DESTDIR)/$(man1dir)
- 
- start-stop-daemon: $(SSD_OBJECTS) ../lib/libdpkg.a
--	$(CC) $(LDFLAGS) -o $@ $(SSD_OBJECTS) $(LIBS) $(SSD_LIBS)
-+	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(SSD_OBJECTS) $(LIBS) $(SSD_LIBS)
- 
- md5sum-static: LDFLAGS += -static
- md5sum-static: ZLIB_LIBS = $(ZLIBS_LIBS_ALSO_STATIC)
- md5sum md5sum-static: $(MD5_OBJECTS) ../lib/libdpkg.a
--	$(CC) $(LDFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
-+	$(CC) $(LDFLAGS) $(EXEFLAGS) -o $@ $(MD5_OBJECTS) $(LIBS) $(NLS_LIBS)
+diff -ruN dpkg-1.17.6.orig/fink/patches/add-BOD.patch dpkg-1.17.6/fink/patches/add-BOD.patch
+--- dpkg-1.17.6.orig/fink/patches/add-BOD.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/add-BOD.patch	2014-03-25 11:37:48.000000000 -0600
+@@ -0,0 +1,10 @@
++--- dpkg.orig/dpkg-deb/build.c
+++++ dpkg/dpkg-deb/build.c
++@@ -341,6 +341,7 @@
++   "Installer-Menu-Item",
++   "Homepage",
++   "Tag",
+++  "BuildDependsOnly",
++   NULL
++ };
++ 
+diff -ruN dpkg-1.17.6.orig/fink/patches/add-install-info.patch dpkg-1.17.6/fink/patches/add-install-info.patch
+--- dpkg-1.17.6.orig/fink/patches/add-install-info.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/add-install-info.patch	2014-03-25 11:38:29.000000000 -0600
+@@ -0,0 +1,186 @@
++--- dpkg.orig/utils/Makefile.am
+++++ dpkg/utils/Makefile.am
++@@ -41,6 +41,16 @@
++ 	$(SSD_LIBS)
++ endif
++ 
+++sbin_PROGRAMS += dpkg-install-info
+++
+++# Automake has its own install-info rule, gah
+++dpkg_install_info_SOURCES = install-info.c
+++
+++dpkg_install_info_LDADD = \
+++	../lib/compat/libcompat.a
+++
+++transform = s/dpkg-install-info/install-info/; $(program_transform_name)
+++
++ install-data-local:
++ if BUILD_UPDATE_ALTERNATIVES
++ 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)/alternatives
++@@ -50,6 +60,7 @@
++ 
++ uninstall-local:
++ 	rm -f $(DESTDIR)$(sysconfdir)/alternatives/README
+++	rm -f $(DESTDIR)$(sbindir)/install-info
++ 
++ TEST_ENV_VARS = DPKG_DATADIR=$(top_srcdir)
++ 
++--- dpkg.orig/utils/Makefile.in
+++++ dpkg/utils/Makefile.in
++@@ -78,7 +78,6 @@
++ install_sh_PROGRAM = $(install_sh) -c
++ install_sh_SCRIPT = $(install_sh) -c
++ INSTALL_HEADER = $(INSTALL_DATA)
++-transform = $(program_transform_name)
++ NORMAL_INSTALL = :
++ PRE_INSTALL = :
++ POST_INSTALL = :
++@@ -89,7 +88,7 @@
++ host_triplet = @host@
++ bin_PROGRAMS = $(am__EXEEXT_1)
++ @BUILD_UPDATE_ALTERNATIVES_TRUE@am__append_1 = update-alternatives
++-sbin_PROGRAMS = $(am__EXEEXT_2)
+++sbin_PROGRAMS = $(am__EXEEXT_2) dpkg-install-info$(EXEEXT)
++ @BUILD_START_STOP_DAEMON_TRUE@am__append_2 = start-stop-daemon
++ DIST_COMMON = $(top_srcdir)/Makecheck.am $(srcdir)/Makefile.in \
++ 	$(srcdir)/Makefile.am $(top_srcdir)/build-aux/depcomp
++@@ -120,6 +119,9 @@
++ @BUILD_START_STOP_DAEMON_TRUE@am__EXEEXT_2 =  \
++ @BUILD_START_STOP_DAEMON_TRUE@	start-stop-daemon$(EXEEXT)
++ PROGRAMS = $(bin_PROGRAMS) $(sbin_PROGRAMS)
+++am_dpkg_install_info_OBJECTS = install-info.$(OBJEXT)
+++dpkg_install_info_OBJECTS = $(am_dpkg_install_info_OBJECTS)
+++dpkg_install_info_DEPENDENCIES = ../lib/compat/libcompat.a
++ am__start_stop_daemon_SOURCES_DIST = start-stop-daemon.c
++ @BUILD_START_STOP_DAEMON_TRUE@am_start_stop_daemon_OBJECTS =  \
++ @BUILD_START_STOP_DAEMON_TRUE@	start-stop-daemon.$(OBJEXT)
++@@ -160,8 +162,10 @@
++ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
++ am__v_CCLD_0 = @echo "  CCLD    " $@;
++ am__v_CCLD_1 = 
++-SOURCES = $(start_stop_daemon_SOURCES) $(update_alternatives_SOURCES)
++-DIST_SOURCES = $(am__start_stop_daemon_SOURCES_DIST) \
+++SOURCES = $(dpkg_install_info_SOURCES) $(start_stop_daemon_SOURCES) \
+++	$(update_alternatives_SOURCES)
+++DIST_SOURCES = $(dpkg_install_info_SOURCES) \
+++	$(am__start_stop_daemon_SOURCES_DIST) \
++ 	$(update_alternatives_SOURCES)
++ am__can_run_installinfo = \
++   case $$AM_UPDATE_INFO_DIR in \
++@@ -188,6 +192,7 @@
++ ETAGS = etags
++ CTAGS = ctags
++ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+++transform = s/dpkg-install-info/install-info/; $(program_transform_name)
++ ACLOCAL = @ACLOCAL@
++ AMTAR = @AMTAR@
++ AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
++@@ -361,6 +366,12 @@
++ @BUILD_START_STOP_DAEMON_TRUE@	../lib/compat/libcompat.a \
++ @BUILD_START_STOP_DAEMON_TRUE@	$(SSD_LIBS)
++ 
+++
+++# Automake has its own install-info rule, gah
+++dpkg_install_info_SOURCES = install-info.c
+++dpkg_install_info_LDADD = \
+++	../lib/compat/libcompat.a
+++
++ TEST_ENV_VARS = DPKG_DATADIR=$(top_srcdir)
++ test_tmpdir = t.tmp
++ test_cases = \
++@@ -486,6 +497,10 @@
++ clean-sbinPROGRAMS:
++ 	-test -z "$(sbin_PROGRAMS)" || rm -f $(sbin_PROGRAMS)
++ 
+++dpkg-install-info$(EXEEXT): $(dpkg_install_info_OBJECTS) $(dpkg_install_info_DEPENDENCIES) $(EXTRA_dpkg_install_info_DEPENDENCIES) 
+++	@rm -f dpkg-install-info$(EXEEXT)
+++	$(AM_V_CCLD)$(LINK) $(dpkg_install_info_OBJECTS) $(dpkg_install_info_LDADD) $(LIBS)
+++
++ start-stop-daemon$(EXEEXT): $(start_stop_daemon_OBJECTS) $(start_stop_daemon_DEPENDENCIES) $(EXTRA_start_stop_daemon_DEPENDENCIES) 
++ 	@rm -f start-stop-daemon$(EXEEXT)
++ 	$(AM_V_CCLD)$(LINK) $(start_stop_daemon_OBJECTS) $(start_stop_daemon_LDADD) $(LIBS)
++@@ -500,6 +515,7 @@
++ distclean-compile:
++ 	-rm -f *.tab.c
++ 
+++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/install-info.Po@am__quote@
++ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/start-stop-daemon.Po@am__quote@
++ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update-alternatives.Po@am__quote@
++ 
++@@ -734,6 +750,7 @@
++ 
++ uninstall-local:
++ 	rm -f $(DESTDIR)$(sysconfdir)/alternatives/README
+++	rm -f $(DESTDIR)$(sbindir)/install-info
++ 
++ TEST_VERBOSE ?= 0
++ 
++--- dpkg.orig/utils/install-info.c
+++++ dpkg/utils/install-info.c
++@@ -0,0 +1,66 @@
+++/*
+++ * install-info.c - transitional ginstall-info wrapper
+++ *
+++ * Copyright ¬© 2009 Rapha√´l Hertzog <hertzog@debian.org>
+++ *
+++ * This is free software; you can redistribute it and/or modify
+++ * it under the terms of the GNU General Public License as published by
+++ * the Free Software Foundation; either version 2 of the License, or
+++ * (at your option) any later version.
+++ *
+++ * This is distributed in the hope that it will be useful,
+++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+++ * GNU General Public License for more details.
+++ *
+++ * You should have received a copy of the GNU General Public License
+++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+++ */
+++
+++#include <config.h>
+++#include <compat.h>
+++
+++#include <errno.h>
+++#include <string.h>
+++#include <unistd.h>
+++#include <stdlib.h>
+++#include <stdio.h>
+++
+++#define SELF "@FINKPREFIX@/sbin/install-info"
+++#define WRAPPED "@FINKPREFIX@/bin/install-info"
+++
+++#define warn(...) fprintf(stderr, "install-info: warning: " __VA_ARGS__)
+++#define error(...) fprintf(stderr, "install-info: error: " __VA_ARGS__)
+++
+++int
+++main(int argc, char **argv)
+++{
+++    if (strcmp(argv[0], SELF) == 0) {
+++	warn("don't call programs like install-info with an absolute path,\n");
+++	warn("%s provided by dpkg is deprecated and will go away soon;\n",
+++	     SELF);
+++	warn("its replacement lives in @FINKPREFIX@/bin/.\n");
+++    }
+++
+++	execv(WRAPPED, argv);
+++	if (errno == ENOENT) {
+++	    if (getenv("DPKG_RUNNING_VERSION") != NULL) {
+++		const char *pkg;
+++
+++		pkg = getenv("DPKG_MAINTSCRIPT_PACKAGE");
+++
+++		warn("maintainer scripts should not call install-info anymore,\n");
+++		warn("this is handled now by a dpkg trigger provided by the\n");
+++		warn("install-info package; package %s should be updated.\n",
+++		     pkg);
+++	    } else {
+++		warn("nothing done since %s doesn't exist,\n", WRAPPED);
+++		warn("you might want to install an info-browser package.\n");
+++	    }
+++	} else {
+++	    error("can't execute %s: %s\n", WRAPPED, strerror(errno));
+++	    return 1;
+++	}
+++
+++    return 0;
+++}
+diff -ruN dpkg-1.17.6.orig/fink/patches/bsdutils.patch dpkg-1.17.6/fink/patches/bsdutils.patch
+--- dpkg-1.17.6.orig/fink/patches/bsdutils.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/bsdutils.patch	2014-03-25 11:37:40.000000000 -0600
+@@ -0,0 +1,24 @@
++--- dpkg.orig/scripts/dpkg-genchanges.pl
+++++ dpkg/scripts/dpkg-genchanges.pl
++@@ -466,8 +466,8 @@
++ $fields->{'Format'} = $substvars->get('Format');
++ 
++ if (!defined($fields->{'Date'})) {
++-    chomp(my $date822 = `date -R`);
++-    subprocerr('date -R') if $?;
+++    chomp(my $date822 = `date +"%%a, %%d %%b %%Y %%H:%%M:%%S %%z"`);
+++    subprocerr('date +"%%a, %%d %%b %%Y %%H:%%M:%%S %%z"') if $?;
++     $fields->{'Date'}= $date822;
++ }
++ 
++--- dpkg.orig/scripts/dpkg-gencontrol.pl
+++++ dpkg/scripts/dpkg-gencontrol.pl
++@@ -340,7 +340,7 @@
++     if (!$c) {
++         chdir("$packagebuilddir")
++             or syserr(_g("chdir for du to \`%s'"), $packagebuilddir);
++-        exec('du', '-k', '-s', '--apparent-size', '.')
+++        exec('du', '-k', '-s', '.')
++             or syserr(_g('unable to execute %s'), 'du');
++     }
++     my $duo = '';
+diff -ruN dpkg-1.17.6.orig/fink/patches/build-fix.patch dpkg-1.17.6/fink/patches/build-fix.patch
+--- dpkg-1.17.6.orig/fink/patches/build-fix.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/build-fix.patch	2014-03-25 11:40:56.000000000 -0600
+@@ -0,0 +1,102 @@
++--- dpkg.orig/dselect/Makefile.am
+++++ dpkg/dselect/Makefile.am
++@@ -8,7 +8,7 @@
++ AM_CPPFLAGS = \
++ 	-DLOCALEDIR=\"$(localedir)\" \
++ 	-DADMINDIR=\"$(admindir)\" -DLIBDIR=\"$(pkglibdir)\" \
++-	-DLOCALLIBDIR=\"/usr/local/lib/dpkg\" \
+++	-DLOCALLIBDIR=\"@FINKPREFIX@/lib/dpkg\" \
++ 	-idirafter $(top_srcdir)/lib/compat \
++ 	-iquote $(builddir) \
++ 	-I$(top_builddir) \
++--- dpkg.orig/dselect/Makefile.in
+++++ dpkg/dselect/Makefile.in
++@@ -374,7 +374,7 @@
++ AM_CPPFLAGS = \
++ 	-DLOCALEDIR=\"$(localedir)\" \
++ 	-DADMINDIR=\"$(admindir)\" -DLIBDIR=\"$(pkglibdir)\" \
++-	-DLOCALLIBDIR=\"/usr/local/lib/dpkg\" \
+++	-DLOCALLIBDIR=\"@FINKPREFIX@/local/lib/dpkg\" \
++ 	-idirafter $(top_srcdir)/lib/compat \
++ 	-iquote $(builddir) \
++ 	-I$(top_builddir) \
++--- dpkg.orig/lib/dpkg/subproc.c
+++++ dpkg/lib/dpkg/subproc.c
++@@ -104,7 +104,9 @@
++ 	void (*out)(const char *fmt, ...) DPKG_ATTR_PRINTF(1);
++ 	int n;
++ 
++-	if (flags & PROCWARN)
+++    /* FINK LOCAL: Tar status 1 is a warning. */
+++	if ((flags & PROCWARN) || (n == 1 && strncmp(desc, "tar", 3) == 0))
+++    /* FINK LOCAL */
++ 		out = warning;
++ 	else
++ 		out = ohshit;
++--- dpkg.orig/src/filesdb.c
+++++ dpkg/src/filesdb.c
++@@ -34,6 +34,9 @@
++ #include <assert.h>
++ #include <errno.h>
++ #include <string.h>
+++#if defined(__APPLE__) && defined(__MACH__)
+++	#include <ctype.h>
+++#endif
++ #include <pwd.h>
++ #include <grp.h>
++ #include <fcntl.h>
++@@ -577,7 +580,7 @@
++ 
++ static int hash(const char *name) {
++   int v= 0;
++-  while (*name) { v *= 1787; v += *name; name++; }
+++  while (*name) { v *= 1787; v += tolower(*name); name++; }
++   return v;
++ }
++ 
++@@ -593,7 +596,7 @@
++   while (*pointerp) {
++     /* XXX: Why is the assert needed? It's checking already added entries. */
++     assert((*pointerp)->name[0] == '/');
++-    if (strcmp((*pointerp)->name + 1, name) == 0)
+++    if (strcasecmp((*pointerp)->name + 1, name) == 0)
++       break;
++     pointerp= &(*pointerp)->next;
++   }
++--- dpkg.orig/src/help.c
+++++ dpkg/src/help.c
++@@ -40,6 +40,19 @@
++ #include "filesdb.h"
++ #include "main.h"
++ 
+++/* FINK LOCAL start */
+++// SystemB setenv() crashes when value == 0, but this occasionally happens
+++// in dpkg.
+++int _setenv(const char *name, const char *value, int overwrite) {
+++  if(name == 0 || value == 0) {
+++    return 0;
+++  }
+++  return setenv(name, value, overwrite);
+++}
+++#undef setenv
+++#define setenv _setenv
+++/* FINK LOCAL end */
+++
++ const char *const statusstrings[]= {
++   [stat_notinstalled]    = N_("not installed"),
++   [stat_configfiles]     = N_("not installed but configs remain"),
++@@ -116,6 +129,14 @@
++     const char *path, *path_end;
++     size_t path_len;
++ 
+++    /* FINK LOCAL start */
+++    if (strncmp(prog[0],"/",1)==0 && stat(*prog, &stab) == 0)
+++    {
+++      // prog is an absolute path which exists, accept it
+++      break;
+++    }
+++    /* FINK LOCAL end */
+++
++     for (path = path_list; path; path = path_end ? path_end + 1 : NULL) {
++       path_end = strchr(path, ':');
++       path_len = path_end ? (size_t)(path_end - path) : strlen(path);
+diff -ruN dpkg-1.17.6.orig/fink/patches/c++filt-defaults.patch dpkg-1.17.6/fink/patches/c++filt-defaults.patch
+--- dpkg-1.17.6.orig/fink/patches/c++filt-defaults.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/c++filt-defaults.patch	2014-03-25 11:45:03.000000000 -0600
+@@ -0,0 +1,11 @@
++--- dpkg.orig/scripts/Dpkg/Shlibs/Cppfilt.pm
+++++ dpkg/scripts/Dpkg/Shlibs/Cppfilt.pm
++@@ -44,7 +44,7 @@
++     } else {
++ 	$filt = { from => undef, to => undef,
++ 	            last_symbol => '', last_result => '' };
++-	$filt->{pid} = spawn(exec => [ 'c++filt', "--format=$type" ],
+++	$filt->{pid} = spawn(exec => [ 'c++filt', "--no-strip-underscore", "--format=$type" ],
++ 	                     from_pipe => \$filt->{from},
++ 	                     to_pipe => \$filt->{to});
++ 	syserr(_g('unable to execute %s'), 'c++filt')
+diff -ruN dpkg-1.17.6.orig/fink/patches/coreutils.patch dpkg-1.17.6/fink/patches/coreutils.patch
+--- dpkg-1.17.6.orig/fink/patches/coreutils.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/coreutils.patch	2014-03-25 11:41:25.000000000 -0600
+@@ -0,0 +1,21 @@
++--- dpkg.orig/scripts/Dpkg/Checksums.pm
+++++ dpkg/scripts/Dpkg/Checksums.pm
++@@ -51,15 +51,15 @@
++ 
++ my $CHECKSUMS = {
++     md5 => {
++-	program => [ 'md5sum' ],
+++	program => [ 'gmd5sum' ],
++ 	regex => qr/[0-9a-f]{32}/,
++     },
++     sha1 => {
++-	program => [ 'sha1sum' ],
+++	program => [ 'gsha1sum' ],
++ 	regex => qr/[0-9a-f]{40}/,
++     },
++     sha256 => {
++-	program => [ 'sha256sum' ],
+++	program => [ 'gsha256sum' ],
++ 	regex => qr/[0-9a-f]{64}/,
++     },
++ };
+diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches/extra-env.patch
+--- dpkg-1.17.6.orig/fink/patches/extra-env.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/extra-env.patch	2014-03-25 15:29:55.000000000 -0600
+@@ -0,0 +1,196 @@
++--- dpkg.orig/config.h.in
+++++ dpkg/config.h.in
++@@ -24,6 +24,9 @@
++ /* default dpkg-deb build compressor */
++ #undef DPKG_DEB_DEFAULT_COMPRESSOR
++ 
+++/* Define if we are including an env script for maintainer script ENV */
+++#undef DPKG_MAINT_ENV_SCRIPT
+++
++ /* Define to 1 if translation of program messages to the user's native
++    language is requested. */
++ #undef ENABLE_NLS
++--- dpkg.orig/configure
+++++ dpkg/configure
++@@ -819,6 +819,7 @@
++ enable_dselect
++ enable_start_stop_daemon
++ enable_update_alternatives
+++with_dpkg_env_script
++ with_pkgconfdir
++ with_admindir
++ with_logdir
++@@ -1508,6 +1509,8 @@
++   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
++   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
++   --without-libintl-prefix     don't search for libintl in includedir and libdir
+++  --with-dpkg-env-script=PATH/TO/SCRIPT
+++                          script to include in the maintainer environment
++   --with-pkgconfdir=DIR   dpkg configuration directory [SYSCONFDIR/dpkg]
++   --with-admindir=DIR     dpkg database directory [LOCALSTATEDIR/lib/dpkg]
++   --with-logdir=DIR       system logging directory [LOCALSTATEDIR/log]
++@@ -7047,6 +7050,36 @@
++ $as_echo "$build_update_alternatives" >&6; }
++ 
++ 
+++# Check if we want to run a script to set extra env vars
+++
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for maintainer environment script" >&5
+++$as_echo_n "checking for maintainer environment script... " >&6; }
+++
+++# Check whether --with-dpkg-env-script was given.
+++if test "${with_dpkg_env_script+set}" = set; then :
+++  withval=$with_dpkg_env_script; with_dpkg_env_script=$withval
+++else
+++  with_dpkg_env_script=no
+++fi
+++
+++  if test "x$with_dpkg_env_script" != "xno"; then :
+++
+++
+++cat >>confdefs.h <<_ACEOF
+++#define DPKG_MAINT_ENV_SCRIPT "$with_dpkg_env_script"
+++_ACEOF
+++
+++
+++else
+++
+++    $as_echo "#define DPKG_MAINT_ENV_SCRIPT 0" >>confdefs.h
+++
+++
+++fi
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_dpkg_env_script" >&5
+++$as_echo "$with_dpkg_env_script" >&6; }
+++
+++
++ # Allow alternate directories
++ 
++   pkgconfdir="${sysconfdir}/${PACKAGE_NAME}"
++--- dpkg.orig/configure.ac
+++++ dpkg/configure.ac 
++@@ -23,6 +23,9 @@
++ DPKG_BUILD_PROG([start-stop-daemon])
++ DPKG_BUILD_PROG([update-alternatives])
++ 
+++# Check if we want to run a script to set extra env vars
+++DPKG_ENV_SCRIPT([no])
+++
++ # Allow alternate directories
++ DPKG_WITH_DIR([pkgconfdir], [${sysconfdir}/${PACKAGE_NAME}],
++               [dpkg configuration directory [SYSCONFDIR/dpkg]])
++--- dpkg.orig/m4/dpkg-build.m4
+++++ dpkg/m4/dpkg-build.m4
++@@ -52,6 +52,23 @@
++   AC_MSG_NOTICE([using default dpkg-deb compressor = $with_dpkg_deb_compressor])
++ ]) # DPKG_DEB_COMPRESSOR
++ 
+++# DPKG_ENV_SCRIPT(SCRIPT)
+++# -------------------
+++# Add script to the maintainer script env.
+++AC_DEFUN([DPKG_ENV_SCRIPT], [
+++  AC_MSG_CHECKING([for maintainer environment script])
+++  AC_ARG_WITH([dpkg-env-script],
+++    [AS_HELP_STRING([--with-dpkg-env-script=PATH/TO/SCRIPT],
+++                   [script to include in the maintainer environment])],
+++    [with_dpkg_env_script=$withval], [with_dpkg_env_script=$1])
+++  AS_IF([test "x$with_dpkg_env_script" != "xno"], [
+++    AC_DEFINE_UNQUOTED([DPKG_MAINT_ENV_SCRIPT], ["$with_dpkg_env_script"], [Define to value if not no.])
+++  ], [
+++    AC_DEFINE([DPKG_MAINT_ENV_SCRIPT], [0])
+++  ])
+++  AC_MSG_RESULT([$with_dpkg_env_script])
+++]) # DPKG_ENV_SCRIPT
+++
++ # DPKG_DIST_CHECK(COND, ERROR)
++ # ---------------
++ # Check if the condition is fulfilled when preparing a distribution tarball.
++--- dpkg.orig/src/main.h
+++++ dpkg/src/main.h
++@@ -237,6 +237,9 @@
++                          const char *scriptname, const char *desc,
++                          const char *cidir, char *cidirrest,
++                          const char *ifok, const char *iffallback);
+++#ifdef DPKG_MAINT_ENV_SCRIPT
+++int execute_env_script();
+++#endif
++ 
++ /* Callers wanting to run the postinst use these two as they want to postpone
++  * trigger incorporation until after updating the package status. The effect
++--- dpkg.orig/src/script.c
+++++ dpkg/src/script.c
++@@ -217,6 +217,11 @@
++ 		    setenv("DPKG_RUNNING_VERSION", PACKAGE_VERSION, 1))
++ 			ohshite(_("unable to setenv for maintainer script"));
++ 
+++#ifdef DPKG_MAINT_ENV_SCRIPT
+++		if (execute_env_script())
+++			ohshite(_("unable to set extra env for maintainer script"));
+++#endif
+++
++ 		cmd->filename = cmd->argv[0] = maintscript_pre_exec(cmd);
++ 
++ 		if (maintscript_set_exec_context(cmd, "dpkg_script_t") < 0)
++@@ -403,3 +408,63 @@
++ 
++ 	return 1;
++ }
+++
+++#ifdef DPKG_MAINT_ENV_SCRIPT
+++// Need limits.h for POSIX_ARG_MAX
+++#include <limits.h>
+++
+++int execute_env_script(void);
+++
+++int
+++execute_env_script() {
+++	debug(dbg_scripts, "Injecting env script (%s)", DPKG_MAINT_ENV_SCRIPT);
+++
+++	struct stat sb;
+++	// is this the right max len?
+++	char buf[_POSIX_ARG_MAX];
+++
+++	if (!stat(DPKG_MAINT_ENV_SCRIPT, &sb)) {
+++		char cmd_full[sizeof(DPKG_MAINT_ENV_SCRIPT) + 16];
+++		sprintf(cmd_full, ". %s; /usr/bin/env", DPKG_MAINT_ENV_SCRIPT);
+++
+++		FILE *cmd_stream;
+++
+++		cmd_stream = popen(cmd_full, "r");
+++		if (cmd_stream) {
+++			debug(dbg_veryverbose, " -> reading %s env results...", DPKG_MAINT_ENV_SCRIPT);
+++			while (fgets(buf, _POSIX_ARG_MAX, cmd_stream)) {
+++				if (!strcmp(buf+strlen(buf)-1, "\n")) {
+++					// chomp trailing newline
+++					buf[strlen(buf)-1]=0;
+++				}
+++				// putenv owns actual passed char*
+++				debug(dbg_veryverbose, " -> adding to ENV '%s'", strdup(buf));
+++				putenv(strdup(buf));
+++			}
+++			pclose(cmd_stream);
+++
+++			return 0;
+++		} else {
+++			debug(dbg_scripts, "popen(%s) failed.", DPKG_MAINT_ENV_SCRIPT);
+++		}
+++	} else {
+++		debug(dbg_scripts, "%s not found.", DPKG_MAINT_ENV_SCRIPT);
+++	}
+++
+++	debug(dbg_scripts, "fallback: just prepend fink to PATH");
+++	{
+++		char *path;
+++
+++		path = getenv("PATH");
+++		if (path) {
+++			sprintf(buf, "PATH=%s:%s:%s", "@FINKPREFIX@/bin", "@FINKPREFIX@/sbin", path);
+++			putenv(strdup(buf));
+++
+++			return 0;
+++		}
+++		debug(dbg_scripts, "could not read PATH from ENV!");
+++	}
+++
+++	return 1;
+++}
+++#endif
+diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/patches/extra-statusfile.patch
+--- dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/extra-statusfile.patch	2015-09-23 15:34:10.000000000 -0600
+@@ -0,0 +1,443 @@
++--- dpkg.orig/config.h.in
+++++ dpkg/config.h.in
++@@ -27,6 +27,9 @@
++ /* Define if we are including an env script for maintainer script ENV */
++ #undef DPKG_MAINT_ENV_SCRIPT
++
+++/* Define if we are including an alt status file */
+++#undef FINKVIRTUALS
+++
++ /* Define to 1 if translation of program messages to the user's native
++    language is requested. */
++ #undef ENABLE_NLS
++--- dpkg.orig/configure
+++++ dpkg/configure
++@@ -820,6 +820,7 @@
++ enable_start_stop_daemon
++ enable_update_alternatives
++ with_dpkg_env_script
+++with_finkvirtual
++ with_pkgconfdir
++ with_admindir
++ with_logdir
++@@ -1511,6 +1512,8 @@
++   --without-libintl-prefix     don't search for libintl in includedir and libdir
++   --with-dpkg-env-script=PATH/TO/SCRIPT
++                           script to include in the maintainer environment
+++  --with-finkvirtuals=PATH/TO/SCRIPT
+++                          full path and script name to f-v-p
++   --with-pkgconfdir=DIR   dpkg configuration directory [SYSCONFDIR/dpkg]
++   --with-admindir=DIR     dpkg database directory [LOCALSTATEDIR/lib/dpkg]
++   --with-logdir=DIR       system logging directory [LOCALSTATEDIR/log]
++@@ -7080,6 +7083,36 @@
++ $as_echo "$with_dpkg_env_script" >&6; }
++
++
+++# Check if we want an fink-virtuals
+++
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for f-v-p" >&5
+++$as_echo_n "checking for f-v-p... " >&6; }
+++
+++# Check whether --with-finkvirtuals was given.
+++if test "${with_finkvirtuals+set}" = set; then :
+++  withval=$with_finkvirtuals; with_finkvirtuals=$withval
+++else
+++  with_finkvirtuals=no
+++fi
+++
+++  if test "x$with_finkvirtuals" != "xno"; then :
+++
+++
+++cat >>confdefs.h <<_ACEOF
+++#define FINKVIRTUALS "$with_finkvirtuals"
+++_ACEOF
+++
+++
+++else
+++
+++    $as_echo "#define FINKVIRTUALS 0" >>confdefs.h
+++
+++
+++fi
+++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_finkvirtuals" >&5
+++$as_echo "$with_finkvirtuals" >&6; }
+++
+++
++ # Allow alternate directories
++ 
++   pkgconfdir="${sysconfdir}/${PACKAGE_NAME}"
++--- dpkg.orig/configure.ac
+++++ dpkg/configure.ac 
++@@ -26,6 +26,9 @@
++ # Check if we want to run a script to set extra env vars
++ DPKG_ENV_SCRIPT([no])
++
+++# Check if we want an alternative statusfile
+++FINKVIRTUALS([no])
+++
++ # Allow alternate directories
++ DPKG_WITH_DIR([pkgconfdir], [${sysconfdir}/${PACKAGE_NAME}],
++               [dpkg configuration directory [SYSCONFDIR/dpkg]])
++--- dpkg.orig/m4/dpkg-build.m4
+++++ dpkg/m4/dpkg-build.m4
++@@ -69,6 +69,23 @@
++   AC_MSG_RESULT([$with_dpkg_env_script])
++ ]) # DPKG_ENV_SCRIPT
++
+++# FINKVIRTUALS(FILE)
+++# -------------------
+++# Second status file to parse and add to the Pkg DB
+++AC_DEFUN([FINKVIRTUALS], [
+++  AC_MSG_CHECKING([for f-v-p])
+++  AC_ARG_WITH([finkvirtuals],
+++    [AS_HELP_STRING([--with-finkvirtuals=PATH/TO/SCRIPT],
+++                   [full path and script name to f-v-p])],
+++    [with_finkvirtuals=$withval], [with_finkvirtuals=$1])
+++  AS_IF([test "x$with_finkvirutals" != "xno"], [
+++    AC_DEFINE_UNQUOTED([FINKVIRTUALS], ["$with_finkvirtuals"], [Define to value if not no.])
+++  ], [
+++    AC_DEFINE([FINKVIRTUALS], [0])
+++  ])
+++  AC_MSG_RESULT([$with_finkvirtuals])
+++]) # FINKVIRTUALS
+++
++ # DPKG_DIST_CHECK(COND, ERROR)
++ # ---------------
++ # Check if the condition is fulfilled when preparing a distribution tarball.
++--- dpkg.orig/lib/dpkg/dbmodify.c
+++++ dpkg/lib/dpkg/dbmodify.c
++@@ -44,6 +44,8 @@
++ #include <dpkg/dpkg-db.h>
++ #include <dpkg/file.h>
++ #include <dpkg/dir.h>
+++#include <dpkg/subproc.h>
+++#include <dpkg/command.h>
++ #include <dpkg/triglib.h>
++ 
++ static bool db_initialized;
++@@ -51,6 +53,11 @@
++ static enum modstatdb_rw cstatus=-1, cflags=0;
++ static char *lockfile;
++ static char *statusfile, *availablefile;
+++#ifdef FINKVIRTUALS
+++#define FINKSTATUSFILE "status-fink"
+++void run_fvp(void);
+++static char *extrastatusfile;
+++#endif
++ static char *importanttmpfile=NULL;
++ static FILE *importanttmp;
++ static int nextupdate;
++@@ -79,6 +86,10 @@
++   int cdn, i;
++ 
++   parsedb(statusfile, pdb_parse_status, NULL);
+++#ifdef FINKVIRTUALS
+++  run_fvp();
+++  parsedb(extrastatusfile, pdb_parse_status, NULL);
+++#endif
++ 
++   *updatefnrest = '\0';
++   updateslength= -1;
++@@ -138,6 +149,9 @@
++ } fnis[] = {
++   {   LOCKFILE,                   &lockfile           },
++   {   STATUSFILE,                 &statusfile         },
+++#ifdef FINKVIRTUALS
+++  {   FINKSTATUSFILE,             &extrastatusfile    },
+++#endif
++   {   AVAILFILE,                  &availablefile      },
++   {   UPDATESDIR,                 &updatesdir         },
++   {   UPDATESDIR IMPORTANTTMP,    &importanttmpfile   },
++@@ -437,3 +451,26 @@
++     modstatdb_note(pkg);
++ }
++ 
+++#ifdef FINKVIRTUALS
+++void
+++run_fvp(void)
+++{
+++  // If not root, wait till next time to refresh
+++  if (getuid()) return;
+++  pid_t pid;
+++
+++  pid = subproc_fork();
+++  if (pid == 0) {
+++    struct command cmd;
+++    size_t finkstatusfile_len = strlen(ADMINDIR) + strlen(FINKSTATUSFILE) + 2;
+++    char *finkstatusfile = m_malloc(finkstatusfile_len);
+++
+++    snprintf(finkstatusfile, finkstatusfile_len, "%s/%s", ADMINDIR, FINKSTATUSFILE);
+++
+++    command_init(&cmd, FINKVIRTUALS, _("getting fink virtuals"));
+++    command_add_args(&cmd, FINKVIRTUALS, "-o", finkstatusfile, NULL);
+++    command_exec(&cmd);
+++  }
+++  subproc_wait(pid, _("getting fink virtuals"));
+++}
+++#endif
++--- dpkg.orig/lib/dpkg/dpkg-db.h
+++++ dpkg/lib/dpkg/dpkg-db.h
++@@ -175,7 +175,8 @@
++     stat_halfconfigured,
++     stat_triggersawaited,
++     stat_triggerspending,
++-    stat_installed
+++    stat_installed,
+++    stat_virtual
++   } status;
++   enum pkgpriority {
++     pri_required,
++--- dpkg.orig/lib/dpkg/parsehelp.c
+++++ dpkg/lib/dpkg/parsehelp.c
++@@ -108,6 +108,7 @@
++   NAMEVALUE_DEF("triggers-awaited", stat_triggersawaited),
++   NAMEVALUE_DEF("triggers-pending", stat_triggerspending),
++   NAMEVALUE_DEF("installed",        stat_installed),
+++  NAMEVALUE_DEF("virtual",          stat_virtual),
++   { .name = NULL }
++ };
++ 
++--- dpkg.orig/lib/dpkg/pkg.c
+++++ dpkg/lib/dpkg/pkg.c
++@@ -189,7 +189,8 @@
++ 	if (pkgbin == &pkg->installed &&
++ 	    (pkg->want != want_unknown ||
++ 	     pkg->eflag != eflag_ok ||
++-	     pkg->status != stat_notinstalled ||
+++	     (pkg->status != stat_notinstalled &&
+++	      pkg->status != stat_virtual) ||
++ 	     dpkg_version_is_informative(&pkg->configversion)))
++ 		return true;
++ 
++--- dpkg.orig/lib/dpkg/pkg-show.c
+++++ dpkg/lib/dpkg/pkg-show.c
++@@ -158,7 +158,7 @@
++ int
++ pkg_abbrev_status(const struct pkginfo *pkg)
++ {
++-	return "ncHUFWti"[pkg->status];
+++	return "ncHUFWtiv"[pkg->status];
++ }
++ 
++ int
++--- dpkg.orig/lib/dpkg/dump.c
+++++ dpkg/lib/dpkg/dump.c
++@@ -90,6 +90,7 @@
++   if (!dpkg_version_is_informative(&pkg->configversion))
++     return;
++   if (pkg->status == stat_installed ||
+++      pkg->status == stat_virtual ||
++       pkg->status == stat_notinstalled ||
++       pkg->status == stat_triggerspending)
++     return;
++@@ -271,6 +272,7 @@
++     assert(PEND);
++     assert(!AW);
++     break;
+++  case stat_virtual:
++   case stat_installed:
++     assert(!PEND);
++     assert(!AW);
++@@ -491,7 +493,7 @@
++   while ((pkg = pkg_db_iter_next_pkg(it)) != NULL) {
++     pkgbin = (flags & wdb_dump_available) ? &pkg->available : &pkg->installed;
++     /* Don't dump records which have no useful content. */
++-    if (!pkg_is_informative(pkg, pkgbin))
+++    if (!pkg_is_informative(pkg, pkgbin) || pkg->status == stat_virtual)
++       continue;
++     varbufrecord(&vb, pkg, pkgbin);
++     varbuf_add_char(&vb, '\n');
++--- dpkg.orig/lib/dpkg/parse.c
+++++ dpkg/lib/dpkg/parse.c
++@@ -227,11 +227,11 @@
++    * ‚Äònot-installed‚Äô (in which case there is no Config-Version). */
++   if (!(ps->flags & pdb_recordavailable)) {
++     if (pkg->configversion.version) {
++-      if (pkg->status == stat_installed || pkg->status == stat_notinstalled)
+++      if (pkg->status == stat_installed || pkg->status == stat_virtual || pkg->status == stat_notinstalled)
++         parse_error(ps,
++                     _("Config-Version for package with inappropriate Status"));
++     } else {
++-      if (pkg->status == stat_installed)
+++      if (pkg->status == stat_installed || pkg->status == stat_virtual)
++         pkg->configversion = pkgbin->version;
++     }
++   }
++--- dpkg.orig/dselect/pkgcmds.cc
+++++ dpkg/dselect/pkgcmds.cc
++@@ -152,7 +152,8 @@
++ 
++   if (wantvalue == pkginfo::want_install) return 1;
++   if (wantvalue != pkginfo::want_hold) return 0;
++-  if (pkg->status == pkginfo::stat_installed) return 1;
+++  if (pkg->status == pkginfo::stat_installed ||
+++      pkg->status == pkginfo::stat_virtual) return 1;
++   if (pkg->status == pkginfo::stat_notinstalled ||
++       pkg->status == pkginfo::stat_configfiles) return 0;
++   return -1;
++--- dpkg.orig/dselect/pkgdepcon.cc
+++++ dpkg/dselect/pkgdepcon.cc
++@@ -38,6 +38,7 @@
++       pkg->clientdata->selected == pkginfo::want_install &&
++       pkg_is_informative(pkg, &pkg->available) &&
++       (!(pkg->status == pkginfo::stat_installed ||
+++         pkg->status == pkginfo::stat_virtual ||
++          pkg->status == pkginfo::stat_triggersawaited ||
++          pkg->status == pkginfo::stat_triggerspending) ||
++        dpkg_version_compare(&pkg->available.version,
++@@ -443,6 +444,7 @@
++       return true;
++     if (fixbyupgrade && !*fixbyupgrade &&
++         (!(provider->up->up->status == pkginfo::stat_installed ||
+++           provider->up->up->status == pkginfo::stat_virtual ||
++            provider->up->up->status == pkginfo::stat_triggerspending ||
++            provider->up->up->status == pkginfo::stat_triggersawaited) ||
++          dpkg_version_compare(&provider->up->up->available.version,
++--- dpkg.orig/dselect/pkglist.cc
+++++ dpkg/dselect/pkglist.cc
++@@ -203,6 +203,7 @@
++           table[index]->ssavail= ssa_notinst_seen;
++         }
++         break;
+++      case pkginfo::stat_virtual:
++       case pkginfo::stat_installed:
++         veri= &table[index]->pkg->installed.version;
++         vera= &table[index]->pkg->available.version;
++@@ -244,6 +245,7 @@
++       case pkginfo::stat_configfiles:
++         table[index]->ssstate= sss_configfiles;
++         break;
+++      case pkginfo::stat_virtual:
++       case pkginfo::stat_installed:
++         table[index]->ssstate= sss_installed;
++         break;
++@@ -403,6 +405,7 @@
++         state->original == pkginfo::want_unknown) {
++       state->suggested=
++         pkg->status == pkginfo::stat_installed ||
+++          pkg->status == pkginfo::stat_virtual ||
++           pkg->priority <= pkginfo::pri_standard /* FIXME: configurable */
++             ? pkginfo::want_install : pkginfo::want_purge;
++       state->spriority= sp_inherit;
++--- dpkg.orig/src/archives.c
+++++ dpkg/arc/archives.c
++@@ -1444,6 +1444,7 @@
++              pkg_name(fixbyrm, pnaw_nonambig),
++              pkgbin_name(pkg, &pkg->available, pnaw_nonambig));
++       if (!(fixbyrm->status == stat_installed ||
+++            fixbyrm->status == stat_virtual ||
++             fixbyrm->status == stat_triggerspending ||
++             fixbyrm->status == stat_triggersawaited)) {
++         notice(_("%s is not properly installed; ignoring any dependencies on it"),
++--- dpkg.orib/src/depcon.c
+++++ dpkg/src/depcon.c
++@@ -331,6 +331,7 @@
++   case itb_normal:
++     /* Only installed packages can be make dependency problems. */
++     switch (dep->up->status) {
+++    case stat_virtual:
++     case stat_installed:
++     case stat_triggerspending:
++     case stat_triggersawaited:
++@@ -389,6 +390,7 @@
++         case itb_normal:
++         case itb_preinstall:
++           switch (pkg_pos->status) {
+++          case stat_virtual:
++           case stat_installed:
++           case stat_triggerspending:
++             if (versionsatisfied(&pkg_pos->installed, possi)) {
++@@ -490,6 +492,7 @@
++             break;
++           case itb_normal: case itb_preinstall:
++             if (provider->up->up->status == stat_installed ||
+++                provider->up->up->status == stat_virtual ||
++                 provider->up->up->status == stat_triggerspending)
++               return true;
++             if (provider->up->up->status == stat_triggersawaited)
++@@ -568,6 +571,7 @@
++           case stat_halfconfigured:
++             if (dep->type == dep_breaks)
++               break; /* No problem. */
+++          case stat_virtual:
++           case stat_installed:
++           case stat_triggerspending:
++           case stat_triggersawaited:
++@@ -642,6 +646,7 @@
++           case stat_halfconfigured:
++             if (dep->type == dep_breaks)
++               break; /* No problem. */
+++          case stat_virtual:
++           case stat_installed:
++           case stat_triggerspending:
++           case stat_triggersawaited:
++--- dpkg.orig/src/enquiry.c
+++++ dpkg/src/enquiry.c
++@@ -230,7 +230,7 @@
++     return false;
++ 
++   switch (pkg->status) {
++-  case stat_unpacked: case stat_installed: case stat_halfconfigured:
+++  case stat_unpacked: case stat_virtual: case stat_installed: case stat_halfconfigured:
++   case stat_triggerspending:
++   case stat_triggersawaited:
++     return false;
++--- dpkg.orig/src/filesdb.c
+++++ dpkg/src/filesdb.c
++@@ -238,6 +238,7 @@
++               pkg_name(pkg, pnaw_nonambig));
++     onerr_abort--;
++     if (pkg->status != stat_configfiles &&
+++        pkg->status != stat_virtual &&
++         dpkg_version_is_informative(&pkg->configversion)) {
++       warning(_("files list file for package '%.250s' missing; assuming "
++                 "package has no files currently installed"),
++--- dpkg.orig/src/help.c
+++++ dpkg/src/help.c.new
++@@ -61,7 +61,8 @@
++   [stat_halfconfigured]  = N_("broken due to postinst failure"),
++   [stat_triggersawaited] = N_("awaiting trigger processing by another package"),
++   [stat_triggerspending] = N_("triggered"),
++-  [stat_installed]       = N_("installed")
+++  [stat_installed]       = N_("installed"),
+++  [stat_virtual]         = N_("virtual")
++ };
++ 
++ struct filenamenode *
++--- dpkg.orig/src/packages.c
+++++ dpkg/src/packages.c
++@@ -223,7 +223,7 @@
++       }
++     }
++ 
++-    assert(pkg->status <= stat_installed);
+++    assert(pkg->status <= stat_virtual);
++ 
++     if (setjmp(ejbuf)) {
++       /* Give up on it from the point of view of other packages, i.e. reset
++@@ -359,6 +359,7 @@
++   case stat_halfconfigured:
++   case stat_triggersawaited:
++   case stat_triggerspending:
+++  case stat_virtual:
++   case stat_installed:
++     if (checkversion && !versionsatisfied(&possdependee->installed,checkversion)) {
++       varbuf_printf(oemsgs, _("  Version of %s on system is %s.\n"),
++@@ -373,6 +374,7 @@
++       return thisf;
++     }
++     if (possdependee->status == stat_installed ||
+++        possdependee->status == stat_virtual ||
++         possdependee->status == stat_triggerspending) {
++       debug(dbg_depcondetail,"      is installed, ok and found");
++       return found_ok;
++--- dpkg.orig/src/t/100_dpkg_divert.t
+++++ dpkg/src/t/100_dpkg_divert.t
++@@ -44,6 +44,7 @@
++     system("rm -rf $tmpdir && mkdir -p $testdir");
++     system("mkdir -p $admindir/updates");
++     system("rm -f $admindir/status && touch $admindir/status");
+++    system("rm -f $admindir/status-fink && touch $admindir/status-fink");
++     system("rm -rf $admindir/info && mkdir -p $admindir/info");
++ }
++ 
+diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/patches/fink-as-vendor.patch
+--- dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/fink-as-vendor.patch	2014-03-25 11:47:45.000000000 -0600
+@@ -0,0 +1,101 @@
++--- dpkg.orig/scripts/Dpkg/Vendor/Fink.pm
+++++ dpkg/scripts/Dpkg/Vendor/Fink.pm
++@@ -0,0 +1,98 @@
+++# Copyright ¬© 2009-2011 Rapha√´l Hertzog <hertzog@debian.org>
+++#
+++# Hardening build flags handling derived from work of:
+++# Copyright ¬© 2009-2011 Kees Cook <kees@debian.org>
+++# Copyright ¬© 2007-2008 Canonical, Ltd.
+++#
+++# This program is free software; you can redistribute it and/or modify
+++# it under the terms of the GNU General Public License as published by
+++# the Free Software Foundation; either version 2 of the License, or
+++# (at your option) any later version.
+++#
+++# This program is distributed in the hope that it will be useful,
+++# but WITHOUT ANY WARRANTY; without even the implied warranty of
+++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+++# GNU General Public License for more details.
+++#
+++# You should have received a copy of the GNU General Public License
+++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+++
+++package Dpkg::Vendor::Fink;
+++
+++use strict;
+++use warnings;
+++
+++our $VERSION = "0.01";
+++
+++use base qw(Dpkg::Vendor::Default);
+++
+++use Dpkg::Gettext;
+++use Dpkg::ErrorHandling;
+++use Dpkg::Control::Types;
+++use Dpkg::Vendor::Ubuntu;
+++use Dpkg::BuildOptions;
+++use Dpkg::Arch qw(get_host_arch debarch_to_debtriplet);
+++
+++=encoding utf8
+++
+++=head1 NAME
+++
+++Dpkg::Vendor::Fink - Fink vendor object
+++
+++=head1 DESCRIPTION
+++
+++This vendor object customize the behaviour of dpkg scripts
+++for Fink specific actions.
+++
+++=cut
+++
+++sub run_hook {
+++    my ($self, $hook, @params) = @_;
+++
+++    if ($hook eq "before-source-build") {
+++        my $srcpkg = shift @params;
+++    } elsif ($hook eq "keyrings") {
+++        return ();
+++    } elsif ($hook eq "register-custom-fields") {
+++        return ();
+++    } elsif ($hook eq "post-process-changelog-entry") {
+++        my $fields = shift @params;
+++    } elsif ($hook eq "extend-patch-header") {
+++	my ($textref, $ch_info) = @params;
+++    } elsif ($hook eq "update-buildflags") {
+++	$self->add_hardening_flags(@params);
+++    } else {
+++        return $self->SUPER::run_hook($hook, @params);
+++    }
+++}
+++
+++sub add_hardening_flags {
+++    my ($self, $flags) = @_;
+++    my $arch = get_host_arch();
+++    my ($abi, $os, $cpu) = debarch_to_debtriplet($arch);
+++
+++    unless (defined $abi and defined $os and defined $cpu) {
+++        warning(_g("unknown host architecture '%s'"), $arch);
+++        ($abi, $os, $cpu) = ("", "", "");
+++    }
+++
+++    # start by removing the Dpkg defaults "-g -O2"
+++    $flags->strip("CFLAGS", "-g");
+++    $flags->strip("CXXFLAGS", "-g");
+++    $flags->strip("FFLAGS", "-g");
+++    $flags->strip("CFLAGS", "-O2");
+++    $flags->strip("CXXFLAGS", "-O2");
+++    $flags->strip("FFLAGS", "-O2");
+++
+++    $flags->append("CPPFLAGS", "-I@FINKPREFIX@/include");
+++    $flags->append("LDFLAGS", "-L@FINKPREFIX@/lib");
+++
+++    # for building 64bit libraries, we change LDFLAGS:
+++    #if (exists $self->{_type_hash}->{"-64bit"}) {
+++    #    if ($self->{_type_hash}->{"-64bit"} eq "-64bit") {
+++    #        $defaults{"LDFLAGS"} = "-L\%p/\%lib -L\%p/lib";
+++    #    }
+++    #}
+++}
+++
+++1;
+diff -ruN dpkg-1.17.6.orig/fink/patches/fink-bld_no_fakeroot.patch dpkg-1.17.6/fink/patches/fink-bld_no_fakeroot.patch
+--- dpkg-1.17.6.orig/fink/patches/fink-bld_no_fakeroot.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/fink-bld_no_fakeroot.patch	2014-03-25 11:48:18.000000000 -0600
+@@ -0,0 +1,19 @@
++--- dpkg.orig/scripts/dpkg-buildpackage.pl
+++++ dpkg/scripts/dpkg-buildpackage.pl
++@@ -319,12 +319,15 @@
++ 
++ if ($< == 0) {
++     warning(_g('using a gain-root-command while being root')) if (@rootcommand);
+++} elsif (getpwuid($<) eq "fink-bld") {
+++    warning(_g('removing the gain-root-command while being fink-bld')) if (@rootcommand);
+++    pop  @rootcommand if (@rootcommand);
++ } else {
++     push @rootcommand, 'fakeroot' unless @rootcommand;
++ }
++ 
++ if (@rootcommand and not find_command($rootcommand[0])) {
++-    if ($rootcommand[0] eq 'fakeroot' and $< != 0) {
+++    if ($rootcommand[0] eq 'fakeroot' and $< != 0 and getpwuid($<) ne "fink-bld") {
++         error(_g("fakeroot not found, either install the fakeroot\n" .
++                  'package, specify a command with the -r option, ' .
++                  'or run this as root'));
+diff -ruN dpkg-1.17.6.orig/fink/patches/full-path-calls.patch dpkg-1.17.6/fink/patches/full-path-calls.patch
+--- dpkg-1.17.6.orig/fink/patches/full-path-calls.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/full-path-calls.patch	2014-03-25 11:50:16.000000000 -0600
+@@ -0,0 +1,36 @@
++--- dpkg.orig/dselect/dselect.h
+++++ dpkg/dselect/dselect.h
++@@ -33,7 +33,7 @@
++ 
++ #include "dselect-curses.h"
++ 
++-#define DSELECT		"dselect"
+++#define DSELECT		"@FINKPREFIX@/bin/dselect"
++ 
++ #define TOTAL_LIST_WIDTH 180
++ #define MAX_DISPLAY_INFO 120
++--- dpkg.orig/lib/dpkg/dpkg.h
+++++ dpkg/lib/dpkg/dpkg.h
++@@ -99,14 +99,14 @@
++ #define MD5HASHLEN           32
++ #define MAXTRIGDIRECTIVE     256
++ 
++-#define BACKEND		"dpkg-deb"
++-#define SPLITTER	"dpkg-split"
++-#define DPKGQUERY	"dpkg-query"
++-#define DPKGDIVERT	"dpkg-divert"
++-#define DPKGSTAT	"dpkg-statoverride"
++-#define DPKGTRIGGER	"dpkg-trigger"
++-#define DPKG		"dpkg"
++-#define DEBSIGVERIFY	"/usr/bin/debsig-verify"
+++#define BACKEND		"@FINKPREFIX@/bin/dpkg-deb"
+++#define SPLITTER	"@FINKPREFIX@/bin/dpkg-split"
+++#define DPKGQUERY	"@FINKPREFIX@/bin/dpkg-query"
+++#define DPKGDIVERT	"@FINKPREFIX@/bin/dpkg-divert"
+++#define DPKGSTAT	"@FINKPREFIX@/bin/dpkg-statoverride"
+++#define DPKGTRIGGER	"@FINKPREFIX@/bin/dpkg-trigger"
+++#define DPKG		"@FINKPREFIX@/bin/dpkg"
+++#define DEBSIGVERIFY	"@FINKPREFIX@/bin/debsig-verify"
++ 
++ #define TAR		"tar"
++ #define RM		"rm"
+diff -ruN dpkg-1.17.6.orig/fink/patches/gzip-rsyncable-fix.patch dpkg-1.17.6/fink/patches/gzip-rsyncable-fix.patch
+--- dpkg-1.17.6.orig/fink/patches/gzip-rsyncable-fix.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/gzip-rsyncable-fix.patch	2014-03-25 11:51:17.000000000 -0600
+@@ -0,0 +1,12 @@
++--- dpkg.orig/scripts/Dpkg/Compression.pm
+++++ dpkg/scripts/Dpkg/Compression.pm
++@@ -50,7 +50,8 @@
++ my $COMP = {
++     gzip => {
++ 	file_ext => 'gz',
++-	comp_prog => [ 'gzip', '--no-name', '--rsyncable' ],
+++	# Fink doesn't have rsyncable bzip2/gzip yet
+++	comp_prog => [ 'gzip', '--no-name' ],
++ 	decomp_prog => [ 'gunzip' ],
++ 	default_level => 9,
++     },
+diff -ruN dpkg-1.17.6.orig/fink/patches/location-fixes.patch dpkg-1.17.6/fink/patches/location-fixes.patch
+--- dpkg-1.17.6.orig/fink/patches/location-fixes.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/location-fixes.patch	2014-03-25 11:54:19.000000000 -0600
+@@ -0,0 +1,101 @@
++--- dpkg.orig/dpkg-split/queue.c
+++++ dpkg/dpkg-split/queue.c
++@@ -46,7 +46,7 @@
++ #include "dpkg-split.h"
++ 
++ /*
++- * The queue, by default located in /var/lib/dpkg/parts/, is a plain
+++ * The queue, by default located in @FINKPREFIX@/var/lib/dpkg/parts/, is a plain
++  * directory with one file per part.
++  *
++  * Each part is named ‚Äú<md5sum>.<maxpartlen>.<thispartn>.<maxpartn>‚Äù,
++diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Changelog/Parse.pm dpkg-1.16.4.3/scripts/Dpkg/Changelog/Parse.pm
++--- dpkg-1.16.4.3.orig/scripts/Dpkg/Changelog/Parse.pm	2012-06-09 08:32:08.000000000 -0600
+++++ dpkg-1.16.4.3/scripts/Dpkg/Changelog/Parse.pm	2012-07-02 16:14:45.000000000 -0600
++@@ -56,7 +56,7 @@
++ 
++ The parsing itself is done by an external program (searched in the
++ following list of directories: $opt{libdir},
++-F</usr/local/lib/dpkg/parsechangelog>, F</usr/lib/dpkg/parsechangelog>) That
+++F<@FINKPREFIX@/lib/dpkg/parsechangelog>) That
++ program is named according to the format that it's able to parse. By
++ default it's either "debian" or the format name lookep up in the 40 last
++ lines of the changelog itself (extracted with this perl regular expression
++@@ -76,9 +76,8 @@
++ 
++ sub changelog_parse {
++     my (%options) = @_;
++-    my @parserpath = ('/usr/local/lib/dpkg/parsechangelog',
++-                      "$Dpkg::LIBDIR/parsechangelog",
++-                      '/usr/lib/dpkg/parsechangelog');
+++    my @parserpath = ("$Dpkg::LIBDIR/parsechangelog",
+++                      '@FINKPREFIX@/lib/dpkg/parsechangelog');
++     my $format = 'debian';
++     my $force = 0;
++ 
++diff -ruN dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs.pm dpkg-1.16.4.3/scripts/Dpkg/Shlibs.pm
++--- dpkg-1.16.4.3.orig/scripts/Dpkg/Shlibs.pm	2012-06-13 23:12:34.000000000 -0600
+++++ dpkg-1.16.4.3/scripts/Dpkg/Shlibs.pm	2012-07-02 16:14:45.000000000 -0600
++@@ -36,7 +36,8 @@
++                   gnutriplet_to_multiarch debarch_to_multiarch);
++ 
++ use constant DEFAULT_LIBRARY_PATH =>
++-    qw(/lib /usr/lib /lib32 /usr/lib32 /lib64 /usr/lib64
+++    qw(@FINKPREFIX@/lib @FINKPREFIX@/lib32 @FINKPREFIX@/lib64
+++       /lib /usr/lib /lib32 /usr/lib32 /lib64 /usr/lib64
++        /emul/ia32-linux/lib /emul/ia32-linux/usr/lib);
++ 
++ # Adjust set of directories to consider when we're in a situation of a
++--- dpkg.orig/dselect/methods/Dselect/Ftp.pm
+++++ dpkg/dselect/methods/Dselect/Ftp.pm
++@@ -79,12 +79,12 @@
++ }
++ 
++ sub view_mirrors {
++-  if (-f '/usr/lib/dpkg/methods/ftp/README.mirrors.txt') {
++-    system('pager', '/usr/lib/dpkg/methods/ftp/README.mirrors.txt');
++-  } elsif (-f '/usr/lib/dpkg/methods/ftp/README.mirrors.txt.gz') {
++-    system('gzip -dc /usr/lib/dpkg/methods/ftp/README.mirrors.txt.gz | pager');
+++  if (-f '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt') {
+++    system('pager', '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt');
+++  } elsif (-f '@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt.gz') {
+++    system('gzip -dc @FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt.gz | pager');
++   } else {
++-    print "/usr/lib/dpkg/methods/ftp/README.mirrors.txt(.gz): file not found.\n";
+++    print "@FINKPREFIX@/lib/dpkg/methods/ftp/README.mirrors.txt(.gz): file not found.\n";
++   }
++ }
++ 
++--- dpkg.orig/dselect/methods/disk/setup
+++++ dpkg/dselect/methods/disk/setup
++@@ -19,7 +19,7 @@
++ option=$3
++ 
++ cd "$vardir/methods/disk"
++-tp=/var/run/ddm$$
+++tp=@FINKPREFIX@/var/run/ddm$$
++ 
++ iarch=`dpkg --admindir $vardir --print-architecture`
++ 
++--- dpkg.orig/dselect/methods/ftp/setup
+++++ dpkg/dselect/methods/ftp/setup
++@@ -75,7 +75,7 @@
++ You must supply an ftp site, use of passive mode, username, password,
++ path to the debian directory,list of distributions you are interested
++ in and place to download the binary package files to (relative to
++-/var/lib/dpkg/methods/ftp). You can add as much sites as you like. Later
+++@FINKPREFIX@/var/lib/dpkg/methods/ftp). You can add as much sites as you like. Later
++ entries will always override older ones.
++ 
++ Supply "?" as a password to be asked each time you connect.
++--- dpkg.orig/dselect/methods/multicd/install
+++++ dpkg/dselect/methods/multicd/install
++@@ -175,7 +175,7 @@
++ Perhaps you downloaded it with an unexpected name, or something.
++ In any case, you must find the file(s) and then either place it with
++ the correct filename(s) (as listed in the Packages.cd file or in
++-/var/lib/dpkg/available) and rerun the installation, or upgrade the
+++@FINKPREFIX@/var/lib/dpkg/available) and rerun the installation, or upgrade the
++ package by using `dpkg --install --auto-deconfigure'\'' by hand.
++ 
++ ";
+diff -ruN dpkg-1.17.6.orig/fink/patches/protect-system-dirs.patch dpkg-1.17.6/fink/patches/protect-system-dirs.patch
+--- dpkg-1.17.6.orig/fink/patches/protect-system-dirs.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/protect-system-dirs.patch	2014-03-25 11:54:57.000000000 -0600
+@@ -0,0 +1,28 @@
++--- dpkg.orig/src/help.c
+++++ dpkg/src/help.c
++@@ -271,6 +271,25 @@
++   debug(dbg_veryverbose, "dir_is_used_by_others '%s' (except %s)", file->name,
++         pkg ? pkg_name(pkg, pnaw_always) : "<none>");
++ 
+++  /* FINK LOCAL begin */
+++
+++  /*
+++   * Darwin has symlinks /etc -> /private/etc and /var -> /private/var
+++   * instead of actual /etc and /var dirs. If dpkg removes the last
+++   * pkg that it has record of having installed a file in one of those
+++   * top-level dirs, it will try to remove the dir (since it thinks
+++   * it's an empty dir) and it will succeed (since it's just unlinking
+++   * a symlink, not trying to remove a dir that is not actually
+++   * empty). That's Bad. Here we make sure these top-level dirs are
+++   * never thought to be empty.
+++   */
+++  if( !strcmp(file->name,"/etc") || !strcmp(file->name,"/tmp") || !strcmp(file->name,"/var") ) {
+++    debug(dbg_veryverbose, "dir_is_used_by_others precious!");
+++    return true;
+++  }
+++
+++  /* FINK LOCAL end */
+++
++   iter = filepackages_iter_new(file);
++   while ((other_pkg = filepackages_iter_next(iter))) {
++     debug(dbg_veryverbose, "dir_is_used_by_others considering %s ...",
+diff -ruN dpkg-1.17.6.orig/fink/patches/so-to-dylib.patch dpkg-1.17.6/fink/patches/so-to-dylib.patch
+--- dpkg-1.17.6.orig/fink/patches/so-to-dylib.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/so-to-dylib.patch	2014-03-25 11:56:56.000000000 -0600
+@@ -0,0 +1,263 @@
++--- dpkg.orig/scripts/Dpkg/Shlibs/Objdump.pm
+++++ dpkg/scripts/Dpkg/Shlibs/Objdump.pm
++@@ -28,9 +28,15 @@
++ 
++ # Decide which objdump to call
++ our $OBJDUMP = 'objdump';
+++our $OTOOL = "otool";
+++our $NM = "nm";
++ if (get_build_arch() ne get_host_arch()) {
++     my $od = debarch_to_gnutriplet(get_host_arch()) . '-objdump';
++     $OBJDUMP = $od if find_command($od);
+++    my $otool = debarch_to_gnutriplet(get_host_arch()) . "-otool";
+++    $OTOOL = $otool if find_command($otool);
+++    my $nm = debarch_to_gnutriplet(get_host_arch()) . "-nm";
+++    $NM = $nm if find_command($nm);
++ }
++ 
++ 
++@@ -93,9 +99,9 @@
++ 	    return $format{$file};
++ 	} else {
++ 	    my ($output, %opts, $pid, $res);
++-	    if ($objdump ne 'objdump') {
+++	    #if ($objdump ne 'objdump') {
++ 		$opts{error_to_file} = '/dev/null';
++-	    }
+++	    #}
++ 	    $pid = spawn(exec => [ $objdump, '-a', '--', $file ],
++ 			 env => { LC_ALL => 'C' },
++ 			 to_pipe => \$output, %opts);
++@@ -104,7 +110,8 @@
++ 		if (/^\s*\S+:\s*file\s+format\s+(\S+)\s*$/) {
++ 		    $format{$file} = $1;
++ 		    $res = $format{$file};
++-		    last;
+++		    # This might now be the only format, lets always take last
+++		    #last;
++ 		}
++ 	    }
++ 	    close($output);
++@@ -129,7 +136,30 @@
++     return $result;
++ }
++ 
+++sub is_mach_o {
+++    my ($file) = @_;
+++    open(FILE, "<", $file) || syserr(_g("cannot read %s"), $file);
+++    my ($header, $result) = ("", 0);
+++    if (read(FILE, $header, 4) == 4) {
+++       # isLittleEndian
+++        # 32 bit Mach-O
+++        $result = 1 if ($header =~ /^\xce\xfa\xed\xfe$/);
+++        # 64 bit Mach-O
+++        $result = 1 if ($header =~ /^\xcf\xfa\xed\xfe$/);
+++       # Fat
+++        # 32 bit Mach-O
+++        $result = 1 if ($header =~ /^\xfe\xed\xfa\xce$/);
+++        # 64 bit Mach-O
+++        $result = 1 if ($header =~ /^\xfe\xed\xfa\xcf$/);
+++
+++       # Mach-O Universal object files
+++        $result = 1 if ($header =~ /^\xca\xfe\xba\xbe$/);
+++    }
+++    close(FILE);
+++    return $result;
+++}
+++
++ package Dpkg::Shlibs::Objdump::Object;
++ 
++ use Dpkg::Gettext;
++ use Dpkg::ErrorHandling;
++@@ -170,21 +200,118 @@
++ 
++ sub analyze {
++     my ($self, $file) = @_;
+++    my $ret = 'none';
++ 
++     $file ||= $self->{file};
++     return unless $file;
++ 
+++    use IPC::Open3;
+++
++     $self->reset;
++     $self->{file} = $file;
++ 
++     local $ENV{LC_ALL} = 'C';
++-    open(my $objdump, '-|', $OBJDUMP, '-w', '-f', '-p', '-T', '-R', $file)
++-        or syserr(_g('cannot fork for %s'), $OBJDUMP);
++-    my $ret = $self->parse_objdump_output($objdump);
++-    close($objdump);
+++    if (Dpkg::Shlibs::Objdump::is_elf($file)) {
+++       open3(my $objdumpin, my $objdump, my $objdumperr, $OBJDUMP, "-w", "-f", "-p", "-T", "-R", $file)
+++           || syserr(_g("cannot fork for %s"), $OBJDUMP);
+++       $ret = $self->parse_objdump_output($objdump);
+++       close($objdump);
+++    } elsif (Dpkg::Shlibs::Objdump::is_mach_o($file)) {
+++       # no RPATH, HASH or GNU_HASH in macho
+++       $self->{RPATH} = [ '/' ];
+++
+++       open3(my $objdumpin, my $objdump, my $objdumperr, $OBJDUMP, "-f", "-p", $file)
+++           || syserr(_g("cannot fork for %s"), $OBJDUMP);
+++       $ret = $self->parse_objdump_output($objdump);
+++       close($objdump);
+++
+++       # get SONAME (dylib doesn't really use rpath but SONAME has a path)
+++       open(my $install_name, "-|", $OTOOL, "-X", "-D", $file)
+++           || syserr(_g("cannot fork for %s"), $OTOOL);
+++       $self->parse_macho_soname($install_name);
+++       close($install_name);
+++
+++        # Get list of linked libs
+++        open(my $needed_names, "-|", $OTOOL, "-L", "-X", $file)
+++            || syserr(_g("cannot fork for %s"), $OTOOL);
+++        $self->parse_macho_needed($needed_names);
+++        close($needed_names);
+++
+++       # Get list of symbols
+++       open(my $dynsymbols, "-|", $NM, "-g", $file)
+++           || syserr(_g("cannot fork for %s"), $NM);
+++       $self->parse_macho_dynamic_symbol($dynsymbols);
+++       close($dynsymbols);
+++    }
++     return $ret;
++ }
++ 
+++sub parse_macho_dynamic_symbol {
+++    my ($self, $fh) = @_;
+++    while (defined($_ = <$fh>)) {
+++       chomp;
+++
+++       # no version in mach o
+++       my $ver = '';
+++
+++       if (/^([0-9a-f]{16}) ([T|D|U]) (\S+)$/) {
+++           my ($flags, $sect, $name) = ($1, $2, $3);
+++           my $symbol = {
+++               name => $name,
+++               version => defined($ver) ? $ver : '',
+++               section => $sect,
+++               dynamic => "D",
+++               #debug => substr($flags, 5, 1) eq "d",
+++               type => $sect,
+++               #weak => substr($flags, 1, 1) eq "w",
+++               #local => substr($flags, 0, 1) eq "l",
+++               #global => substr($flags, 0, 1) eq "g",
+++               #visibility => defined($vis) ? $vis : '',
+++               hidden => '',
+++               defined => $sect ne 'U'
+++           };
+++           $self->add_dynamic_symbol($symbol);
+++       }
+++    }
+++}
+++
+++sub get_macho_compatversion {
+++    my ($self, $file) = @_;
+++    open(my $fh, "-|", $OTOOL, "-L", "-X", $file)
+++        || syserr(_g("cannot fork for %s"), $OTOOL);
+++    while (defined($_ = <$fh>)) {
+++       chomp;
+++       if (/^\s*(.+) \(compatibility version ([0-9.]+)/) {
+++           return $2 if $1 eq $self->{SONAME};
+++       }
+++    }
+++    close($fh);
+++}
+++
+++sub parse_macho_needed {
+++    my ($self, $fh) = @_;
+++    while (defined($_ = <$fh>)) {
+++        chomp;
+++        if (/^\s*(.+) \(compatibility version/) {
+++            next if $1 eq $self->{SONAME};
+++            push @{$self->{NEEDED}}, $1;
+++        }
+++    }
+++}
+++
+++sub parse_macho_soname {
+++    my ($self, $fh) = @_;
+++    while (defined($_ = <$fh>)) {
+++       chomp;
+++       if ($_) {
+++               use File::Basename;
+++               $self->{SONAME} = basename $_;
+++               $self->{SONAME} = $_;
+++               $self->{RPATH} = [ dirname $_ ];
+++       }
+++    }
+++}
+++
++ sub parse_objdump_output {
++     my ($self, $fh) = @_;
++ 
++--- dpkg.orig/scripts/dpkg-gensymbols.pl
+++++ dpkg/scripts/dpkg-gensymbols.pl
++@@ -195,8 +195,9 @@
++ 	opendir(my $libdir_dh, "$libdir")
++ 	    or syserr(_g("can't read directory %s: %s"), $libdir, $!);
++ 	push @files, grep {
++-	    /(\.so\.|\.so$)/ && -f $_ &&
++-	    Dpkg::Shlibs::Objdump::is_elf($_);
+++	    /(\.so\.|\.so$|\.dylib$|\.bundle$)/ && -f $_ &&
+++	    Dpkg::Shlibs::Objdump::is_elf($_) ||
+++	    Dpkg::Shlibs::Objdump::is_mach_o($_);
++ 	} map { "$libdir/$_" } readdir($libdir_dh);
++ 	closedir $libdir_dh;
++     }
++--- dpkg.orig/scripts/dpkg-shlibdeps.pl
+++++ dpkg/scripts/dpkg-shlibdeps.pl
++@@ -185,13 +185,15 @@
++ 	unless (defined $lib) {
++ 	    $soname_notfound{$soname} = 1;
++ 	    $global_soname_notfound{$soname} = 1;
++-	    my $msg = _g("couldn't find library %s needed by %s (ELF " .
+++	    my $libtype = 'ELF';
+++	    $libtype = 'MACH-O' if Dpkg::Shlibs::Objdump::is_mach_o($soname);
+++	    my $msg = _g("couldn't find library %s needed by %s (%s " .
++ 			 "format: '%s'; RPATH: '%s')");
++ 	    if (scalar(split_soname($soname))) {
++-		errormsg($msg, $soname, $file, $obj->{format}, join(':', @{$obj->{RPATH}}));
+++		errormsg($msg, $soname, $file, $libtype, $obj->{format}, join(':', @{$obj->{RPATH}}));
++ 		$error_count++;
++ 	    } else {
++-		warning($msg, $soname, $file, $obj->{format}, join(':', @{$obj->{RPATH}}));
+++		warning($msg, $soname, $file, $libtype, $obj->{format}, join(':', @{$obj->{RPATH}}));
++ 	    }
++ 	    next;
++ 	}
++@@ -671,13 +673,19 @@
++ 
++ sub split_soname {
++     my $soname = shift;
++-    if ($soname =~ /^(.*)\.so\.(.*)$/) {
++-	return wantarray ? ($1, $2) : 1;
++-    } elsif ($soname =~ /^(.*)-(\d.*)\.so$/) {
++-	return wantarray ? ($1, $2) : 1;
+++
+++    if (Dpkg::Shlibs::Objdump::is_mach_o($soname)) {
+++	use File::Basename;
+++	my $obj = Dpkg::Shlibs::Objdump::Object->new($soname);
+++	return wantarray ? ($soname, $obj->get_macho_compatversion($soname)) : 1;
++     } else {
++-	return wantarray ? () : 0;
+++	if ($soname =~ /^(.*)\.so\.(.*)$/) {
+++	    return wantarray ? ($1, $2) : 1;
+++	} elsif ($soname =~ /^(.*)-(\d.*)\.so$/) {
+++	    return wantarray ? ($1, $2) : 1;
+++	}
++     }
+++    return wantarray ? () : 0;
++ }
++ 
++ sub extract_from_shlibs {
++@@ -702,7 +710,7 @@
++ 	    next;
++ 	}
++ 	my $depread = defined($4) ? $4 : '';
++-	if (($libname eq $2) && ($libversion eq $3)) {
+++	if (($libname eq $2 || $soname eq $2) && ($libversion eq $3)) {
++ 	    # Define dep and end here if the package type explicitly
++ 	    # matches. Otherwise if the packagetype is not specified, use
++ 	    # the dep only as a default that can be overriden by a later
+diff -ruN dpkg-1.17.6.orig/fink/patches/test-fix.patch dpkg-1.17.6/fink/patches/test-fix.patch
+--- dpkg-1.17.6.orig/fink/patches/test-fix.patch	1969-12-31 17:00:00.000000000 -0700
++++ dpkg-1.17.6/fink/patches/test-fix.patch	2015-05-30 17:31:56.000000000 -0600
+@@ -0,0 +1,31 @@
++--- dpkg.orig/src/t/100_dpkg_divert.t
+++++ dpkg/src/t/100_dpkg_divert.t
++@@ -38,7 +38,7 @@
++     exit(0);
++ }
++ 
++-plan tests => 257;
+++plan tests => 255;
++ 
++ sub cleanup {
++     system("rm -rf $tmpdir && mkdir -p $testdir");
++@@ -602,6 +602,7 @@
++                 expect_failure => 1, expect_stderr_like => qr/Permission denied/);
++     diversions_eq('');
++ 
+++    system("chmod 755 $testdir/nadir");
++     cleanup();
++ }
++ 
++@@ -614,8 +615,9 @@
++ 
++     system("chmod 500 $admindir");
++     call_divert(["$testdir/foo"], expect_failure => 1, expect_stderr_like => qr/create.*new/);
++-    system("chmod 755 $admindir; ln -s /dev/full $admindir/diversions-new");
++-    call_divert(["$testdir/foo"], expect_failure => 1, expect_stderr_like => qr/(write|flush|close).*new/);
+++    system("chmod 755 $admindir");
+++    #system("chmod 755 $admindir; ln -s /dev/zero $admindir/diversions-new");
+++    #call_divert(["$testdir/foo"], expect_failure => 1, expect_stderr_like => qr/(write|flush|close).*new/);
++ }
++ 
++ system("rm -f $admindir/diversions-new; mkdir $admindir/diversions-old");
