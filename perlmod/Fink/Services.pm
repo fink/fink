@@ -1449,6 +1449,9 @@ sub get_darwin_equiv {
 		# darwin20.1 == 11.0
 		# darwin20.2 == 11.1
 		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers_minor-1);
+	} elsif ($kernel_vers >= 21) {
+		# darwin21.0 == 12.0
+		return $darwin_osx{$kernel_vers} || '12.' . ($kernel_vers_minor);
 	}
 }
 
