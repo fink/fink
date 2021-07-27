@@ -1677,7 +1677,7 @@ END
 				chomp(my $result = `pkgutil --pkg-info org.macosforge.xquartz.pkg --pkg-info org.xquartz.X11 2>/dev/null`);
 				foreach (split /\n/, $result) {
 					if (/version:\s(.*)$/) {
-						$xver = $1 if $1 > $xver;
+						$xver = $1 if Fink::Services::version_cmp($1,'>>',$xver);
 					}
 				}
 				$xver = '7.2' unless $xver;
