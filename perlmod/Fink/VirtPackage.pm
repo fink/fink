@@ -384,7 +384,6 @@ END
 				 'module-corelist',
 				 'module-load',
 				 'module-load-conditional',
-				 'package-constants',
 				 'params-check',
 				 'pod-escapes',
 			);
@@ -392,8 +391,13 @@ END
 				push(@modules,
 					 'cpanplus',
 					 'cpanplus-dist-build',
-					 'module-build',
 					 'module-pluggable',
+				);
+			}
+			if ($perlver < 5.021000) {
+				push(@modules,
+					 'module-build',
+					 'package-constants',
 				);
 			}
 		}
