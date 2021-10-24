@@ -7,7 +7,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2020 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -383,10 +383,13 @@ my $xcode_version;
 		$max_xcode="11.3.1";
 	} elsif ($vers == 19) {
 		$min_xcode="11.0";
+		$max_xcode="12.4";
+	} elsif ($vers == 20) {
+		$min_xcode="12.0";
 		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 		$max_xcode="99.99.99";
-	} elsif ($vers >= 20) {
-		$min_xcode="12.0";
+	} elsif ($vers >= 21) {
+		$min_xcode="13.0";
 		$max_xcode="99.99.99";
 		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 	} else {

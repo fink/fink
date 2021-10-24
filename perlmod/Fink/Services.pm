@@ -1322,6 +1322,10 @@ sub enforce_gcc {
 		'11.1' => '4.2',
 		'11.2' => '4.2',
 		'11.3' => '4.2',
+		'11.4' => '4.2',
+		'11.5' => '4.2',
+		'11.6' => '4.2',
+		'12.0' => '4.2',
 	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
@@ -1455,8 +1459,8 @@ sub get_darwin_equiv {
 		# darwin20.6 == 11.5 or 11.6 handled in get_osx_vers()
 		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers_minor-1);
 	} elsif ($kernel_vers >= 21) {
-		# darwin21.0 == 12.0
-		return $darwin_osx{$kernel_vers} || '12.' . ($kernel_vers_minor);
+		# darwin21.1 == 12.0
+		return $darwin_osx{$kernel_vers} || '12.' . ($kernel_vers_minor-1);
 	}
 }
 
