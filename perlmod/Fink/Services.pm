@@ -1322,6 +1322,10 @@ sub enforce_gcc {
 		'11.1' => '4.2',
 		'11.2' => '4.2',
 		'11.3' => '4.2',
+		'11.4' => '4.2',
+		'11.5' => '4.2',
+		'11.6' => '4.2',
+		'12.0' => '4.2',
 	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
@@ -1370,7 +1374,11 @@ sub get_osx_vers {
 	my $darwin_osx = get_darwin_equiv();
 	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
 	if ($sw_vers != $darwin_osx) {
-		die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+		if ($sw_vers == 11.6 && $darwin_osx == 11.5) {
+			# special case where it's OK to have a mismatch
+		} else {
+			die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+		}
 	}
 	return $sw_vers;
 }
@@ -1448,10 +1456,11 @@ sub get_darwin_equiv {
 	} elsif ($kernel_vers == 20) {
 		# darwin20.1 == 11.0
 		# darwin20.2 == 11.1
+		# darwin20.6 == 11.5 or 11.6 handled in get_osx_vers()
 		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers_minor-1);
 	} elsif ($kernel_vers >= 21) {
-		# darwin21.0 == 12.0
-		return $darwin_osx{$kernel_vers} || '12.' . ($kernel_vers_minor);
+		# darwin21.1 == 12.0
+		return $darwin_osx{$kernel_vers} || '12.' . ($kernel_vers_minor-1);
 	}
 }
 

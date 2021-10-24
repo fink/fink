@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2020 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -5773,6 +5773,10 @@ sub get_perl_dir_arch {
 			} elsif ((&version_cmp($perlversion, '=', "5.30.2")) and Fink::Services::get_kernel_vers() == '20') {
 				# 11.3 system-perl is 5.30.2, but the only supplied
 				# interpreter is /usr/bin/perl5.30 (not perl5.30.2)
+				$perlcmd = "/usr/bin/arch -%m perl5.30";
+			} elsif ((&version_cmp($perlversion, '=', "5.30.3")) and Fink::Services::get_kernel_vers() == '21') {
+				# 12.0 system-perl is 5.30.3, but the only supplied
+				# interpreter is /usr/bin/perl5.30 (not perl5.30.3)
 				$perlcmd = "/usr/bin/arch -%m perl5.30";
 			}
 		} else {
