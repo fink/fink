@@ -4840,7 +4840,7 @@ EOF
 	}
 
 	# make sure fink and dpkg use gz compression for bindist upgrades
-	my $dpkgdebextra = ($parentpkgname eq 'fink' || $parentpkgname eq 'dpkg') && Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1'))
+	my $dpkgdebextra = (($parentpkgname eq 'fink' || $parentpkgname eq 'dpkg') && Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1'))
 		? ' -Zgzip'
 		: '';
 	# Set ENV so for tar on 10.9+, dpkg-deb calls tar and thus requires it
