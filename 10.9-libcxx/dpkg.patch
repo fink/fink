@@ -972,7 +972,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-env.patch dpkg-1.17.6/fink/patches
 diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/patches/extra-statusfile.patch
 --- dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/patches/extra-statusfile.patch	2015-09-23 15:34:10.000000000 -0600
-@@ -0,0 +1,443 @@
+@@ -0,0 +1,454 @@
 +--- dpkg.orig/config.h.in
 ++++ dpkg/config.h.in
 +@@ -27,6 +27,9 @@
@@ -1416,6 +1416,17 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 +     system("rm -rf $admindir/info && mkdir -p $admindir/info");
 + }
 + 
++--- dpkg.orig/src/trigproc.c
+++++ dpkg/src/trigproc.c
++@@ -404,7 +404,7 @@
++ 
++ 	it = pkg_db_iter_new();
++ 	while ((pkg = pkg_db_iter_next_pkg(it))) {
++-		if (pkg->status <= stat_halfinstalled)
+++		if (pkg->status <= stat_halfinstalled || pkg->status == stat_virtual)
++ 			continue;
++ 		debug(dbg_triggersdetail, "trig_transitional_activate %s %s",
++ 		      pkg_name(pkg, pnaw_always),
 diff -ruN dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch dpkg-1.17.6/fink/patches/fink-as-vendor.patch
 --- dpkg-1.17.6.orig/fink/patches/fink-as-vendor.patch	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.17.6/fink/patches/fink-as-vendor.patch	2014-03-25 11:47:45.000000000 -0600

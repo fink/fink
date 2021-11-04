@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.17.6
-Revision: 1.4
+Revision: 1.5
 GCC: 4.0
 ## Remove po4a
 BuildDepends: <<
@@ -38,7 +38,7 @@ Source-MD5: bdb6d88470c901d35fa19d776a8e8828
 SourceDirectory: dpkg-%v
 
 PatchFile: dpkg.patch
-PatchFile-MD5: 87bfc829e1b1deff1fc2f8f15e01cfaa
+PatchFile-MD5: 2754c94569bbf7c2150557a600f07fee
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -443,6 +443,20 @@ create_logfile() {
     chown root: $logfile 2>/dev/null || chown 0:0 $logfile
 }
 
+# Remove virtuals from status file during upgrade to a version that knows
+# about virtuals
+remove_virtuals() {
+    if dpkg --compare-versions "$version" lt 1.15; then
+	echo "Removing virtuals from dpkg status file upgrade from ($version) ..."
+	for i in `grep 'Package:' %p/var/lib/dpkg/status-fink | awk {'print $2'}`; do
+	    if grep -Eq "^Package: ${i}$" %p/var/lib/dpkg/status; then
+		echo "Removing ${i} from status file ..."
+		sed -i -e "/^Package: ${i}$/,/^$/d" %p/var/lib/dpkg/status
+	    fi
+	done
+    fi
+}
+
 
 case "$1" in
     configure)
@@ -451,6 +465,8 @@ case "$1" in
 
 	move_info_directory
 	remove_info_symlink
+	version=$2
+	remove_virtuals
 	;;
 
     abort-upgrade|abort-deconfigure|abort-remove)
