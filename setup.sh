@@ -34,6 +34,7 @@ version=`cat VERSION`
 perlexe="/usr/bin/perl"
 
 osMajorVer=`uname -r | cut -d. -f1`
+osMinorVer=`uname -r | cut -d. -f2`
 
 if [ $osMajorVer -eq 11 -o $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
@@ -41,8 +42,10 @@ elif [ $osMajorVer -eq 13 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.16"
 elif [ $osMajorVer -gt 13 -a $osMajorVer -le 19 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.18"
-elif [ $osMajorVer -gt 20 ]; then
+elif [ $osMajorVer -eq 20 -a $osMinorVer -le 3 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.28"
+elif [ $osMajorVer -eq 20 -o $osMajorVer -ge 21 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.30"
 fi
 
 
