@@ -1,21 +1,23 @@
 Package: expat1
-Version: 2.2.8
+Version: 2.4.1
 Revision: 1
 Depends: %N-shlibs (= %v-%r)
 Replaces: expat
 Conflicts: expat
 BuildDependsOnly: true
 CustomMirror: <<
-	Primary: https://downloads.sourceforge.net/expat/
+	Primary: https://github.com/libexpat/libexpat/releases/download/R_2_4_1/
 	Secondary: https://downloads.sourceforge.net/fink/
 <<
 Source: mirror:custom:expat-%v.tar.bz2
-Source-MD5: 00858041acfea5757af55e6ee6b86231
+Source-MD5: 476cdf4b5e40280316fff36b2086a390
 #PatchFile: %n.patch
 #PatchFile-MD5: 
 #PatchScript: <<
 #	%{default_script}
 #<<
+# c++ only used for test suite, not installed binaries
+#GCC: 4.0
 # don't autodetect docbook tools, which would trigger doc regeneration
 ConfigureParams: --without-docbook --disable-static
 SetCFLAGS: -g -O2 -fshort-wchar
@@ -34,7 +36,7 @@ SplitOff:<<
 	Package: %N-shlibs
 	Essential: true
 	Files: lib/libexpat.*.dylib
-	Shlibs: %p/lib/libexpat.1.dylib 8.0.0 %n (>= 2.1.0-1)
+	Shlibs: %p/lib/libexpat.1.dylib 10.0.0 %n (>= 2.4.1-1)
 	DocFiles: AUTHORS Changes:changelog COPYING README.md
 <<
 

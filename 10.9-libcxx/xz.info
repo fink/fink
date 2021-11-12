@@ -1,5 +1,5 @@
 Package: xz
-Version: 5.2.0
+Version: 5.2.4
 Revision: 1.1
 Essential: yes
 Description: LZMA file compressor
@@ -38,8 +38,8 @@ License: GPL2+
 Homepage: http://tukaani.org/xz/
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 
-Source: http://tukaani.org/%n/%n-%v.tar.bz2
-Source-MD5: 867cc8611760240ebf3440bd6e170bb9
+Source: mirror:sourceforge:lzmautils/%n-%v.tar.bz2
+Source-Checksum: SHA256(3313fd2a95f43d88e44264e6b015e7d03053e681860b0d5d3f9baca79c57b7bf)
 
 BuildDepends: libiconv-dev, libgettext8-dev, gettext-tools, fink (>= 0.24.12)
 Depends: liblzma5-shlibs (= %v-%r)
