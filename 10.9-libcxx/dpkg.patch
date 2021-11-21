@@ -991,7 +991,7 @@ diff -ruN dpkg-1.17.6.orig/fink/patches/extra-statusfile.patch dpkg-1.17.6/fink/
 + enable_start_stop_daemon
 + enable_update_alternatives
 + with_dpkg_env_script
-++with_finkvirtual
+++with_finkvirtuals
 + with_pkgconfdir
 + with_admindir
 + with_logdir

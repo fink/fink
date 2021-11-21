@@ -38,7 +38,7 @@ Source-MD5: bdb6d88470c901d35fa19d776a8e8828
 SourceDirectory: dpkg-%v
 
 PatchFile: dpkg.patch
-PatchFile-MD5: 2754c94569bbf7c2150557a600f07fee
+PatchFile-MD5: e42321211f3f963b16fec94219d320ac
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
