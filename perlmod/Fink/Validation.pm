@@ -23,7 +23,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &pkglist2lol &version_cmp);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &pkglist2lol &version_cmp &dep_in_lol);
 use Fink::Config qw($config);
 use Fink::CLI qw(&print_breaking);
 use Fink::PkgVersion;
@@ -1185,31 +1185,12 @@ sub _require_dep {
 
 	if (exists $required_versions->{build}) {
 		my %reqs = %{$required_versions->{build}}; # clone so we can alter it
-
-		foreach (
-			@{&pkglist2lol($package_hash->{builddepends})},
-			@{&pkglist2lol($package_hash->{depends})},
-		) {
-			foreach my $atom (@$_) {
-				$atom =~ s/^\(.*?\)\s*//;
-				while ( my($pkg,$minver) = each %reqs ) {
-					if (defined $minver) {
-						# need to check version spec
-						$atom =~ /^$pkg\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
-						delete $reqs{$pkg} if version_cmp($2, '>=', $minver);
-					} elsif ($atom eq $pkg) {
-						# no version spec needed, just check that dep
-						# exists without version spec...
-						delete $reqs{$pkg};
- 					} elsif ($atom =~ /^$pkg\s*\(/) {
-						# ...but any version spec still okay
-						delete $reqs{$pkg};
-					}
-				}
-			}
-		}
-
-		if (keys %reqs) {
+		if (!&dep_in_lol(
+			\%reqs, [
+				@{&pkglist2lol($package_hash->{builddepends})},
+				@{&pkglist2lol($package_hash->{depends})},
+				  ]
+			)) {
 			print "Error: $feature requires declaring a BuildDepends or Depends on:\n";
 			print map { "\t$_" . ( defined $reqs{$_} ? " (>= $reqs{$_})\n" : "\n" ) } sort keys %reqs;
 			$all_ok = 0;
@@ -1218,31 +1199,12 @@ sub _require_dep {
 
 	if (exists $required_versions->{run}) {
 		my %reqs = %{$required_versions->{run}}; # clone so we can alter it
-
-		foreach (
-			@{&pkglist2lol($package_hash->{depends})},
-			@{&pkglist2lol($package_hash->{runtimedepends})},
-		) {
-			foreach my $atom (@$_) {
-				$atom =~ s/^\(.*?\)\s*//;
-				while ( my($pkg,$minver) = each %reqs ) {
-					if (defined $minver) {
-						# need to check version spec
-						$atom =~ /^$pkg\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
-						delete $reqs{$pkg} if version_cmp($2, '>=', $minver);
-					} elsif ($atom eq $pkg) {
-						# no version spec needed, just check that dep
-						# exists without version spec...
-						delete $reqs{$pkg};
- 					} elsif ($atom =~ /^$pkg\s*\(/) {
-						# ...but any version spec still okay
-						delete $reqs{$pkg};
-					}
-				}
-			}
-		}
-
-		if (keys %reqs) {
+		if (!&dep_in_lol(
+			\%reqs, [
+				@{&pkglist2lol($package_hash->{depends})},
+				@{&pkglist2lol($package_hash->{runtimedepends})},
+				  ]
+			)) {
 			print "Error: $feature requires declaring a Depends or RuntimeDepends on:\n";
 			print map { "\t$_" . ( defined $reqs{$_} ? " (>= $reqs{$_})\n" : "\n" ) } sort keys %reqs;
 			$all_ok = 0;

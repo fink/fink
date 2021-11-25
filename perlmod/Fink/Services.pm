@@ -60,6 +60,7 @@ BEGIN {
 					  &parse_fullversion
 					  &collapse_space
 					  &pkglist2lol &lol2pkglist &cleanup_lol
+					  &dep_in_lol
 					  &enforce_gcc
 					  &get_osx_vers
 					  &get_osx_vers_long
@@ -1238,6 +1239,71 @@ sub cleanup_lol {
 	my @clusters = grep { defined $_ } @$struct;
 	@$struct = @clusters;
 }
+
+=item dep_in_lol
+
+	$is_met = dep_in_lol $req_deps, $pkg_lol;
+
+Check whether required dependencies are satisfied by a package's
+dependency list. That is, is $pkg_lol at least as strict as $req_deps?
+
+$req_deps is a ref to a hash of pkgname=>minversion pairs to check;
+$pkg_lol is a package's dependencies. The minversion (dpkg v-string)
+is the minimum allowable (a ">=" requirement). If minversion is undef,
+then any version suffices.
+
+* Varianting is ignored
+
+* A complete range-to-range comparison is not implemented. Only the
+  following operators are respected in $pkg_lol: >= =
+
+* Logical "or" is not supported in $pkg_lol, as a consequence of it
+  not requiring the $req_deps package-name specifically
+
+The return is a boolean indicating whether all $req_deps are satisfied
+by $pkg_lol, and $req_deps is pruned to contain only those items that
+are not satisfied.
+
+=cut
+
+sub dep_in_lol {
+	my ($req_deps, $pkg_lol) = @_;
+
+	foreach (@$pkg_lol) {
+		last unless %$req_deps; # short-circuit if we've found them all
+
+		# assume an "or" pkg-dep will not strictly enforce any
+		# specific dep
+		next if (@$_ > 1);
+
+		# there's only one element (see prev), but loop construct help
+		# clarify the structure of a lol
+		foreach my $atom (@$_) {
+			$atom =~ s/^\(.*?\)\s*//;	# ignore varianting
+			$atom =~ s/\s*\((.*)\)//;	# atom is pkgname of pkg dep
+			my $ver = $1;				# ver is dpkg dep-string of pkg dep
+
+			next unless exists $req_deps->{$atom};	# atom does not satisfy any req dep
+			if (!defined $req_deps->{$atom}) {		# satisfies unversioned req dep
+				delete $req_deps->{$atom};
+				next;
+			}
+
+			# simple-minded function cannot handle arbirary
+			# range-comp, just thresholds
+			$ver =~ s/([>=<!])*\s*//;	# ver is v-string
+			next unless ($1 eq '>=' or $1 eq '=');
+			if (version_cmp($ver, '>=', $req_deps->{$atom})) {
+				# pkg dep is at least as strict as req dep
+				delete $req_deps->{$atom};
+				next;
+			}
+		}
+	}
+
+	return !%$req_deps; # do we have none left?
+}
+
 
 =item gcc_selected
 
