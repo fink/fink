@@ -1270,34 +1270,29 @@ sub dep_in_lol {
 	my ($req_deps, $pkg_lol) = @_;
 
 	foreach (@$pkg_lol) {
-		last unless %$req_deps; # short-circuit if we've found them all
-
 		# assume an "or" pkg-dep will not strictly enforce any
 		# specific dep
 		next if (@$_ > 1);
 
-		# there's only one element (see prev), but loop construct help
-		# clarify the structure of a lol
-		foreach my $atom (@$_) {
-			$atom =~ s/^\(.*?\)\s*//;	# ignore varianting
-			$atom =~ s/\s*\((.*)\)//;	# atom is pkgname of pkg dep
-			my $ver = $1;				# ver is dpkg dep-string of pkg dep
+		my $atom = $_->[0];
+		$atom =~ s/^\(.*?\)\s*//;	# ignore varianting
+		$atom =~ s/\s*\((.*)\)//;	# atom is pkgname of pkg dep
+		my $ver = $1;				# ver is dpkg dep-string of pkg dep
 
-			next unless exists $req_deps->{$atom};	# atom does not satisfy any req dep
-			if (!defined $req_deps->{$atom}) {		# satisfies unversioned req dep
-				delete $req_deps->{$atom};
-				next;
-			}
+		next unless exists $req_deps->{$atom};	# atom does not satisfy any req dep
+		if (!defined $req_deps->{$atom}) {		# satisfies unversioned req dep
+			delete $req_deps->{$atom};
+			%$req_deps ? next : last;
+		}
 
-			# simple-minded function cannot handle arbirary
-			# range-comp, just thresholds
-			$ver =~ s/([>=<!])*\s*//;	# ver is v-string
-			next unless ($1 eq '>=' or $1 eq '=');
-			if (version_cmp($ver, '>=', $req_deps->{$atom})) {
-				# pkg dep is at least as strict as req dep
-				delete $req_deps->{$atom};
-				next;
-			}
+		# simple-minded function cannot handle arbirary range-comp,
+		# just thresholds
+		$ver =~ s/([>=<])*\s*//;	# ver is v-string
+		next unless ($1 eq '>=' or $1 eq '=');
+		if (version_cmp($ver, '>=', $req_deps->{$atom})) {
+			# pkg dep is at least as strict as req dep
+			delete $req_deps->{$atom};
+			%$req_deps ? next : last;
 		}
 	}
 
