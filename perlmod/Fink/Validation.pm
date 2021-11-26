@@ -1187,11 +1187,12 @@ sub _require_dep {
 		my %reqs = %{$required_versions->{build}}; # clone so we can alter it
 		if (!&dep_in_lol(
 			\%reqs, [
+				@{&pkglist2lol($package_hash->{'pre-depends'})},
 				@{&pkglist2lol($package_hash->{builddepends})},
 				@{&pkglist2lol($package_hash->{depends})},
 				  ]
 			)) {
-			print "Error: $feature requires declaring a BuildDepends or Depends on:\n";
+			print "Error: $feature requires declaring a BuildDepends, Depends, or (rarely) Pre-Depends on:\n";
 			print map { "\t$_" . ( defined $reqs{$_} ? " (>= $reqs{$_})\n" : "\n" ) } sort keys %reqs;
 			$all_ok = 0;
 		}
@@ -1201,11 +1202,12 @@ sub _require_dep {
 		my %reqs = %{$required_versions->{run}}; # clone so we can alter it
 		if (!&dep_in_lol(
 			\%reqs, [
+				@{&pkglist2lol($package_hash->{'pre-depends'})},
 				@{&pkglist2lol($package_hash->{depends})},
 				@{&pkglist2lol($package_hash->{runtimedepends})},
 				  ]
 			)) {
-			print "Error: $feature requires declaring a Depends or RuntimeDepends on:\n";
+			print "Error: $feature requires declaring a Depends, RuntimeDepends, or (rarely) Pre-Depends on:\n";
 			print map { "\t$_" . ( defined $reqs{$_} ? " (>= $reqs{$_})\n" : "\n" ) } sort keys %reqs;
 			$all_ok = 0;
 		}
