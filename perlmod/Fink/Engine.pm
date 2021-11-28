@@ -2590,6 +2590,8 @@ HELPFORMAT
 					) {
 				my $deplist = $pkg->pkglist($_);
 				printf "%s: %s\n", $_, $deplist if defined $deplist;
+			} elsif ($_ eq 'testdepends') {
+				printf "%s: %s\n", $_, "[merged into BuildDepends]";
 			} elsif ($_ eq 'essential'         or $_ eq 'builddependsonly'  or
 					 $_ =~ /^noset/            or $_ eq 'noperltests'       or
 					 $_ eq 'updatepod'
