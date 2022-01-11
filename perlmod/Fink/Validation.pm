@@ -1801,10 +1801,10 @@ sub _validate_dpkg {
 		} else {
 			# python language is major.minor
 			# ruby language is major.minor
-			# numbers are all "small" (one-digit)
-			$langver_re =~ /^(\d)(\d)$/;
-			# -pyXY is pythonX.Y
-			# -rbXY is rubyX.Y
+			# major numbers are all "small" (one-digit)
+			$langver_re =~ /^(\d)(\d{1,2})$/;
+			# -pyXY is pythonX.Y (-pyXYY is pythonX.YY)
+			# -rbXY is rubyX.Y (-rbXYY is rubyX.YY)
 			$langver_re = "(?:$langver_re|$1.$2)";
 		}
 	}
