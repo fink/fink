@@ -1,17 +1,17 @@
-diff -ruN texinfo-6.3.orig/fink/info.menu texinfo-6.3/fink/info.menu
---- texinfo-6.3.orig/fink/info.menu	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/info.menu	2016-10-11 08:53:59.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/info.menu texinfo-6.5/fink/info.menu
+--- texinfo-6.5.orig/fink/info.menu	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/info.menu	2017-09-13 06:35:50.000000000 -0400
 @@ -0,0 +1,2 @@
 +?package(info): needs="text" title="Info" section="Help" \
 +  longtitle="GNU Info browser" command="info"
-diff -ruN texinfo-6.3.orig/fink/info.mime texinfo-6.3/fink/info.mime
---- texinfo-6.3.orig/fink/info.mime	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/info.mime	2016-10-11 08:53:59.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/info.mime texinfo-6.5/fink/info.mime
+--- texinfo-6.5.orig/fink/info.mime	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/info.mime	2017-09-13 06:35:50.000000000 -0400
 @@ -0,0 +1 @@
 +application/x-info; @FINKPREFIX@/bin/info -f '%s'; needsterminal; description=GNU Info document
-diff -ruN texinfo-6.3.orig/fink/install-info.1 texinfo-6.3/fink/install-info.1
---- texinfo-6.3.orig/fink/install-info.1	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/install-info.1	2016-10-11 08:53:59.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/install-info.1 texinfo-6.5/fink/install-info.1
+--- texinfo-6.5.orig/fink/install-info.1	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/install-info.1	2017-09-13 06:35:50.000000000 -0400
 @@ -0,0 +1,29 @@
 +.TH INSTALL-INFO 1
 +.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection
@@ -42,9 +42,9 @@ diff -ruN texinfo-6.3.orig/fink/install-info.1 texinfo-6.3/fink/install-info.1
 +.SH AUTHOR
 +This manual page was written by Norbert Preining <preining@logic.at>,
 +for the Debian GNU/Linux system (but may be used by others).
-diff -ruN texinfo-6.3.orig/fink/install-info.sh texinfo-6.3/fink/install-info.sh
---- texinfo-6.3.orig/fink/install-info.sh	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/install-info.sh	2016-10-11 08:53:59.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/install-info.sh texinfo-6.5/fink/install-info.sh
+--- texinfo-6.5.orig/fink/install-info.sh	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/install-info.sh	2017-09-13 06:35:50.000000000 -0400
 @@ -0,0 +1,36 @@
 +#!/bin/sh
 +#
@@ -82,15 +82,14 @@ diff -ruN texinfo-6.3.orig/fink/install-info.sh texinfo-6.3/fink/install-info.sh
 +fi
 +
 +
-diff -ruN texinfo-6.3.orig/fink/install-info.triggers texinfo-6.3/fink/install-info.triggers
---- texinfo-6.3.orig/fink/install-info.triggers	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/install-info.triggers	2016-10-11 08:53:59.000000000 -0600
-@@ -0,0 +1,2 @@
+diff -uNr texinfo-6.5.orig/fink/install-info.triggers texinfo-6.5/fink/install-info.triggers
+--- texinfo-6.5.orig/fink/install-info.triggers	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/install-info.triggers	2017-09-13 06:35:50.000000000 -0400
+@@ -0,0 +1 @@
 +interest-noawait @FINKPREFIX@/share/info
-+interest-noawait @FINKPREFIX@/info
-diff -ruN texinfo-6.3.orig/fink/patches/dont_build_info texinfo-6.3/fink/patches/dont_build_info
---- texinfo-6.3.orig/fink/patches/dont_build_info	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/patches/dont_build_info	2016-10-11 08:57:31.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/patches/dont_build_info texinfo-6.5/fink/patches/dont_build_info
+--- texinfo-6.8.orig/fink/patches/dont_build_info	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.8/fink/patches/dont_build_info	2021-08-26 04:59:42.000000000 -0500
 @@ -0,0 +1,39 @@
 +dont build the info documentation, it has been removed
 +---
@@ -99,7 +98,7 @@ diff -ruN texinfo-6.3.orig/fink/patches/dont_build_info texinfo-6.3/fink/patches
 +
 +--- texinfo.orig/doc/Makefile.in
 ++++ texinfo/doc/Makefile.in
-+@@ -253,14 +253,16 @@
++@@ -259,14 +259,16 @@
 + am__v_texidevnull_ = $(am__v_texidevnull_@AM_DEFAULT_V@)
 + am__v_texidevnull_0 = > /dev/null
 + am__v_texidevnull_1 = 
@@ -113,27 +112,27 @@ diff -ruN texinfo-6.3.orig/fink/patches/dont_build_info texinfo-6.3/fink/patches
 + PSS = texinfo.ps info-stnd.ps
 + HTMLS = texinfo.html info-stnd.html
 +-TEXINFOS = texinfo.texi info-stnd.texi
-++#TEXINFOS = texinfo.texi info-stnd.texi
-++TEXINFOS =
-+ TEXI2DVI = texi2dvi
+++TEXINFOS = texinfo.texi info-stnd.texi
+++#TEXINFOS =
 + TEXI2PDF = $(TEXI2DVI) --pdf --batch
 + MAKEINFOHTML = $(MAKEINFO) --html
-+@@ -1114,8 +1116,10 @@
++ AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS)
++@@ -1138,8 +1140,10 @@
 + top_builddir = @top_builddir@
 + top_srcdir = @top_srcdir@
 + SUBDIRS = tp_api
 +-info_TEXINFOS = texinfo.texi info-stnd.texi
 +-DISTCLEANFILES = texinfo.info* info-stnd.info*
-++#info_TEXINFOS = texinfo.texi info-stnd.texi
-++#DISTCLEANFILES = texinfo.info* info-stnd.info*
-++info_TEXINFOS =
-++DISTCLEANFILES =
+++info_TEXINFOS = texinfo.texi info-stnd.texi
+++DISTCLEANFILES = texinfo.info* info-stnd.info*
+++#info_TEXINFOS =
+++#DISTCLEANFILES =
 + MAKEINFO_ENVIRONMENT = TEXINFO_DEV_SOURCE=1 ; export TEXINFO_DEV_SOURCE ; \
 +                        top_srcdir="$(top_srcdir)" ; export top_srcdir ; \
 +                        top_builddir="$(top_builddir)" ; export top_builddir ;
-diff -ruN texinfo-6.3.orig/fink/patches/numerical-signal-names texinfo-6.3/fink/patches/numerical-signal-names
---- texinfo-6.3.orig/fink/patches/numerical-signal-names	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/patches/numerical-signal-names	2016-10-11 08:59:36.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/patches/numerical-signal-names texinfo-6.5/fink/patches/numerical-signal-names
+--- texinfo-6.5.orig/fink/patches/numerical-signal-names	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/patches/numerical-signal-names	2017-09-13 06:48:57.000000000 -0400
 @@ -0,0 +1,48 @@
 +replace numerical signal names with symbolical
 +---
@@ -144,7 +143,7 @@ diff -ruN texinfo-6.3.orig/fink/patches/numerical-signal-names texinfo-6.3/fink/
 +
 +--- texinfo.orig/util/texi2dvi
 ++++ texinfo/util/texi2dvi
-+@@ -1963,7 +1963,7 @@
++@@ -1985,7 +1985,7 @@
 +              $SED "s,^$orig_pwd/,,;s,^\./,,;s,/,!,g"`
 +   esac
 +   # Remove it at exit if clean mode.
@@ -183,30 +182,9 @@ diff -ruN texinfo-6.3.orig/fink/patches/numerical-signal-names texinfo-6.3/fink/
 + 
 + # Find all the fonts with names that include `circle'.
 + (cd "${texfontdir}"; find . -name '*circle*' -print > "${tempfile}")
-diff -ruN texinfo-6.3.orig/fink/patches/reproducible-makeinfo texinfo-6.3/fink/patches/reproducible-makeinfo
---- texinfo-6.3.orig/fink/patches/reproducible-makeinfo	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/patches/reproducible-makeinfo	2016-10-11 09:00:52.000000000 -0600
-@@ -0,0 +1,17 @@
-+make makeinfo honor S_D_E
-+patch by Alexis Bienvenüe (Closes: #826158)
-+---
-+ tp/Texinfo/Common.pm |    2 +-
-+ 1 file changed, 1 insertion(+), 1 deletion(-)
-+
-+--- texinfo.orig/tp/Texinfo/Common.pm
-++++ texinfo/tp/Texinfo/Common.pm
-+@@ -1205,7 +1205,7 @@
-+     return {'text' => 'a sunny day'};
-+   }
-+   my($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst)
-+-   = localtime(time);
-++   = ($ENV{SOURCE_DATE_EPOCH} ? gmtime($ENV{SOURCE_DATE_EPOCH}) : localtime(time));
-+   $year += ($year < 70) ? 2000 : 1900;
-+   return $self->gdt('{month} {day}, {year}',
-+           { 'month' => $self->gdt($MONTH_NAMES[$mon]),
-diff -ruN texinfo-6.3.orig/fink/patches/warn_missing_tex texinfo-6.3/fink/patches/warn_missing_tex
---- texinfo-6.3.orig/fink/patches/warn_missing_tex	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/patches/warn_missing_tex	2016-10-11 09:00:18.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/patches/warn_missing_tex texinfo-6.5/fink/patches/warn_missing_tex
+--- texinfo-6.5.orig/fink/patches/warn_missing_tex	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/patches/warn_missing_tex	2017-09-13 06:47:51.000000000 -0400
 @@ -0,0 +1,18 @@
 +20_warn_missing_tex.dpatch by  <preining@logic.at>
 +
@@ -216,7 +194,7 @@ diff -ruN texinfo-6.3.orig/fink/patches/warn_missing_tex texinfo-6.3/fink/patche
 +
 +--- texinfo.orig/util/texi2dvi
 ++++ texinfo/util/texi2dvi
-+@@ -1883,6 +1883,9 @@
++@@ -1905,6 +1905,9 @@
 + 
 + For information about obtaining TeX, please see http://tug.org/texlive,
 + or do a web search for TeX and your operating system or distro.
@@ -226,9 +204,9 @@ diff -ruN texinfo-6.3.orig/fink/patches/warn_missing_tex texinfo-6.3/fink/patche
 + EOM
 +     exit 1
 +   fi
-diff -ruN texinfo-6.3.orig/fink/texi2pdf.man texinfo-6.3/fink/texi2pdf.man
---- texinfo-6.3.orig/fink/texi2pdf.man	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/texi2pdf.man	2016-10-11 08:53:59.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/texi2pdf.man texinfo-6.5/fink/texi2pdf.man
+--- texinfo-6.5.orig/fink/texi2pdf.man	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/texi2pdf.man	2017-09-13 06:35:50.000000000 -0400
 @@ -0,0 +1,49 @@
 +.TH "texi2pdf" "1" "September 2000" "teTeX" "teTeX" 
 +.PP 
@@ -279,9 +257,9 @@ diff -ruN texinfo-6.3.orig/fink/texi2pdf.man texinfo-6.3/fink/texi2pdf.man
 +without contacting the author\&.  Any mistakes or omissions in the
 +manual page are my fault; inquiries about or corrections to this
 +manual page should be directed to me (and not to the primary author)\&.
-diff -ruN texinfo-6.3.orig/fink/transition-plan.txt texinfo-6.3/fink/transition-plan.txt
---- texinfo-6.3.orig/fink/transition-plan.txt	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/transition-plan.txt	2016-10-11 08:53:59.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/transition-plan.txt texinfo-6.5/fink/transition-plan.txt
+--- texinfo-6.5.orig/fink/transition-plan.txt	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/transition-plan.txt	2017-09-13 06:35:50.000000000 -0400
 @@ -0,0 +1,120 @@
 +Proposal to replace Debian's install-info with GNU's install-info
 +=================================================================
@@ -403,9 +381,9 @@ diff -ruN texinfo-6.3.orig/fink/transition-plan.txt texinfo-6.3/fink/transition-
 +   previous step).
 +
 +
-diff -ruN texinfo-6.3.orig/fink/update-info-dir texinfo-6.3/fink/update-info-dir
---- texinfo-6.3.orig/fink/update-info-dir	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/update-info-dir	2016-10-11 08:53:59.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/update-info-dir texinfo-6.5/fink/update-info-dir
+--- texinfo-6.5.orig/fink/update-info-dir	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/update-info-dir	2017-09-13 06:35:50.000000000 -0400
 @@ -0,0 +1,82 @@
 +#!/bin/bash
 +# update-info-dir
@@ -468,7 +446,7 @@ diff -ruN texinfo-6.3.orig/fink/update-info-dir texinfo-6.3/fink/update-info-dir
 +errors=0
 +find "$INFODIR" -type f | while read file ; do
 +  case $file in
-+    */dir|*/dir.gz|*/dir.old|*/dir.old.gz|*-[0-9]|*-[0-9].gz|*-[1-9][0-9]|*-[1-9][0-9].gz|*.png)
++    */dir|*/dir.gz|*/dir.old|*/dir.old.gz|*-[0-9]|*-[0-9].gz|*-[1-9][0-9]|*-[1-9][0-9].gz|*.png|*/dir.bak)
 +      # these files are ignored
 +      continue
 +      ;;
@@ -489,9 +467,9 @@ diff -ruN texinfo-6.3.orig/fink/update-info-dir texinfo-6.3/fink/update-info-dir
 +exit 0
 +
 +# vim:set expandtab tabstop=2: #
-diff -ruN texinfo-6.3.orig/fink/update-info-dir.8 texinfo-6.3/fink/update-info-dir.8
---- texinfo-6.3.orig/fink/update-info-dir.8	1969-12-31 17:00:00.000000000 -0700
-+++ texinfo-6.3/fink/update-info-dir.8	2016-10-11 08:53:59.000000000 -0600
+diff -uNr texinfo-6.5.orig/fink/update-info-dir.8 texinfo-6.5/fink/update-info-dir.8
+--- texinfo-6.5.orig/fink/update-info-dir.8	1969-12-31 19:00:00.000000000 -0500
++++ texinfo-6.5/fink/update-info-dir.8	2017-09-13 06:35:50.000000000 -0400
 @@ -0,0 +1,34 @@
 +.TH UPDATE-INFO-DIR 8
 +.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection

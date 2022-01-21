@@ -1,0 +1,52 @@
+Info2: <<
+Package: locale-textdomain-pm%type_pkg[perl]
+Version: 1.32
+Revision: 1
+Depends: <<
+	file-sharedir-pm,
+	libgettext8-shlibs,
+	perl%type_pkg[perl]-core
+<<
+Builddepends: <<
+	libgettext8-dev
+<<
+Replaces: libintl-pm%type_pkg[perl]
+Essential: true
+Source: mirror:cpan:authors/id/G/GU/GUIDO/libintl-perl-%v.tar.gz
+Source-MD5: 2bde66347614962a6f0f1bd1c36b5211
+Type: perl (5.16.2 5.18.2 5.18.4 5.28.2 5.30.2 5.30.3)
+Distribution: <<
+	(%type_pkg[perl] = 5162) 10.9,
+	(%type_pkg[perl] = 5162) 10.10,
+	(%type_pkg[perl] = 5162) 10.11,
+	(%type_pkg[perl] = 5162) 10.12,
+	(%type_pkg[perl] = 5162) 10.13
+<<
+PatchFile: %{ni}.patch
+PatchFile-MD5: f57d5997acc6b04921f9995be94e74cc
+PatchScript: sed "s|FINKPATH|%p|g" < %{PatchFile} | patch -p1
+InstallScript: <<
+	%{default_script}
+	mv %i/share/man %i/lib/perl5/%type_raw[perl]
+<<
+DocFiles: COPYING Changes Credits FAQ NEWS README REFERENCES THANKS TODO
+UpdatePOD: true
+Description: Perl module for string internationalization
+DescDetail: <<
+This package is an internationalization library for Perl
+that aims to be compatible with the Uniforum message translations
+system as implemented for example in GNU gettext.
+
+This package is also called: libintl-perl[-xs]. It installs the native
+gettext_xs extension.
+<<
+DescPackaging: <<
+	Former maintainer: Matthias Ringwald <matthias@ringwald.ch>
+
+libintl not found during linking so gettext_xs not build properly
+Added FINKPATH/lib to LIBS in gettext_xs/Makefile.PL
+<<
+License: Artistic
+Maintainer: Daniel Macks <dmacks@netspace.org>
+Homepage: http://freshmeat.net/projects/libintl-perl
+<<

@@ -1,12 +1,14 @@
 Info2: <<
 Package: texinfo
-Version: 6.3
-# maintain %r spacing for 10.9 vs 10.10+ due to systemperl varianting
-Revision: 303.1
+Version: 6.8
+
+# maintain %r spacing for due to systemperl varianting
+Revision: 201.1
 Distribution: 10.14.5
 Type: systemperl (5.18.4)
+
 Source: gnu
-Source-MD5: 9b08daca9bf8eccae9b0f884aba41f9e
+Source-Checksum: SHA256(8e09cf753ad1833695d2bac0f57dc3bd6bcbbfbf279450e1ba3bc2d7fb297d08)
 SourceDirectory: %n-%v
 BuildDepends: <<
 	fink (>= 0.32),
@@ -22,29 +24,33 @@ Depends: <<
 	libiconv,
 	system-perl%type_pkg[systemperl],
 	info,
-	install-info
-<<
-RuntimeDepends: <<
+	install-info,
 	text-unidecode-pm,
 	locale-textdomain-pm%type_pkg[systemperl]
 <<
 Replaces: <<
 	tetex-base (<< 3.0-1)
 <<
-PatchFile: texinfo.patch
-PatchFile-MD5: 982205174c44668fa2642904193f3845
+PatchFile: %n.patch
+PatchFile-MD5: a82026db1f7aff531955ee862c21939b
 PatchScript: <<
-#chmod a+x build-aux/install-sh
+	#chmod a+x build-aux/install-sh
 
-sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+	sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
 
-patch -p1 < fink/patches/warn_missing_tex
-patch -p1 < fink/patches/numerical-signal-names
-patch -p1 < fink/patches/dont_build_info
-patch -p1 < fink/patches/reproducible-makeinfo
+	patch -p1 < fink/patches/warn_missing_tex
+	patch -p1 < fink/patches/numerical-signal-names
+	patch -p1 < fink/patches/dont_build_info
 
-# help2man isn't present in bootstrap so patch it out
-perl -pi -e 's,help2man,true,g' configure
+	# help2man isn't present in bootstrap so patch it out
+	perl -pi -e 's,help2man,true,g' configure
+
+	# testing infrastructure wants GNU-specific mknod feature
+	# direct support for that command requires TDep:coreutils
+	#perl -pi -e 's/mknod/gmknod/g' info/t/Init-inter.inc
+	# so instead use an alternative command. See:
+	# http://lists.gnu.org/archive/html/bug-texinfo/2016-11/msg00049.html
+	perl -pi -e 's/mknod\s+(\S+)\s+p/mkfifo \1/g' info/t/Init-inter.inc
 <<
 ConfigureParams: <<
 	--mandir=%p/share/man \
@@ -56,61 +62,75 @@ ConfigureParams: <<
 	AWK=awk
 <<
 CompileScript: <<
-./configure %c
-echo '#define DEFAULT_INFOPATH "%p/share/info:%p/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:."' >>config.h
-cp man/texi2dvi.1 fink
-make
-mv fink/texi2dvi.1 man/
-touch man/texi2dvi.1
+#!/bin/sh -ev
+	./configure %c
+	echo '#define DEFAULT_INFOPATH "%p/share/info:%p/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:."' >>config.h
+	cp man/texi2dvi.1 fink
+	make
+	mv fink/texi2dvi.1 man/
+	touch man/texi2dvi.1
+	pushd doc
+		make info-stnd.info 
+		make texinfo.info 
+	popd
 <<
 InfoTest: <<
-	TestConflicts: <<
-		pod-simple-pm
+	TestDepends: <<
+		fink-package-precedence
 	<<
 	TestScript: <<
+		fink-package-precedence .
 		make check ALL_TESTS=yes || exit 2
 	<<
 <<
 InstallScript: <<
-AM_UPDATE_INFO_DIR=no make install prefix=%i mandir=%i/share/man infodir=%i/share/info
-TEXMF=%i/share/texmf make install-tex prefix=%i mandir=%i/share/man infodir=%i/share/info
-find %i -type f -name dir | xargs rm -f
-#
-# clean out .la files as they contain references to libperl 
-# which is not necessary
-for i in `find %i -name '*.la'`; do \
-	sed -i -e "/dependency_libs/ s/'.*'/''/" $i; \
-done
-#
-# epsf.tex is in texlive
-rm -rf %i/share/texmf/tex/generic
-#
-# install additional files that are not installed by default
-install -m 0755 util/txixml2texi %i/bin/txixml2texi
-#
-# work on fink install-info
-mv %i/bin/install-info %i/bin/ginstall-info
-sed -e "s/install-info/g&/g" \
-	< %i/share/man/man1/install-info.1 \
-	> %i/share/man/man1/ginstall-info.1
-rm -f %i/share/man/man1/install-info.1
-install -m 0755 fink/install-info.sh %i/bin/install-info
-install -m 0644 fink/install-info.1 %i/share/man/man1/install-info.1
-install -d -m 0755 %i/sbin
-install -m 0755 fink/update-info-dir %i/sbin/update-info-dir
-install -d -m 0755 %i/share/man/man8
-install -m 0644 fink/update-info-dir.8 %i/share/man/man8/update-info-dir.8
+	make install prefix=%i mandir=%i/share/man infodir=%i/share/info AM_UPDATE_INFO_DIR=no
+	make install-tex prefix=%i mandir=%i/share/man infodir=%i/share/info TEXMF=%i/share/texmf
+	find %i -type f -name dir | xargs rm -f
 
-install -d -m 0755 %i/share/menu
-install -m 0644 fink/info.menu %i/share/menu/info
+	# clean out .la files as they contain references to libperl 
+	# which is not necessary
+	for i in `find %i -name '*.la'`; do \
+		sed -i -e "/dependency_libs/ s/'.*'/''/" $i; \
+	done
 
-# charset.alias supplied from gettext
-rm -rf %i/lib
+	# epsf.tex is in texlive
+	rm -rf %i/share/texmf/tex/generic
 
-install -d -m 0755 %i/lib/mime/packages
-install -m 0644 fink/info.mime %i/lib/mime/packages/info
+	# install additional files that are not installed by default
+	install -m 0755 util/txixml2texi %i/bin/txixml2texi
+
+	# work on fink install-info
+	mv %i/bin/install-info %i/bin/ginstall-info
+	sed -e "s/install-info/g&/g" \
+		< %i/share/man/man1/install-info.1 \
+		> %i/share/man/man1/ginstall-info.1
+	rm -f %i/share/man/man1/install-info.1
+	install -m 0755 fink/install-info.sh %i/bin/install-info
+	install -m 0644 fink/install-info.1 %i/share/man/man1/install-info.1
+	install -d -m 0755 %i/sbin
+	install -m 0755 fink/update-info-dir %i/sbin/update-info-dir
+	install -d -m 0755 %i/share/man/man8
+	install -m 0644 fink/update-info-dir.8 %i/share/man/man8/update-info-dir.8
+
+	install -d -m 0755 %i/share/menu
+	install -m 0644 fink/info.menu %i/share/menu/info
+
+	# charset.alias supplied from gettext
+	rm -rf %i/lib
+
+	install -d -m 0755 %i/lib/mime/packages
+	install -m 0644 fink/info.mime %i/lib/mime/packages/info
+	install -d -m 0755 %i/share/info
+	install -m 0644 doc/info-stnd.info %i/share/info
+	install -m 0644 doc/texinfo.info %i/share/info
+	install -m 0644 doc/texinfo.info-1 %i/share/info
+	install -m 0644 doc/texinfo.info-2 %i/share/info
+	install -m 0644 doc/texinfo.info-3 %i/share/info
 <<
 DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt doc/refcard/txirefcard*.pdf
+# Remove with dpkg > 1.16
+#InfoDocs: texinfo.info info-stnd.info
 #
 Description: GNU documentation system
 DescDetail: <<
@@ -133,12 +153,14 @@ Triggers now make the need for InfoFiles completely redundant and should be
 deprecated.
 
 AKH: Was encoding whatever "*awk" was found at configure time.
-Explicitly use /usr/bin/awk rather than forcing a dependency on gawk.
+Explicitly use something that does not entail a dependency on gawk.
 
 dmacks: perlvarianted because it uses XS internally
 
 dmacks: --disable-static (ignored by some ./configure but handled by
 the XS suite, which is the only internal compiled library)
+
+Former Maintainer: Dave Morrison <drm@finkproject.org>
 <<
 PostInstScript: <<
 build_format_if_format_exists ()
@@ -284,8 +306,8 @@ case "$1" in
 esac
 <<
 License: GPL/GFDL
-Maintainer: Dave Morrison <drm@finkproject.org>
-Homepage: http://www.gnu.org/software/texinfo/
+Maintainer: None <fink-devel@lists.sourceforge.net>
+Homepage: https://www.gnu.org/software/texinfo/
 
 SplitOff: <<
 	Package: info
@@ -310,10 +332,7 @@ SplitOff: <<
 	DescDetail: <<
 The Info file format is an easily-parsable representation for online
 documents. This program allows you to view Info documents, like the
-ones stored in %p/share/info and $p/info.
-.
-Much of the software in Debian comes with its online documentation in
-the form of Info files, so it is most likely you will want to install it.
+ones stored in %p/share/info, that come with many other packages.
 	<<
 	PostInstScript: <<
 if [ "$1" = "configure" ] || [ "$1" = "upgrade" ]; then
@@ -342,7 +361,7 @@ SplitOff2: <<
 		share/man/man8
 	<<
 	InstallScript: <<
-		cp %b/fink/%n.triggers %d/DEBIAN/triggers
+		cp fink/%n.triggers %d/DEBIAN/triggers
 	<<
 	DocFiles: README COPYING AUTHORS NEWS TODO doc/*.texi fink/transition-plan.txt
 	Description: Manage installed documentation in info format
