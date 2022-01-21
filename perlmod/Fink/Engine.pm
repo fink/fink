@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -633,7 +633,7 @@ sub do_real_list {
 
 		foreach my $pname (sort @selected) {
 			my $package = Fink::Package->package_by_name($pname);
-
+			next unless defined $package; # package-name that doesn't exist (via parsing a dep-tree)
 			# Look only in versions the user should see. noload
 			my @pvs = _user_visible_versions($package->get_all_versions(1));
 			my @provs = _user_visible_versions($package->get_all_providers( no_load => 1 ));
@@ -2590,6 +2590,9 @@ HELPFORMAT
 					) {
 				my $deplist = $pkg->pkglist($_);
 				printf "%s: %s\n", $_, $deplist if defined $deplist;
+			} elsif ($_ eq 'testdepends' or $_ eq 'testconflicts') {
+				$_ =~ /test(.*)/;
+				printf "%s: %s\n", $_, "[merged into build$1]";
 			} elsif ($_ eq 'essential'         or $_ eq 'builddependsonly'  or
 					 $_ =~ /^noset/            or $_ eq 'noperltests'       or
 					 $_ eq 'updatepod'

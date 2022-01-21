@@ -384,7 +384,6 @@ END
 				 'module-corelist',
 				 'module-load',
 				 'module-load-conditional',
-				 'package-constants',
 				 'params-check',
 				 'pod-escapes',
 			);
@@ -392,8 +391,13 @@ END
 				push(@modules,
 					 'cpanplus',
 					 'cpanplus-dist-build',
-					 'module-build',
 					 'module-pluggable',
+				);
+			}
+			if ($perlver < 5.021000) {
+				push(@modules,
+					 'module-build',
+					 'package-constants',
 				);
 			}
 		}
@@ -1690,7 +1694,16 @@ END
 				# First item is for 10.8+ only, unless someone backporting fink on 10.6-7
 				# wants to switch to supporting Xquartz rather than Apple's X11.
 				# Fall back to legacy "7.2" version if something goes wrong.
-				($xver) = `pkgutil --pkg-info org.macosforge.xquartz.pkg 2>/dev/null | grep version | cut -d: -f2` =~ /\s(\S+)/ or $xver = '7.2';
+				#
+				# Xquartz 2.8.0 renamed its receipt from
+				# org.macosforge.xquartz.pkg to org.xquartz.X11
+				chomp(my $result = `pkgutil --pkg-info org.macosforge.xquartz.pkg --pkg-info org.xquartz.X11 2>/dev/null`);
+				foreach (split /\n/, $result) {
+					if (/version:\s(.*)$/) {
+						$xver = $1 if Fink::Services::version_cmp($1,'>>',$xver);
+					}
+				}
+				$xver = '7.2' unless $xver;
 				# assign Epoch=3 and Revision=3 here if we're using the receipt, so $xver isn't literally '7.2'.
 				$xver = "3:${xver}-3" unless $xver eq "7.2";
 			} else {

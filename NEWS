@@ -10,6 +10,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.45.x
 \-------------
 
+0.45.4 "Fuji" (2021-11-03)
+
+	* Support XQuartz 2.8+.
+
 0.45.3 "No word" (2021-03-06)
 
 	* Restore default path to /sw for 10.14 and earlier.

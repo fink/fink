@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2022 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 
 package Fink::Validation;
 
-use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &pkglist2lol &version_cmp);
+use Fink::Services qw(&read_properties &read_properties_var &expand_percent &expand_percent2 &pkglist2lol &version_cmp &dep_in_lol);
 use Fink::Config qw($config);
 use Fink::CLI qw(&print_breaking);
 use Fink::PkgVersion;
@@ -1250,32 +1250,14 @@ sub _require_dep {
 
 	if (exists $required_versions->{build}) {
 		my %reqs = %{$required_versions->{build}}; # clone so we can alter it
-
-		foreach (
-			@{&pkglist2lol($package_hash->{builddepends})},
-			@{&pkglist2lol($package_hash->{depends})},
-		) {
-			foreach my $atom (@$_) {
-				$atom =~ s/^\(.*?\)\s*//;
-				while ( my($pkg,$minver) = each %reqs ) {
-					if (defined $minver) {
-						# need to check version spec
-						$atom =~ /^$pkg\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
-						delete $reqs{$pkg} if version_cmp($2, '>=', $minver);
-					} elsif ($atom eq $pkg) {
-						# no version spec needed, just check that dep
-						# exists without version spec...
-						delete $reqs{$pkg};
- 					} elsif ($atom =~ /^$pkg\s*\(/) {
-						# ...but any version spec still okay
-						delete $reqs{$pkg};
-					}
-				}
-			}
-		}
-
-		if (keys %reqs) {
-			print "Error: $feature requires declaring a BuildDepends or Depends on:\n";
+		if (!&dep_in_lol(
+			\%reqs, [
+				@{&pkglist2lol($package_hash->{'pre-depends'})},
+				@{&pkglist2lol($package_hash->{builddepends})},
+				@{&pkglist2lol($package_hash->{depends})},
+				  ]
+			)) {
+			print "Error: $feature requires declaring a BuildDepends, Depends, or (rarely) Pre-Depends on:\n";
 			print map { "\t$_" . ( defined $reqs{$_} ? " (>= $reqs{$_})\n" : "\n" ) } sort keys %reqs;
 			$all_ok = 0;
 		}
@@ -1283,32 +1265,14 @@ sub _require_dep {
 
 	if (exists $required_versions->{run}) {
 		my %reqs = %{$required_versions->{run}}; # clone so we can alter it
-
-		foreach (
-			@{&pkglist2lol($package_hash->{depends})},
-			@{&pkglist2lol($package_hash->{runtimedepends})},
-		) {
-			foreach my $atom (@$_) {
-				$atom =~ s/^\(.*?\)\s*//;
-				while ( my($pkg,$minver) = each %reqs ) {
-					if (defined $minver) {
-						# need to check version spec
-						$atom =~ /^$pkg\s*\(\s*(>>|>=)\s*(.*?)\)\s*$/;
-						delete $reqs{$pkg} if version_cmp($2, '>=', $minver);
-					} elsif ($atom eq $pkg) {
-						# no version spec needed, just check that dep
-						# exists without version spec...
-						delete $reqs{$pkg};
- 					} elsif ($atom =~ /^$pkg\s*\(/) {
-						# ...but any version spec still okay
-						delete $reqs{$pkg};
-					}
-				}
-			}
-		}
-
-		if (keys %reqs) {
-			print "Error: $feature requires declaring a Depends or RuntimeDepends on:\n";
+		if (!&dep_in_lol(
+			\%reqs, [
+				@{&pkglist2lol($package_hash->{'pre-depends'})},
+				@{&pkglist2lol($package_hash->{depends})},
+				@{&pkglist2lol($package_hash->{runtimedepends})},
+				  ]
+			)) {
+			print "Error: $feature requires declaring a Depends, RuntimeDepends, or (rarely) Pre-Depends on:\n";
 			print map { "\t$_" . ( defined $reqs{$_} ? " (>= $reqs{$_})\n" : "\n" ) } sort keys %reqs;
 			$all_ok = 0;
 		}
@@ -1988,10 +1952,10 @@ sub _validate_dpkg {
 		} else {
 			# python language is major.minor
 			# ruby language is major.minor
-			# numbers are all "small" (one-digit)
-			$langver_re =~ /^(\d)(\d)$/;
-			# -pyXY is pythonX.Y
-			# -rbXY is rubyX.Y
+			# major numbers are all "small" (one-digit)
+			$langver_re =~ /^(\d)(\d{1,2})$/;
+			# -pyXY is pythonX.Y (-pyXYY is pythonX.YY)
+			# -rbXY is rubyX.Y (-rbXYY is rubyX.YY)
 			$langver_re = "(?:$langver_re|$1.$2)";
 		}
 	}
@@ -2491,11 +2455,11 @@ sub _validate_dpkg {
 				print "SERIOUS WARNING: $_ appears to have been linked using a flat namespace.\n";
 			}
 			print "       If this package BuildDepends on libtool2, make sure that you use\n";
-			print "          BuildDepends: libtool2 (>= 2.4.2-4).\n";
+			print "          BuildDepends: libtool2 (>= 2.4.2-4)\n";
 			print "       and use autoreconf to regenerate the configure script.\n";
 			print "       If the package doesn't BuildDepend on libtool2, you'll need to\n";
 			print "       update its build procedure to avoid passing\n";	 
-			print "          -Wl,-flat_namespace\n"; 
+			print "          -flat_namespace\n";
 			print "       when linking libraries.\n\n";
 			print "		  If this package actually requires a flat namespace build,\n";
 			print "		  then ignore this message.\n\n";
