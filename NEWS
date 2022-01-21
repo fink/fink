@@ -10,6 +10,11 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.45.x
 \-------------
 
+0.45.5 "Fui" (2022-01-20)
+
+	* Support for Pre-Depends.
+	* Validator improvements.
+
 0.45.4 "Fuji" (2021-11-03)
 
 	* Support XQuartz 2.8+.
