@@ -155,7 +155,7 @@ sub check_host {
 	# If so, we set $gcc so that 10.2 users will get the 10.2-gcc3.3 tree.
 
 	if (-x '/usr/bin/gcc') {
-		$gcc = Fink::Services::enforce_gcc(<<GCC_MSG);
+		$gcc = Fink::Services::enforce_gcc(<<GCC_MSG) || "";
 Under CURRENT_SYSTEM, Fink must be bootstrapped or updated with gcc
 EXPECTED_GCC, however, you currently have gcc INSTALLED_GCC selected.
 Make sure that your developer tools are current for your system and

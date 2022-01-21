@@ -1408,7 +1408,7 @@ sub enforce_gcc {
 	# We don't want to differentiate between 4.0.0 and 4.0.1 here
 	$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
 
-	if ($gcc_select !~ /^$gcc/) {
+	if (defined $gcc && $gcc_select !~ /^$gcc/) {
 		$message =~ s/CURRENT_SYSTEM/$current_system/g;
 		$message =~ s/INSTALLED_GCC/$gcc_select/g;
 		$message =~ s/EXPECTED_GCC/$gcc/g;
