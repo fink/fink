@@ -4256,25 +4256,36 @@ EOF
 	my $kernel = lc((uname())[0]);
 	my $kernel_major_version = Fink::Services::get_kernel_vers();
 
-	my $has_kernel_dep;
+	my ($has_kernel_dep, $has_dpkg_dep);
 	my $deps = $self->get_depends(0, 0); # get runtime dependencies
 	my $predeps = $self->pkglist('Pre-Depends');
 
 	foreach (@$predeps) {
 		foreach (@$_) {
 			$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
+			$has_dpkg_dep = 1 if /^\Qdpkg\E(\Z|\s|\()/;
 		}
 	}
-	if (not $has_kernel_dep) {
+	if (not $has_kernel_dep || not $has_dpkg_dep) {
 		foreach (@$deps) {
 			foreach (@$_) {
-				$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
+				if (not $has_kernel_dep) {
+					$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
+				}
+				if (not $has_dpkg_dep) {
+					$has_dpkg_dep = 1 if /^\Qdpkg\E(\Z|\s|\()/;
+				}
 			}
 		}
 	}
 	# Move to Pre-Depends once bootstrapping can statisfy it.
 	# dpkg-bootstrap needs to be fvp aware for this to happen.
 	push @$deps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
+
+	# add pre-depends on dpkg >= 1.15 for xz usage
+	if ($parentpkgname ne 'fink' && $parentpkgname ne 'dpkg' && Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1')) {
+		push @$predeps, ["dpkg (>= 1.15-1)"] if not $has_dpkg_dep;
+	}
 
 	$control .= "Pre-Depends: " . &lol2pkglist($predeps) . "\n";
 	if (Fink::Config::get_option("maintainermode")) {
