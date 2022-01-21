@@ -1,6 +1,6 @@
 Package: dpkg
-Version: 1.17.6
-Revision: 1.5
+Version: 1.19.7
+Revision: 1.2
 GCC: 4.0
 ## Remove po4a
 BuildDepends: <<
@@ -26,19 +26,19 @@ RuntimeDepends: <<
 Conflicts: dpkg-bootstrap
 Replaces: dpkg-bootstrap
 Recommends: anacron
-Suggests: apt
+Suggests: <<
+	apt,
+	debsig-verify
+<<
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
-# Source: mirror:debian:/pool/main/d/%n/%n_%v.tar.xz
-# Source-MD5: c87f2ae291d460015353e01d121bea85
-# For bootstrap tar.gz version
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
-Source-MD5: bdb6d88470c901d35fa19d776a8e8828
+Source-Checksum: SHA256(b50e58b71223f66196b419f776c7791b5cc3a9aa07e1ccf85848b123517cdd51)
 SourceDirectory: dpkg-%v
 
 PatchFile: dpkg.patch
-PatchFile-MD5: e42321211f3f963b16fec94219d320ac
+PatchFile-MD5: ea15b7308a1cc46e8850330778acbe89
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -47,38 +47,40 @@ patch -p1 < fink/patches/add-BOD.patch
 patch -p1 < fink/patches/build-fix.patch
 patch -p1 < fink/patches/c++filt-defaults.patch
 patch -p1 < fink/patches/full-path-calls.patch
-patch -p1 < fink/patches/gzip-rsyncable-fix.patch
 patch -p1 < fink/patches/location-fixes.patch
 patch -p1 < fink/patches/protect-system-dirs.patch
 patch -p1 < fink/patches/so-to-dylib.patch
 patch -p1 < fink/patches/fink-as-vendor.patch
-patch -p1 < fink/patches/add-install-info.patch
 patch -p1 < fink/patches/extra-env.patch
 patch -p1 < fink/patches/extra-statusfile.patch
 patch -p1 < fink/patches/coreutils.patch
-patch -p1 < fink/patches/bsdutils.patch
 patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
-patch -p1 < fink/patches/test-fix.patch
 
 # Remove po4a and make sure it can't be found if it's installed
 # this is to keep fink policy happy since it has to build the same
 # everytime on all systems
-perl -pi -e 's,po4a,notpo4a,g' configure
+perl -pi -e 's,in po4a,in notpo4a,g' configure
 
 # Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
-perl -pi -e 's,^(\#\!\s?/usr/bin/perl.*)$,$1\nBEGIN \{ push\(\@INC\, \"\%p\/lib\/perl5\"\) \}\;,' %b/scripts/*.pl %b/scripts/changelog/debian.pl
+perl -pi -e 's,^(\#\!\s?/usr/bin/perl.*)$,$1\nBEGIN \{ push\(\@INC\, \"\%p\/lib\/perl5\"\) \}\;,' %b/scripts/*.pl
 
 # fix paths
-for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.[13578]; do \
+for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.man %b/man/*/*.man; do \
 	perl -pi -e 's,/usr,%p,g' $i; \
 	perl -pi -e 's,/var,%p/var,g' $i; \
 	perl -pi -e 's,/etc,%p/etc,g' $i; \
 	perl -pi -e 's,amd64,x86_64,g' $i; \
 done 
+perl -pi -e 's,/usr/share,%p/share,g' scripts/Build.PL.in
+perl -pi -e 's,/usr/lib,%p/lib,g' scripts/Build.PL.in
+perl -pi -e 's,/var/lib,%p/var/lib,g' scripts/Build.PL.in
+perl -pi -e 's,/etc,%p/etc,g' scripts/Build.PL.in
 
 # Fink uses "x86_64" instead of "amd64"
-cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
-perl -pi -e 's,amd64,x86_64,g' *table scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
+cp scripts/t/Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/Dpkg_Shlibs/objdump.basictags-x86_64
+perl -pi -e 's,amd64,x86_64,g' data/*table scripts/Makefile.in scripts/Makefile.am scripts/t/Dpkg_Shlibs/basictags.c scripts/t/Dpkg_Shlibs/basictags.symbols scripts/t/Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/Dpkg_Shlibs.t
+perl -pi -e "s,'-','-' && *p != '_',g" lib/dpkg/arch.c
+perl -pi -e "s,amd64_test,amd64:test,g" lib/dpkg/t/t-arch.c
 
 # Fix for tar (Slightly modified for dpkg-bootstrap)
 if [ "%n" = "dpkg-bootstrap" ]; then \
@@ -108,6 +110,25 @@ perl -pi -e 's,AUTOCONF=.*$,AUTOCONF=echo,g' configure
 perl -pi -e 's,AUTOMAKE=.*$,AUTOMAKE=echo,g' configure
 perl -pi -e 's,AUTOHEADER=.*$,AUTOHEADER=echo,g' configure
 perl -pi -e 's,ACLOCAL_AMFLAGS =.*$,ACLOCAL_AMFLAGS = ,g' Makefile.in
+
+# No librt here
+perl -pi -e 's,-lrt ,,g' lib/dpkg/t/Makefile.*
+
+# Fix Tests
+perl -pi -e 's,dd,gdd,g' t-func/deb-format.at t-func/deb-split.at
+perl -pi -e 's,test_needs_srcdir_switch[\(][\)];,test_needs_author();\ntest_needs_srcdir_switch();,g' t/module-version.t 
+
+# Fix Dpkg.pm values
+perl -pi -e "s,'make','/usr/bin/make',g" scripts/Dpkg.pm
+perl -pi -e "s,'tar','%p/bin/gnutar',g" scripts/Dpkg.pm
+perl -pi -e "s,'/etc/dpkg','%p/etc/dpkg',g" scripts/Dpkg.pm
+perl -pi -e "s,'/var/lib/dpkg','%p/var/lib/dpkg',g" scripts/Dpkg.pm
+
+# Reduce the perl requirement
+perl -pi -e 's,5.20.2,5.16.2,g' configure
+
+# just for building don't force GNU patch (we don't want patch to be essential)
+perl -pi -e "s,GNU patch,patch,g" configure
 <<
 
 SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
@@ -132,14 +153,17 @@ ConfigureParams: <<
 	--build=%m-apple-darwin \
 	--disable-linker-optimisations \
 	PERL_LIBDIR=%p/lib/perl5 \
-	PERL=/usr/bin/perl
+	PERL=/usr/bin/perl \
+	TAR=%p/bin/gnutar
 <<
+# BOOTSTRAP change tar path
 
 InfoTest: <<
 	TestConfigureParams: <<
 		--disable-silent-rules
 	<<
 	TestDepends: <<
+		patch,
 		io-string-pm,
 		time-date-pm,
 		objtools,
@@ -162,7 +186,9 @@ install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
 # install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
 install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
 install -c -p -m 644 fink/buildflags.conf %i/etc/dpkg
-rm -rf %i/lib/dpkg/methods/*
+mkdir -p %i/lib/dpkg
+mv %i/var/lib/dpkg/methods %i/lib/dpkg
+rm -rf %i/libexec
 
 install -m 0755 fink/md5sum %i/bin
 
@@ -283,7 +309,7 @@ set -e
 # Handle upgrades from pre-conffile dpkg.cfg
 upgrade_dpkg_non_conffile()
 {
-    if [ -r /etc/dpkg/dpkg.cfg ]; then
+    if [ -r %p/etc/dpkg/dpkg.cfg ]; then
 	dpkg_cfg_md5="535552ad5ee9145dbc7a34c264df4e59  %p/etc/dpkg/dpkg.cfg"
 	if echo "$dpkg_cfg_md5" | md5sum -c >/dev/null 2>&1; then
 	    echo "Removing non-modified dpkg.cfg to be replaced by a conffile ..."
@@ -715,7 +741,7 @@ SplitOff: <<
 	Files: <<
 		include
 		lib/pkgconfig
-		lib/libdpkg.a
+		lib/libdpkg.{a,la}
 	<<
 	DocFiles: AUTHORS THANKS doc/README.api doc/README.feature-removal-schedule
 	Description: Debian package management static library
@@ -763,6 +789,7 @@ SplitOff2: <<
 		bin/dpkg-buildpackage
 		bin/dpkg-checkbuilddeps
 		bin/dpkg-distaddfile
+		bin/dpkg-genbuildinfo
 		bin/dpkg-genchanges
 		bin/dpkg-gencontrol
 		bin/dpkg-gensymbols
@@ -780,6 +807,7 @@ SplitOff2: <<
 		share/man/man1/dpkg-buildpackage.1
 		share/man/man1/dpkg-checkbuilddeps.1
 		share/man/man1/dpkg-distaddfile.1
+		share/man/man1/dpkg-genbuildinfo.1
 		share/man/man1/dpkg-genchanges.1
 		share/man/man1/dpkg-gencontrol.1
 		share/man/man1/dpkg-gensymbols.1
@@ -873,10 +901,10 @@ SplitOff3: <<
 	<<
 	Essential: yes
 	Files: <<
-		lib/dpkg/parsechangelog
 		lib/perl5/Dpkg
 		lib/perl5/Dpkg.pm
 		share/man/man3
+		share/dpkg/*.specs
 	<<
 	InstallScript: <<
 		mkdir -p %i/share
@@ -941,7 +969,6 @@ SplitOff4: <<
 		bin/dselect
 		lib
 		share/man/man1/dselect.1
-		var/lib/dpkg/methods
 		share/man/man5/dselect.cfg.5
 	<<
 	InstallScript: <<

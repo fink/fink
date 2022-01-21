@@ -1,15 +1,16 @@
 Package: dpkg-bootstrap
-Version: 1.17.6
+Version: 1.19.7
 Revision: 1
 GCC: 4.0
+Depends: tar-bootstrap
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
 Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
-Source-MD5: bdb6d88470c901d35fa19d776a8e8828
+Source-MD5: SHA256(b50e58b71223f66196b419f776c7791b5cc3a9aa07e1ccf85848b123517cdd51)
 SourceDirectory: dpkg-%v
 
 PatchFile: dpkg.patch
-PatchFile-MD5: e42321211f3f963b16fec94219d320ac
+PatchFile-MD5: ea15b7308a1cc46e8850330778acbe89
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -18,29 +19,25 @@ patch -p1 < fink/patches/add-BOD.patch
 patch -p1 < fink/patches/build-fix.patch
 patch -p1 < fink/patches/c++filt-defaults.patch
 patch -p1 < fink/patches/full-path-calls.patch
-patch -p1 < fink/patches/gzip-rsyncable-fix.patch
 patch -p1 < fink/patches/location-fixes.patch
 patch -p1 < fink/patches/protect-system-dirs.patch
 patch -p1 < fink/patches/so-to-dylib.patch
 patch -p1 < fink/patches/fink-as-vendor.patch
-patch -p1 < fink/patches/add-install-info.patch
 patch -p1 < fink/patches/extra-env.patch
 patch -p1 < fink/patches/extra-statusfile.patch
 patch -p1 < fink/patches/coreutils.patch
-patch -p1 < fink/patches/bsdutils.patch
 patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
-patch -p1 < fink/patches/test-fix.patch
 
 # Remove po4a and make sure it can't be found if it's installed
 # this is to keep fink policy happy since it has to build the same
 # everytime on all systems
-perl -pi -e 's,po4a,notpo4a,g' configure
-
+perl -pi -e 's,in po4a,in notpo4a,g' configure
+ 
 # Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
-perl -pi -e 's,^(\#\!\s?/usr/bin/perl.*)$,$1\nBEGIN \{ push\(\@INC\, \"\%p\/lib\/perl5\"\) \}\;,' %b/scripts/*.pl %b/scripts/changelog/debian.pl
-
-# fix paths
-for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.[13578]; do \
+perl -pi -e 's,^(\#\!\s?/usr/bin/perl.*)$,$1\nBEGIN \{ push\(\@INC\, \"\%p\/lib\/perl5\"\) \}\;,' %b/scripts/*.pl
+ 
+ # fix paths
+for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.man %b/man/*/*.man; do \
 	perl -pi -e 's,/usr,%p,g' $i; \
 	perl -pi -e 's,/var,%p/var,g' $i; \
 	perl -pi -e 's,/etc,%p/etc,g' $i; \
@@ -48,8 +45,10 @@ for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.[13578] %b/man/*/*.
 done 
 
 # Fink uses "x86_64" instead of "amd64"
-cp scripts/t/200_Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64
-perl -pi -e 's,amd64,x86_64,g' *table scripts/Makefile.in scripts/Makefile.am scripts/t/200_Dpkg_Shlibs/basictags.c scripts/t/200_Dpkg_Shlibs/basictags.symbols scripts/t/200_Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/200_Dpkg_Shlibs.t
+cp scripts/t/Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/Dpkg_Shlibs/objdump.basictags-x86_64
+perl -pi -e 's,amd64,x86_64,g' data/*table scripts/Makefile.in scripts/Makefile.am scripts/t/Dpkg_Shlibs/basictags.c scripts/t/Dpkg_Shlibs/basictags.symbols scripts/t/Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/Dpkg_Shlibs.t
+perl -pi -e "s,'-','-' && *p != '_',g" lib/dpkg/arch.c
+perl -pi -e "s,amd64_test,amd64:test,g" lib/dpkg/t/t-arch.c
 
 # Fix for tar (Slightly modified for dpkg-bootstrap)
 if [ "%n" = "dpkg-bootstrap" ]; then \
@@ -79,6 +78,25 @@ perl -pi -e 's,AUTOCONF=.*$,AUTOCONF=echo,g' configure
 perl -pi -e 's,AUTOMAKE=.*$,AUTOMAKE=echo,g' configure
 perl -pi -e 's,AUTOHEADER=.*$,AUTOHEADER=echo,g' configure
 perl -pi -e 's,ACLOCAL_AMFLAGS =.*$,ACLOCAL_AMFLAGS = ,g' Makefile.in
+
+# No librt here
+perl -pi -e 's,-lrt ,,g' lib/dpkg/t/Makefile.*
+
+# Fix Tests
+perl -pi -e 's,dd,gdd,g' t-func/deb-format.at t-func/deb-split.at
+perl -pi -e 's,test_needs_srcdir_switch[\(][\)];,test_needs_author();\ntest_needs_srcdir_switch();,g' t/module-version.t 
+
+# Fix Dpkg.pm values
+perl -pi -e "s,'make','/usr/bin/make',g" scripts/Dpkg.pm
+perl -pi -e "s,'tar','%p/bin/gnutar',g" scripts/Dpkg.pm
+perl -pi -e "s,'/etc/dpkg','%p/etc/dpkg',g" scripts/Dpkg.pm
+perl -pi -e "s,'/var/lib/dpkg','%p/var/lib/dpkg',g" scripts/Dpkg.pm
+
+# Reduce the perl requirement
+perl -pi -e 's,5.20.2,5.16.2,g' configure
+
+# just for building don't force GNU patch (we don't want patch to be essential)
+perl -pi -e "s,GNU patch,patch,g" configure
 <<
 
 SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
@@ -106,7 +124,8 @@ ConfigureParams: <<
 	--disable-linker-optimisations \
 	--with-dpkg-deb-compressor=gzip \
 	PERL_LIBDIR=%p/lib/perl5 \
-	PERL=/usr/bin/perl
+	PERL=/usr/bin/perl \
+	TAR=%p/bin/tar
 <<
 
 InfoTest: <<
@@ -114,6 +133,7 @@ InfoTest: <<
 		--disable-silent-rules
 	<<
 	TestDepends: <<
+		patch,
 		io-string-pm,
 		time-date-pm,
 		objtools,

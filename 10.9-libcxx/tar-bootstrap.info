@@ -1,0 +1,58 @@
+Package: tar-bootstrap
+Version: 1.29
+Revision: 1
+CustomMirror: <<
+	Primary: http://ftpmirror.gnu.org/tar/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:tar-%v.tar.bz2
+Source-MD5: 955cd533955acb1804b83fd70218da51
+PatchFile: tar.patch
+PatchFile-MD5: 1de48773d822a8716a742ce0b4bba96e
+PatchScript: <<
+	%{default_script}
+	perl -pi -e "s/(textdomain \(PACKAGE\)\;)/\1\ngettext\(\"\"\)\;/" src/tar.c
+<<
+ConfigureParams: <<
+	--program-transform-name=s/tar/gtar/ \
+	--infodir=%p/share/info \
+	--libexecdir=%p/lib \
+	--disable-dependency-tracking \
+	--without-gzip \
+	--without-bzip2 \
+	--without-lzip \
+	--without-lzma \
+	--without-lzop \
+	--without-xz \
+	--without-libiconv-prefix \
+	--without-libintl-prefix \
+	FORCE_UNSAFE_CONFIGURE=1
+<<
+CompileScript: <<
+	./configure %c gl_cv_func_getcwd_abort_bug=no
+	make
+<<
+InfoTest: <<
+	# NOTE: if any test macros are modified in tests/at, it is critical to 
+	# test the build without autoconf* installed.
+	TestScript: <<
+		make check || exit 2
+	<<
+<<
+InstallScript: <<
+ make install DESTDIR=%d
+cd %i/lib ; rm -rf charset.alias; cd ..;
+cd %i/bin ; ln -s gtar tar ; ln -s gtar gnutar
+<<
+#
+Description: Archiving program for files and tape (bootstrap package)
+DescPackaging: <<
+  removed Depends and BuildDepends since this is built during phase two
+  of bootstrap and those fields are not relevant there
+<<
+DescPort: <<
+See dpkg DescPort
+<<
+License: GPL
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://www.gnu.org/software/tar/

@@ -1,19 +1,44 @@
-diff -Nurd -x'*~' libintl-perl-1.32.orig/Makefile.PL libintl-perl-1.32/Makefile.PL
+diff -Nurd libintl-perl-1.32.orig/Makefile.PL libintl-perl-1.32/Makefile.PL
 --- libintl-perl-1.32.orig/Makefile.PL	2018-10-08 04:37:35.000000000 -0400
-+++ libintl-perl-1.32/Makefile.PL	2020-12-11 01:21:33.000000000 -0500
-@@ -104,9 +104,9 @@
++++ libintl-perl-1.32/Makefile.PL	2022-01-21 14:15:09.000000000 -0500
+@@ -92,7 +92,10 @@
  }
+ EOF
+ 
+-my $build_gettext_xs = ac_try_link $c, "Checking whether we can compile the XS version";
++my $want_xs = -1; # edit this line: -1=no, 0=if-found, 1=require-yes
++my $build_gettext_xs = 0;
++if ($want_xs != -1) {
++$build_gettext_xs = ac_try_link $c, "Checking whether we can compile the XS version";
+ unless ($build_gettext_xs) {
+     $build_gettext_xs = ac_try_link $c, "  Trying again with -lintl", "-lintl";
+ }
+@@ -102,12 +105,24 @@
+ unless ($build_gettext_xs) {
+     $build_gettext_xs = ac_try_link $c, "  Trying again with -liconv", "-liconv";
+ }
++}
  
  unless ($build_gettext_xs) {
--	print STDERR <<EOF;
-+	die <<EOF;
++if ($want_xs == 0) {
+ 	print STDERR <<EOF;
  => Cannot build the XS version of libintl-perl (see 'config.log' for
--=> details).  This is harmless!
-+=> details).
+ => details).  This is harmless!
  EOF
++} elsif ($want_xs == 1) {
++	die <<EOF;
++=> Cannot build the XS version of libintl-perl (see 'config.log' for
++=> details).  But build-time option requires it!
++EOF
++} else { # $want_xs == -1
++	print STDERR <<EOF;
++=> Build-time option disabled the XS version of libintl-perl.
++EOF
++}
  } else {
  	print STDERR <<EOF;
-@@ -124,6 +124,7 @@
+ => Building the XS version of libintl-perl.
+@@ -124,6 +139,7 @@
      close HANDLE or die "cannot close file 'gettest.c': $!\n";
  
  	my @cmd = $Config{cc};
@@ -21,9 +46,9 @@ diff -Nurd -x'*~' libintl-perl-1.32.orig/Makefile.PL libintl-perl-1.32/Makefile.
      push @cmd, $Config{ccflags};
      push @cmd, $Config{ldflags};
      push @cmd, $Config{perllibs};
-diff -Nurd -x'*~' libintl-perl-1.32.orig/gettext_xs/Makefile.PL libintl-perl-1.32/gettext_xs/Makefile.PL
+diff -Nurd libintl-perl-1.32.orig/gettext_xs/Makefile.PL libintl-perl-1.32/gettext_xs/Makefile.PL
 --- libintl-perl-1.32.orig/gettext_xs/Makefile.PL	2018-10-08 04:37:35.000000000 -0400
-+++ libintl-perl-1.32/gettext_xs/Makefile.PL	2020-12-11 01:25:48.000000000 -0500
++++ libintl-perl-1.32/gettext_xs/Makefile.PL	2022-01-21 13:47:12.000000000 -0500
 @@ -37,7 +37,8 @@
      ),
      PREREQ_PM => { File::Spec => 0 },

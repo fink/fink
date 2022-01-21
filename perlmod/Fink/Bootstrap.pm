@@ -524,8 +524,9 @@ sub is_perl_supported {
     bootstrap1($item1,$item2,...);
 
 The first part of the primary bootstrap routine, called by bootstrap.
-The optional arguments specify packages in addition to dpkg-bootstrap
-which should be built before package management starts.
+The optional arguments specify packages in addition to tar-bootstrap
+and dpkg-bootstrap which should be built before package management
+starts.
 
 =cut
 
@@ -533,7 +534,7 @@ sub bootstrap1 {
 	$config->set_flag("bootstrap1");
 	my ($bsbase, $save_path);
 	my ($pkgname, $package, @elist);
-	my @plist = ("dpkg-bootstrap");
+	my @plist = ("tar-bootstrap", "dpkg-bootstrap");
 	push(@plist, @_);
 	print "plist is @plist\n";
 	die "Sorry, this version of Perl ($]) is currently not supported by Fink.\n" unless is_perl_supported();

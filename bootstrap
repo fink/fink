@@ -802,9 +802,9 @@ if (&execute($cmd, quiet=>0)) {
 
 Fink::Bootstrap::bootstrap3();
 
-### remove dpkg-bootstrap.info, dpkg-bootstrap.patch, and perl588-bootstrap.info to avoid later confusion
+### remove tar-bootstrap.info, tar-bootstrap.patch, dpkg-bootstrap.info, dpkg-bootstrap.patch, and perl588-bootstrap.info to avoid later confusion
 
-&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.patch $installto/fink/dists/stable/main/finkinfo/base/perl588-bootstrap.info");
+&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/tar-bootstrap.info $installto/fink/dists/stable/main/finkinfo/base/tar-bootstrap.patch $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.patch $installto/fink/dists/stable/main/finkinfo/base/perl588-bootstrap.info");
 
 ### copy included package info tree if present
 
