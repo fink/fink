@@ -20,7 +20,13 @@ Distribution: <<
 	(%type_pkg[perl] = 5162) 10.10,
 	(%type_pkg[perl] = 5162) 10.11,
 	(%type_pkg[perl] = 5162) 10.12,
-	(%type_pkg[perl] = 5162) 10.13
+	(%type_pkg[perl] = 5162) 10.13,
+	(%type_pkg[perl] = 5182) 10.14,
+	(%type_pkg[perl] = 5184) 10.14.5,
+	(%type_pkg[perl] = 5184) 10.15,
+	(%type_pkg[perl] = 5282) 11.0,
+	(%type_pkg[perl] = 5302) 11.3,
+	(%type_pkg[perl] = 5303) 12.0
 <<
 PatchFile: %{ni}.patch
 PatchFile-MD5: f57d5997acc6b04921f9995be94e74cc
