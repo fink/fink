@@ -4153,9 +4153,11 @@ EOF
 	# dpkg-bootstrap needs to be fvp aware for this to happen.
 	push @$deps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
 
-	$control .= "Pre-Depends: " . &lol2pkglist($predeps) . "\n";
-	if (Fink::Config::get_option("maintainermode")) {
-		print "- Pre-Depends line is: " . &lol2pkglist($predeps) . "\n";
+	if ($self->has_pkglist("Pre-Depends")) {
+		$control .= "Pre-Depends: " . &lol2pkglist($predeps) . "\n";
+		if (Fink::Config::get_option("maintainermode")) {
+			print "- Pre-Depends line is: " . &lol2pkglist($predeps) . "\n";
+		}
 	}
 
 	$control .= "Depends: " . &lol2pkglist($deps) . "\n";
