@@ -10,6 +10,10 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.45.x
 \-------------
 
+0.45.6 "Fuhgeddaboudit" (2022-01-20)
+
+	* Hot fix for #240. Don't break when Pre-Depends is empty.
+
 0.45.5 "Fui" (2022-01-20)
 
 	* Support for Pre-Depends.
