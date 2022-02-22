@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2021 The Fink Package Manager Team
+# Copyright (c) 2001-2022 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@ use Fink::Base;
 use Fink::Services qw(&filename &execute
 					  &expand_percent &expand_percent2 &latest_version
 					  &collapse_space &read_properties &read_properties_var
-					  &pkglist2lol &lol2pkglist &cleanup_lol
+					  &pkglist2lol &lol2pkglist &cleanup_lol &dep_in_lol
 					  &version_cmp
 					  &get_path &eval_conditional &enforce_gcc
 					  &dpkg_lockwait &aptget_lockwait &lock_wait
@@ -60,6 +60,7 @@ use Fcntl;
 use Storable;
 use IO::Handle;
 use version 0.77;	
+use Data::Dumper;
 
 use strict;
 use warnings;
@@ -4125,47 +4126,40 @@ EOF
 	#   installing a .deb file created with an incorrect MACOSX_DEPLOYMENT_TARGET
 	#   value.
 	# TODO: move all this kernel-dependency stuff into pkglist()
-	# FIXME: Actually, if the package states a kernel version we should combine
-	#   the version given by the package with the one we want to impose.
-	#   Instead, right now, we just use the package's version but this means
-	#   that a package will need to be revised if the kernel major version changes.
 
 	my $kernel = lc((uname())[0]);
-	my $kernel_major_version = Fink::Services::get_kernel_vers();
+	my $kernel_vdep = Fink::Services::get_kernel_vers() . "-1";
 
-	my $has_kernel_dep;
-	my $deps = $self->get_depends(0, 0); # get runtime dependencies
-	my $predeps = $self->pkglist('Pre-Depends');
+	my $deps_lol = $self->get_depends(0, 0); # get runtime dependencies
+	my $predeps_lol = &pkglist2lol($self->pkglist('Pre-Depends'));
 
-	foreach (@$predeps) {
-		foreach (@$_) {
-			$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
-		}
+	if (
+		!&dep_in_lol({$kernel=>$kernel_vdep}, $deps_lol)
+		and
+		!&dep_in_lol({$kernel=>$kernel_vdep}, $predeps_lol)
+	) {
+		# Move to Pre-Depends once bootstrapping can statisfy it.
+		# dpkg-bootstrap needs to be fvp aware for this to happen.
+		push @$deps_lol, ["$kernel (>= $kernel_vdep)"];
 	}
-	if (not $has_kernel_dep) {
-		foreach (@$deps) {
-			foreach (@$_) {
-				$has_kernel_dep = 1 if /^\Q$kernel\E(\Z|\s|\()/;
-			}
-		}
-	}
-	# Move to Pre-Depends once bootstrapping can statisfy it.
-	# dpkg-bootstrap needs to be fvp aware for this to happen.
-	push @$deps, ["$kernel (>= $kernel_major_version-1)"] if not $has_kernel_dep;
 
-	if ($self->has_pkglist("Pre-Depends")) {
-		$control .= "Pre-Depends: " . &lol2pkglist($predeps) . "\n";
+	if (@$predeps_lol) {
+		my $pkglist = &lol2pkglist($predeps_lol);
+		$control .= "Pre-Depends: $pkglist\n";
 		if (Fink::Config::get_option("maintainermode")) {
-			print "- Pre-Depends line is: " . &lol2pkglist($predeps) . "\n";
+			print "- Pre-Depends line is: $pkglist\n";
 		}
 	}
 
-	$control .= "Depends: " . &lol2pkglist($deps) . "\n";
-	if (Fink::Config::get_option("maintainermode")) {
-		print "- Depends line is: " . &lol2pkglist($deps) . "\n";
+	if (@$deps_lol) {
+		my $pkglist = &lol2pkglist($deps_lol);
+		$control .= "Depends: $pkglist\n";
+		if (Fink::Config::get_option("maintainermode")) {
+			print "- Depends line is: $pkglist\n";
+		}
 	}
 
-	### Look at other pkglists
+	### Look at other pkglists (not do any special processing)
 	foreach $field (qw(Provides Replaces Conflicts
 			 Recommends Suggests Enhances)) {
 		if ($self->has_pkglist($field)) {
