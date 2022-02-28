@@ -4266,21 +4266,21 @@ EOF
 		push @$deps_lol, ["$kernel (>= $kernel_vdep)"];
 	}
 
-    # add pre-depends on dpkg >= 1.15 for xz usage
-    if (
-        $parentpkgname ne 'fink'
-        and
-        $parentpkgname ne 'dpkg'
-        and
-        Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1')
-        and
-        !&dep_in_lol({"dpkg"=>"1.15-1"}, $deps_lol)
-        and
-        !&dep_in_lol({"dpkg"=>"1.15-1"}, $predeps_lol)
-    ) {
-        push @$predeps, ["dpkg (>= 1.15-1)"] if not $has_dpkg_dep;
-    }
-    
+	# add pre-depends on dpkg >= 1.15 for xz usage
+	if (
+		$parentpkgname ne 'fink'
+		and
+		$parentpkgname ne 'dpkg'
+		and
+		Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1')
+		and
+		!&dep_in_lol({"dpkg"=>"1.15-1"}, $deps_lol)
+		and
+		!&dep_in_lol({"dpkg"=>"1.15-1"}, $predeps_lol)
+	) {
+		push @$predeps, ["dpkg (>= 1.15-1)"] if not $has_dpkg_dep;
+	}
+
 	if (@$predeps_lol) {
 		my $pkglist = &lol2pkglist($predeps_lol);
 		$control .= "Pre-Depends: $pkglist\n";
@@ -4509,9 +4509,15 @@ EOF
 		$scriptbody{prerm} .= "\n";
 		$scriptbody{prerm} .= "# generated from InfoDocs directive\n";
 		$scriptbody{prerm} .= "if [ -f $infodir/dir ]; then\n";
+		$scriptbody{prerm} .= "\tif [ -f %p/sbin/install-info ]; then\n";
 		foreach (@infodocs) {
-			$scriptbody{prerm} .= "\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
+			$scriptbody{prerm} .= "\t\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
 		}
+		$scriptbody{prerm} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
+		foreach (@infodocs) {
+			$scriptbody{prerm} .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir $_\n";
+		}
+		$scriptbody{prerm} .= "\tfi\n";
 		$scriptbody{prerm} .= "fi\n";
 	}
 
