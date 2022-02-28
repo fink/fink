@@ -4515,7 +4515,7 @@ EOF
 		}
 		$scriptbody{prerm} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
 		foreach (@infodocs) {
-			$scriptbody{prerm} .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir $_\n";
+			$scriptbody{prerm} .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir --remove $_\n";
 		}
 		$scriptbody{prerm} .= "\tfi\n";
 		$scriptbody{prerm} .= "fi\n";
