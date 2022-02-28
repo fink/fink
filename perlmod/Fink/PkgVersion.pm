@@ -4278,7 +4278,7 @@ EOF
 		and
 		!&dep_in_lol({"dpkg"=>"1.15-1"}, $predeps_lol)
 	) {
-		push @$predeps, ["dpkg (>= 1.15-1)"] if not $has_dpkg_dep;
+		push @$predeps_lol, ["dpkg (>= 1.15-1)"];
 	}
 
 	if (@$predeps_lol) {
