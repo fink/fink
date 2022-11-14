@@ -2,8 +2,6 @@ Package: fink
 Version: @VERSION@
 Revision: @REVISION@
 Distribution: @DISTRIBUTION@
-# This does not work for bootstraping (causes circ deps) :(
-#	dpkg (>> 1.16) || dpkg-bootstrap (>> 1.16),
 Depends: <<
 	base-files
 <<
@@ -27,29 +25,7 @@ InstallScript: <<
 ./install.sh %i %m
 install -c -p -m 644 fink.shlibs "%d/DEBIAN/shlibs"
 <<
-Triggers: <<
-	Interest-noawait: <<
-		%p/lib
-		%p/opt
-	<<
-<<
 PostInstScript: <<
-# dpkg triggers to clean .la files (we can not get a pkg name to process all)
-if [ "$1" = "triggered" ]; then
-	shift;
-	msg="Clearing dependency_libs of .la files in $@ ..."
-	for lafile in `find $@ -name *.la`; do
-		if [ -f "$lafile" ] && [ ! -h "$lafile" ]; then
-			if [ -n "$msg" ]; then
-				echo $msg
-				msg=""
-			fi
-			perl -pi -e "s/^(dependency_libs)=.*/\1=''/" "$lafile" || true
-		fi
-	done
-	exit 0
-fi
-
 %p/lib/fink/postinstall.pl %m
 %p/bin/fink --no-use-binary-dist index
 
@@ -59,10 +35,6 @@ rm -f %p/var/db/shlibs.db
 rm -f %p/var/lib/fink/fink.db
 <<
 PreRmScript: <<
-if [ "$1" = "triggered" ]; then
-    exit 0
-fi
-
 # clean up package indexes
 [ \! -d %p/var/lib/fink/finkinfodb ] || /usr/bin/touch %p/var/lib/fink/finkinfodb/invalidate
 rm -f %p/var/lib/fink/index.db

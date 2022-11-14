@@ -2,14 +2,37 @@ Info4: <<
 Package: dpkg-base-files
 Version: 0.4
 Revision: 1
-Depends: dpkg (>= 1.10.21-1229)
+BuildDepends: fink (>= 0.45.99.git)
+Depends: dpkg (>> 1.16)
 Source: mirror:custom:fink/%n-%v.tar.gz
 Essential: yes
 Source-MD5: 7937b673519919e33e065421e6f1bf63
 CompileScript: ./setup.sh %p
 InstallScript: ./install.sh %i
 #
+Triggers: <<
+        Interest-noawait: <<
+                %p/lib
+                %p/opt
+        <<
+<<
 PostInstScript: <<
+	# dpkg triggers to clean .la files
+	if [ "$1" = "triggered" ]; then
+		shift;
+		msg="Clearing dependency_libs of .la files in $@ ..."
+		for lafile in `find $@ -name *.la`; do
+			if [ -f "$lafile" ] && [ ! -h "$lafile" ]; then
+				if [ -n "$msg" ]; then
+					echo $msg
+					msg=""
+				fi
+				perl -pi -e "s/^(dependency_libs)=.*/\1=''/" "$lafile" || true
+			fi
+		done
+		exit 0
+	fi
+
 	if [ "$1" = "configure" ]; then
 		echo "Cleaning up all installed .la files (this may take a moment)"
 		for libdir in "%p/lib" "%p/opt" "%p/Applications" "%p/Library"; do
@@ -20,6 +43,11 @@ PostInstScript: <<
 				echo '  skipping "'$libdir'" (nothing installed there)'
 			fi
 		done
+	fi
+<<
+PreRmScript: <<
+	if [ "$1" = "triggered" ]; then
+		exit 0
 	fi
 <<
 #
