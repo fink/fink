@@ -1443,8 +1443,8 @@ sub get_osx_vers {
 	my $darwin_osx = get_darwin_equiv();
 	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
 	if ($sw_vers != $darwin_osx) {
-		if ($sw_vers == 11.6 && $darwin_osx == 11.5) {
-			# special case where it's OK to have a mismatch
+		if ($sw_vers == 11.6 && $darwin_osx == 11.5) || ($sw_vers == 12.6 && $darwin_osx == 12.5) {
+			# special cases in Big Sur and Monterey where it's OK to have a mismatch
 		} else {
 			die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
 		}
