@@ -1013,6 +1013,11 @@ as part of the Xcode tools.
 			MacOSX11.3.sdk
 			MacOSX12.0.sdk
 		);
+	} elsif ($osxversion == 22) {
+		@SDKDIRS=qw(
+			MacOSX13.0.sdk
+			MacOSX13.1.sdk
+		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
 	my $sdkpath;
