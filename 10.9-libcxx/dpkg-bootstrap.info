@@ -9,6 +9,7 @@ Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
 Source-MD5: SHA256(b50e58b71223f66196b419f776c7791b5cc3a9aa07e1ccf85848b123517cdd51)
 SourceDirectory: dpkg-%v
 
+UpdateConfigGuessInDirs: build-aux
 PatchFile: dpkg.patch
 PatchFile-MD5: ea15b7308a1cc46e8850330778acbe89
 
