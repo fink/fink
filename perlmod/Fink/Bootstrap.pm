@@ -287,7 +287,7 @@ GCC_MSG
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "12.0";
-	} elsif ($host =~ /^i386-apple-darwin22\./) {
+	} elsif ($host =~ /^(aarch64|i386)-apple-darwin22\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of macOS might work with Fink, but there are no " .
