@@ -1,18 +1,22 @@
 Package: objtools
-Version: 2.22
-Revision: 4
+Version: 2.36.1
+Revision: 1
 Essential: true
 Replaces: binutils (<< 2.22)
 
-Maintainer: Sjors Gielen <fink-objtools@sjorsgielen.nl>
+Maintainer: None <fink-devel@lists.sourceforge.net>
 License: GPL
 DocFiles: COPYING README
 Description: Binutils tools objcopy, objdump and readelf
 
-Source: mirror:gnu:binutils/binutils-%v.tar.bz2
-Source-MD5: ee0f10756c84979622b992a4a61ea3f5
-PatchFile: objtools.patch
-PatchFile-MD5: 46c7844a1fe9dfc5148615d5db251140
+Source: mirror:gnu:binutils/binutils-%v.tar.xz
+Source-Checksum: SHA256(e81d9edf373f193af428a0f256674aea62a9d74dfe93f65192d4eae030b0f3b0)
+
+# Patch Phase: (fix Puma linking in configure on Yosemite)
+PatchScript: <<
+#!/bin/sh -ev
+  sed -i.bak 's|10\.\[012\]\*|10.[012][,.]*|g' */configure
+<<
 
 ConfigureParams: <<
 	--disable-werror
@@ -22,15 +26,16 @@ CompileScript: <<
 #!/bin/sh -ev
   cd bfd
   ./configure %c
-  make bfdver.h
-  make targmatch.h
-  make libbfd.la
+  make
   cd ../libiberty
   ./configure %c
-  make libiberty.a
+  make
+  cd ../libctf
+  ./configure %c
+  make
   cd ../opcodes
   ./configure %c
-  make libopcodes.la
+  make
   cd ../binutils
   ./configure %c
   make objcopy
@@ -47,4 +52,7 @@ InstallScript: <<
   install -m 0644 binutils/doc/objcopy.1 %i/share/man/man1
   install -m 0644 binutils/doc/objdump.1 %i/share/man/man1
   install -m 0644 binutils/doc/readelf.1 %i/share/man/man1
+<<
+DescPackaging: <<
+       Former maintainer: Sjors Gielen <fink-objtools@sjorsgielen.nl>
 <<
