@@ -1,8 +1,7 @@
 Package: texinfo
 Version: 6.8
 
-Revision: 601.1
-
+Revision: 700
 Source: gnu
 Source-Checksum: SHA256(8e09cf753ad1833695d2bac0f57dc3bd6bcbbfbf279450e1ba3bc2d7fb297d08)
 SourceDirectory: %n-%v
@@ -20,8 +19,8 @@ Depends: <<
 	libiconv,
 	info,
 	install-info,
-	text-unidecode-pm,
-	locale-textdomain-pm
+	locale-textdomain-pm,
+	text-unidecode-pm
 <<
 Replaces: <<
 	tetex-base (<< 3.0-1)
