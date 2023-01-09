@@ -278,10 +278,10 @@ GCC_MSG
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "11.3";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin21\.[0-1]/) {
+	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.[0-1]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "12.0";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin21\./) {
+	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
 			"of macOS might work with Fink, but there are no " .
