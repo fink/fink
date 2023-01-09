@@ -31,7 +31,7 @@ diff -ruN dpkg-1.19.7.orig/fink/buildflags.conf dpkg-1.19.7/fink/buildflags.conf
 +
 +# fink defaults
 +PREPEND CPPFLAGS -I@FINKPREFIX@/include
-+PREPEND LDFLAGS -L@FINKPREFIX@/lib/x86_64-darwin -L@FINKPREFIX@/lib
++PREPEND LDFLAGS -L@FINKPREFIX@/lib/@ARCHITECTURE@-darwin -L@FINKPREFIX@/lib
 diff -ruN dpkg-1.19.7.orig/fink/dpkg.cron.daily dpkg-1.19.7/fink/dpkg.cron.daily
 --- dpkg-1.19.7.orig/fink/dpkg.cron.daily	1969-12-31 17:00:00.000000000 -0700
 +++ dpkg-1.19.7/fink/dpkg.cron.daily	2019-12-10 14:27:04.000000000 -0700

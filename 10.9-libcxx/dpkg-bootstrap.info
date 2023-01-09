@@ -11,10 +11,10 @@ SourceDirectory: dpkg-%v
 
 UpdateConfigGuessInDirs: build-aux
 PatchFile: dpkg.patch
-PatchFile-MD5: ea15b7308a1cc46e8850330778acbe89
+PatchFile-MD5: 9fb88eddbf7d830c448eb7771642bb3a
 
 PatchScript: <<
-sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+sed -e 's,@FINKPREFIX@,%p,g' -e 's,@ARCHITECTURE@,%m,g' %{PatchFile} | patch -p1
 
 patch -p1 < fink/patches/add-BOD.patch
 patch -p1 < fink/patches/build-fix.patch
