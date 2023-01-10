@@ -84,7 +84,9 @@ perl -pi -e "s,'-','-' && *p != '_',g" lib/dpkg/arch.c
 perl -pi -e "s,amd64_test,amd64:test,g" lib/dpkg/t/t-arch.c
 
 # add aarch64 for darwin
-/usr/bin/awk '/darwin/{print "base-bsd-darwin-aarch64\t\tdarwin-arm"}1' data/tupletable > data/tupletable.new
+/usr/bin/awk '/arm64/{print "arm\t\taarch64\t\t(aarch64|arm64)\t\t64\tlittle"}1' data/cputable > data/cputable.new
+mv data/cputable.new data/cputable
+/usr/bin/awk '/darwin/{print "base-bsd-darwin-arm\t\tdarwin-arm64"}1' data/tupletable > data/tupletable.new
 mv data/tupletable.new data/tupletable
 
 # Fix for tar (Slightly modified for dpkg-bootstrap)
