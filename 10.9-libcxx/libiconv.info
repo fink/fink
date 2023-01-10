@@ -5,7 +5,10 @@ Description: Character set conversion library
 License: LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 Depends: base-files
-BuildDepends: fink (>= 0.30.0)
+BuildDepends: <<
+	fink (>= 0.30.0),
+	gperf (>= 3.1-1)
+<<
 Essential: yes
 CustomMirror: <<
 	Primary: http://ftpmirror.gnu.org/%n/
@@ -16,26 +19,15 @@ Source-MD5: 7d2a800b952942bb2880efb00cfd524c
 Source2: mirror:sourceforge:fink/gettext-0.20.2.tar.gz
 #Source2: mirror:gnu:gettext/gettext-0.20.2.tar.gz
 Source2-MD5: 30fec34a895fab4c02584449c500aac2
-Source3: mirror:sourceforge:fink/gperf-3.1.tar.gz
-#Source3: mirror:gnu:gperf/gperf-3.1.tar.gz
-Source3-MD5: 9e251c0a618ad0824b51117d5d9db87e
 PatchFile: %n.patch
-PatchFile-MD5: 0680e630945155f90310754f063f099e
+PatchFile-MD5: 5e7d6a1b9c563b71d1ac08a6ad2106cf
 PatchScript: <<
 	cd %b/..; patch -p0 < %{PatchFile}
 <<
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
-### gperf builds with g++
-GCC: 4.0
 CompileScript: <<
 #! /bin/sh -ex
-### build gperf
-cd %b/../gperf-3.1
-./configure --prefix=%p
-make
-make -j1 check || exit 2
-
 ### Build our local gettext-runtime.
 ### If gettext gets updated, make sure these ./configure parameters 
 ### match the new package parameters (except build static only here).
@@ -65,7 +57,7 @@ make install DESTDIR=%b/../_inst
 
 ### now build iconv
 cd %b/../libiconv-%v
-make -f Makefile.devel GPERF=%b/../gperf-3.1/src/gperf
+make -f Makefile.devel
 am_cv_func_iconv="yes"
 am_cv_proto_iconv=""
 export am_cv_func_iconv am_cv_proto_iconv
@@ -168,5 +160,12 @@ our build system.
  
  https://stackoverflow.com/questions/24288691/
  why-does-hexadecimal-floating-point-need-to-have-a-specified-exponent
+
+2023-01-08 Daniel Macks
+ Patching iconv.1.html as well as iconv.1 so we don't need to run
+ groff for .1 -> .1.html regeneration. Apple seems to be dropping
+ /usr/bin/groff and fink's groff is heavy and gives circular dep.
+
+ Externalize gperf
 <<
 Homepage: http://www.gnu.org/software/libiconv/
