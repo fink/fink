@@ -181,8 +181,8 @@ The package is present when the CPU is 64bit-capable.
 
 print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 
-# different sysctl variables for intel and ppc
-	my @keys64 = ('hw.optional.x86_64', 'hw.optional.64bitops', 'hw.cpu64bit_capable');
+# different sysctl variables for arm, intel and ppc
+	my @keys64 = ('hw.optional.x86_64', 'hw.optional.arm64', 'hw.optional.64bitops', 'hw.cpu64bit_capable');
 
 	$hash = {};
 	$hash->{package} = "64bit-cpu";
