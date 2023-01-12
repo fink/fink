@@ -34,13 +34,18 @@ basepath="$1"
 architecture="$2"
 version=`cat VERSION`
 
+archdir="${architecture}-darwin"
+if [ "${architecture}" == "arm64" ]; then
+	archdir="aarch64-darwin"
+fi
+
 echo "Creating directories..."
 
 mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin sbin \
-	lib lib/${architecture}-darwin lib/perl5 lib/perl5/Fink \
+	lib lib/${archdir} lib/perl5 lib/perl5/Fink \
 	lib/perl5/Fink/{Text,Tie,Notify,Checksum,Finally,SelfUpdate} \
 	lib/fink lib/fink/update lib/fink/update-packages \
 	etc etc/dpkg \
