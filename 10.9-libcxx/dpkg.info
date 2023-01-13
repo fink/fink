@@ -135,7 +135,7 @@ perl -pi -e "s,'/var/lib/dpkg','%p/var/lib/dpkg',g" scripts/Dpkg.pm
 perl -pi -e 's,5.20.2,5.16.2,g' configure
 
 # just for building don't force GNU patch (we don't want patch to be essential)
-perl -pi -e "s,GNU patch,patch,g" configure
+perl -pi -e "s,-q '[\^]GNU patch,-qE '^\(GNU \)\?patch,g" configure
 <<
 
 SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
