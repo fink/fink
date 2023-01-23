@@ -129,6 +129,7 @@ our %allowed_arch_values = map {lc $_, 1}
 	 'powerpc',
 	 'i386',
 	 'x86_64',
+	 'arm64',
 	);
 
 # List of all valid fields,
@@ -548,6 +549,8 @@ sub validate_info_file {
 					$expand->{"lib"} = "lib/x86_64";
 				} elsif ($config->param('Architecture') eq "x86_64" ) {
 					print "Warning: the -64bit type may have unexpected effects under x86_64 Architecture. ($filename)\n";
+					$looks_good = 0;
+				} elsif ($config->param('Architecture') eq "arm64" ) {
 					$looks_good = 0;
 				} else {
 					die "Your Architecture is not suitable for 64bit libraries.\n";
@@ -1573,7 +1576,7 @@ sub validate_info_component {
 			# default value of $libarch, if absent, is "32" for the
 			# powerpc and i386 architectures, and "64" for x86_64
 			my $libarch = "32";
-			if ($config->param('Architecture') eq "x86_64" ) {
+			if ($config->param('Architecture') eq "x86_64" || $config->param('Architecture') eq "arm64") {
 				$libarch = "64";
 			}
 			# strip off the end of the last @shlib_deps entry (the stuff
