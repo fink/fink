@@ -4488,9 +4488,17 @@ EOF
 		$scriptbody{postinst} .= "\n";
 		$scriptbody{postinst} .= "# generated from InfoDocs directive\n";
 		$scriptbody{postinst} .= "if [ -f $infodir/dir ]; then\n";
-		$scriptbody{postinst} .= "\tif [ -f %p/sbin/install-info ]; then\n";
+		$scriptbody{postinst} .= "\tif [ -f %p/bin/install-info ]; then\n";
+		foreach (@infodocs) {
+			$scriptbody{postinst} .= "\t\t%p/bin/install-info --infodir=$infodir $_\n";
+		}
+		$scriptbody{postinst} .= "\telif [ -f %p/sbin/install-info ]; then\n";
 		foreach (@infodocs) {
 			$scriptbody{postinst} .= "\t\t%p/sbin/install-info --infodir=$infodir $_\n";
+		}
+		$scriptbody{postinst} .= "\telif [ -f %p/bootstrap/bin/install-info ]; then\n";
+		foreach (@infodocs) {
+			$scriptbody{postinst} .= "\t\t%p/bootstrap/bin/install-info --infodir=$infodir $_\n";
 		}
 		$scriptbody{postinst} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
 		foreach (@infodocs) {
@@ -4509,9 +4517,17 @@ EOF
 		$scriptbody{prerm} .= "\n";
 		$scriptbody{prerm} .= "# generated from InfoDocs directive\n";
 		$scriptbody{prerm} .= "if [ -f $infodir/dir ]; then\n";
-		$scriptbody{prerm} .= "\tif [ -f %p/sbin/install-info ]; then\n";
+		$scriptbody{prerm} .= "\tif [ -f %p/bin/install-info ]; then\n";
+		foreach (@infodocs) {
+			$scriptbody{prerm} .= "\t\t%p/bin/install-info --infodir=$infodir --remove $_\n";
+		}
+		$scriptbody{prerm} .= "\telif [ -f %p/sbin/install-info ]; then\n";
 		foreach (@infodocs) {
 			$scriptbody{prerm} .= "\t\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
+		}
+		$scriptbody{prerm} .= "\telif [ -f %p/bootstrap/bin/install-info ]; then\n";
+		foreach (@infodocs) {
+			$scriptbody{prerm} .= "\t\t%p/bootstrap/bin/install-info --infodir=$infodir --remove $_\n";
 		}
 		$scriptbody{prerm} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
 		foreach (@infodocs) {
