@@ -546,7 +546,7 @@ sub initialize {
 			} elsif ($config->param('Architecture') eq "x86_64" ) {
 				# paradoxically, no special library location is required for
 				# -64bit variants under x86_64 architecture
-			} elsif ($config->param('Architecture') eq arm64" ) {
+			} elsif ($config->param('Architecture') eq "arm64" ) {
 				# paradoxically, no special library location is required for
 				# -64bit variants under arm64 architecture
 			} else {
