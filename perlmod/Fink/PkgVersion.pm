@@ -4474,67 +4474,70 @@ EOF
 		my @infodocs;
 
 		# postinst needs to tweak @infodocs
-		@infodocs = split(/\s+/, $self->param("InfoDocs"));
-		@infodocs = grep { $_ } @infodocs;  # TODO: what is this supposed to do???
+		#@infodocs = split(/\s+/, $self->param("InfoDocs"));
+		#@infodocs = grep { $_ } @infodocs;  # TODO: what is this supposed to do???
 
 		# FIXME: This seems brokenly implemented for @infodocs that are already absolute path
-		map { $_ = "$infodir/$_" unless $_ =~ /\// } @infodocs;
+		#map { $_ = "$infodir/$_" unless $_ =~ /\// } @infodocs;
+
+		# DEPRECATED, this is all done via install-info trigger now,
+		# which is much cleaner since we do not need 4 cases
 
 		# FIXME: debian install-info seems to always omit all path components when adding
 
 		# NOTE: Validation::_validate_dpkg must be kept in sync with
 		# this implementation!
 
-		$scriptbody{postinst} .= "\n";
-		$scriptbody{postinst} .= "# generated from InfoDocs directive\n";
-		$scriptbody{postinst} .= "if [ -f $infodir/dir ]; then\n";
-		$scriptbody{postinst} .= "\tif [ -f %p/bin/install-info ]; then\n";
-		foreach (@infodocs) {
-			$scriptbody{postinst} .= "\t\t%p/bin/install-info --infodir=$infodir $_\n";
-		}
-		$scriptbody{postinst} .= "\telif [ -f %p/sbin/install-info ]; then\n";
-		foreach (@infodocs) {
-			$scriptbody{postinst} .= "\t\t%p/sbin/install-info --infodir=$infodir $_\n";
-		}
-		$scriptbody{postinst} .= "\telif [ -f %p/bootstrap/bin/install-info ]; then\n";
-		foreach (@infodocs) {
-			$scriptbody{postinst} .= "\t\t%p/bootstrap/bin/install-info --infodir=$infodir $_\n";
-		}
-		$scriptbody{postinst} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
-		foreach (@infodocs) {
-			$scriptbody{postinst} .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir $_\n";
-		}
-		$scriptbody{postinst} .= "\tfi\n";
-		$scriptbody{postinst} .= "fi\n";
+		#$scriptbody{postinst} .= "\n";
+		#$scriptbody{postinst} .= "# generated from InfoDocs directive\n";
+		#$scriptbody{postinst} .= "if [ -f $infodir/dir ]; then\n";
+		#$scriptbody{postinst} .= "\tif [ -f %p/bin/install-info ]; then\n";
+		#foreach (@infodocs) {
+		#	$scriptbody{postinst} .= "\t\t%p/bin/install-info --infodir=$infodir $_\n";
+		#}
+		#$scriptbody{postinst} .= "\telif [ -f %p/sbin/install-info ]; then\n";
+		#foreach (@infodocs) {
+		#	$scriptbody{postinst} .= "\t\t%p/sbin/install-info --infodir=$infodir $_\n";
+		#}
+		#$scriptbody{postinst} .= "\telif [ -f %p/bootstrap/bin/install-info ]; then\n";
+		#foreach (@infodocs) {
+		#	$scriptbody{postinst} .= "\t\t%p/bootstrap/bin/install-info --infodir=$infodir $_\n";
+		#}
+		#$scriptbody{postinst} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
+		#foreach (@infodocs) {
+		#	$scriptbody{postinst} .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir $_\n";
+		#}
+		#$scriptbody{postinst} .= "\tfi\n";
+		#$scriptbody{postinst} .= "fi\n";
 
 		# postinst tweaked @infodocs so reload the original form
-		@infodocs = split(/\s+/, $self->param("InfoDocs"));
-		@infodocs = grep { $_ } @infodocs;  # TODO: what is this supposed to do???
+		#@infodocs = split(/\s+/, $self->param("InfoDocs"));
+		#@infodocs = grep { $_ } @infodocs;  # TODO: what is this supposed to do???
 
 		# FIXME: this seems wrong for non-simple-filename $_ (since the dir only lists
 		# the filename component and could have same value in different dirs)
 
-		$scriptbody{prerm} .= "\n";
-		$scriptbody{prerm} .= "# generated from InfoDocs directive\n";
-		$scriptbody{prerm} .= "if [ -f $infodir/dir ]; then\n";
-		$scriptbody{prerm} .= "\tif [ -f %p/bin/install-info ]; then\n";
-		foreach (@infodocs) {
-			$scriptbody{prerm} .= "\t\t%p/bin/install-info --infodir=$infodir --remove $_\n";
-		}
-		$scriptbody{prerm} .= "\telif [ -f %p/sbin/install-info ]; then\n";
-		foreach (@infodocs) {
-			$scriptbody{prerm} .= "\t\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
-		}
-		$scriptbody{prerm} .= "\telif [ -f %p/bootstrap/bin/install-info ]; then\n";
-		foreach (@infodocs) {
-			$scriptbody{prerm} .= "\t\t%p/bootstrap/bin/install-info --infodir=$infodir --remove $_\n";
-		}
-		$scriptbody{prerm} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
-		foreach (@infodocs) {
-			$scriptbody{prerm} .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir --remove $_\n";
-		}
-		$scriptbody{prerm} .= "\tfi\n";
-		$scriptbody{prerm} .= "fi\n";
+		#$scriptbody{prerm} .= "\n";
+		#$scriptbody{prerm} .= "# generated from InfoDocs directive\n";
+		#$scriptbody{prerm} .= "if [ -f $infodir/dir ]; then\n";
+		#$scriptbody{prerm} .= "\tif [ -f %p/bin/install-info ]; then\n";
+		#foreach (@infodocs) {
+		#	$scriptbody{prerm} .= "\t\t%p/bin/install-info --infodir=$infodir --remove $_\n";
+		#}
+		#$scriptbody{prerm} .= "\telif [ -f %p/sbin/install-info ]; then\n";
+		#foreach (@infodocs) {
+		#	$scriptbody{prerm} .= "\t\t%p/sbin/install-info --infodir=$infodir --remove $_\n";
+		#}
+		#$scriptbody{prerm} .= "\telif [ -f %p/bootstrap/bin/install-info ]; then\n";
+		#foreach (@infodocs) {
+		#	$scriptbody{prerm} .= "\t\t%p/bootstrap/bin/install-info --infodir=$infodir --remove $_\n";
+		#}
+		#$scriptbody{prerm} .= "\telif [ -f %p/bootstrap/sbin/install-info ]; then\n";
+		#foreach (@infodocs) {
+		#	$scriptbody{prerm} .= "\t\t%p/bootstrap/sbin/install-info --infodir=$infodir --remove $_\n";
+		#}
+		#$scriptbody{prerm} .= "\tfi\n";
+		#$scriptbody{prerm} .= "fi\n";
 	}
 
 	# write out each non-empty script
