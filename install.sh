@@ -61,14 +61,18 @@ for dir in bin sbin \
   chmod 755 "$basepath/$dir"
 done
 
-if [ "$architecture" = "i386" ]; then
+if [ "${architecture}" == "arm64" ]; then
+  ln -s "$basepath/lib/${archdir}" "$basepath/lib/arm64"
+fi
+
+if [ "$architecture" == "i386" ]; then
   mkdir "$basepath/etc/profile.d"
   chmod 755 "$basepath/etc/profile.d"
 fi
 
 echo "Copying files..."
 
-if [ "$architecture" = "i386" ]; then
+if [ "$architecture" == "i386" ]; then
   install -c -p -m 755 fink.csh "$basepath/etc/profile.d"
   install -c -p -m 755 fink.sh "$basepath/etc/profile.d"
 fi
