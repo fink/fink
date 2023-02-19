@@ -62,7 +62,7 @@ for dir in bin sbin \
 done
 
 if [ "${architecture}" == "arm64" ]; then
-  ln -s "$basepath/lib/${archdir}" "$basepath/lib/arm64"
+  pushd "$basepath/lib" && ln -s "${archdir}" "arm64-darwin"; popd
 fi
 
 if [ "$architecture" == "i386" ]; then
