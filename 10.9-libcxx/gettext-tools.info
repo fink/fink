@@ -1,24 +1,23 @@
 Package: gettext-tools
-Version: 0.19.8.1
-Revision: 2
+Version: 0.20.2
+Revision: 1
 CustomMirror: <<
 	Primary: http://ftpmirror.gnu.org/gettext/
 	Secondary: http://downloads.sourceforge.net/fink/
 <<
 Source: mirror:custom:gettext-%v.tar.gz
-Source-MD5: 97e034cf8ce5ba73a28ff6c3c0638092
+Source-MD5: 30fec34a895fab4c02584449c500aac2
 PatchFile: libgettext8-shlibs.patch
-PatchFile-MD5: 9a702c97d1c95d216f0908e368e7ad42
+PatchFile-MD5: 8ebf1b7c276059b0d3a334f60a2f705e
 PatchFile2: gettext-tools-tests.patch
 PatchFile2-MD5: 6051a92acfc5ba9bf2274c258dbd6c7e
 PatchScript: <<
  patch -p1 < %{PatchFile}
  sed 's|@FINKPREFIX@|%p|g' < %{PatchFile2} | patch -p1
- perl -pi -e 's/.*chmod.*777.*$//g' build-aux/ltmain.sh
 <<
 Depends: <<
 	expat1-shlibs (>= 2.0.1-1),
-	libgettext8-shlibs (>= %v-2),
+	libgettext8-shlibs (>= %v-1),
 	libiconv (>= 1.14-6),
 	libncurses5-shlibs (>= 5.4-20041023-1011)
 <<
@@ -26,7 +25,7 @@ Suggests: gettext-doc
 BuildDepends: <<
 	expat1 (>= 2.0.1-1),
 	fink (>= 0.30.0),
-	libgettext8-dev (>= %v-2),
+	libgettext8-dev (>= %v-1),
 	libiconv-dev (>= 1.14-6),
 	libncurses5 (>= 5.4-20041023-1011)
 <<
@@ -40,7 +39,7 @@ Replaces: gettext-dev (<= 0.10.40-20), gettext (<= 0.10.40-4), gettext-bin (<= 0
 ConfigureParams: <<
 	--infodir='%p/share/info' \
 	--mandir='%p/share/man' \
-	--with-included-gettext \
+	--without-included-gettext \
 	--disable-csharp \
 	--disable-rpath \
 	--disable-libasprintf \
@@ -60,10 +59,14 @@ ConfigureParams: <<
 CompileScript: <<
 	#!/bin/sh -ev
 	mkdir bin
-	ln -s /usr/bin/javac bin/gcj 
+	ln -s /usr/bin/javac bin/gcj
+	cd libtextstyle
+	env EMACS=no JAVA=/usr/bin/java PATH=../bin:$PATH ./configure --prefix=%b/localtree --enable-shared=no ac_cv_prog_AWK=/usr/bin/awk ac_cv_path_GREP=/usr/bin/grep ac_cv_path_SED=/usr/bin/sed
+	/usr/bin/make -w
+	cd ..
 	cd gettext-tools
-	env EMACS=no JAVA=/usr/bin/java PATH=../bin:$PATH ./configure %c
-	make -w
+	env EMACS=no JAVA=/usr/bin/java PATH=../bin:%b/localtree/bin:$PATH ./configure %c
+	/usr/bin/make -w
 <<
 InfoTest: <<
 	### https://savannah.gnu.org/support/index.php?108122
@@ -71,7 +74,7 @@ InfoTest: <<
 		fpc
 	<<
 	TestScript: <<
-		cd gettext-tools; LC_ALL=C make -k check || exit 2
+		cd gettext-tools; LC_ALL=C /usr/bin/make -w -k check || exit 2
 	<<
 <<
 InstallScript: <<
@@ -86,8 +89,8 @@ InstallScript: <<
 DocFiles: README* AUTHORS COPYING* NEWS THANKS ChangeLog* 
 InfoDocs: gettext.info
 Shlibs: <<
-  !%p/lib/libgettextlib-0.19.8.1.dylib
-  !%p/lib/libgettextsrc-0.19.8.1.dylib
+  !%p/lib/libgettextlib-0.20.2.dylib
+  !%p/lib/libgettextsrc-0.20.2.dylib
 <<
 Description: GNU Internationalization utils
 
@@ -96,7 +99,7 @@ Splitoff: <<
   Replaces: libgettext3-dev (<< 0.14.5-1)
   Depends: <<
 	libgettextpo2-shlibs (= %v-%r),
-	gettext-bin (>= %v-2),
+	gettext-bin (>= %v-1),
 	gettext-tools (>= %v-%r)
   <<
   BuildDependsOnly: true
@@ -143,8 +146,6 @@ DescPort: <<
   So, set CFLAGS to -O0  when compiling xgettext-xgettext.o.
   http://llvm.org/bugs/show_bug.cgi?id=9892
   
-  format-sh.c also has a clang/-O2 bug, so build that at -O0 as well.
-  
   Can remove those chunks from libgettext8-shlibs.patch if/when Xcode 4.3
   is the minimum allowed by Fink (enforcing via BuildDepends is ignored
   during bootstrap).
@@ -166,6 +167,11 @@ DescPackaging: <<
   are thus private shared libraries in the package with the binaries.
   The files used to link against them are removed so that nothing else
   can link to those libraries.
+
+  As of 0.20.1, several of the executables and the private dylib
+  libgettextsrc-0.20.1.dylib uses the new internal library libtextstyle.
+  Since nothing else is currently using it, we build static and keep it
+  in the build tree.
 
   We also remove a few stray files related to libintl which 'make install'
   installs for us. Cannot scrap the whole libintl build because -tools
@@ -195,11 +201,6 @@ DescPackaging: <<
 	the necessity of BuildConflicting against gcc*.  (The GCC environment variable
 	is not properly honored by the configure script in this version of the package,
 	and there are numerous hardcoded 'gcj').
-	
-  With format string strictness, High Sierra also enforces that
-  %n isn't used in dynamic format strings, but we should just
-  disable its use on darwin in general.
-
 <<
 
 

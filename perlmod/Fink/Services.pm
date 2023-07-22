@@ -1337,13 +1337,13 @@ sub gcc_selected {
 	my $gcc = enforce_gcc($message, $gcc_abi);
 
 Check to see if the gcc version optionally supplied in $gcc_abi is the
-same as the default GCC ABI for the installed version of Mac OS X or Darwin.
+same as the default GCC ABI for the installed version of macOS or Darwin.
 If it is not, we return the value for the default GCC ABI.
 
 If it is, or if $gcc_abi is not supplied, then we check to see if the
 gcc version obtained from /usr/sbin/gcc_select agrees with the expected
 (default) gcc version corresponding to the installed version of
-Mac OS X or Darwin.  If the versions agree, the common value is returned.
+macOS or Darwin.  If the versions agree, the common value is returned.
 If they do not agree, we print $message and exit fink.
 
 The strings CURRENT_SYSTEM, INSTALLED_GCC, and EXPECTED_GCC,
@@ -1379,10 +1379,26 @@ sub enforce_gcc {
 		'10.13' => '4.2',
 		'10.14' => '4.2',
 		'10.15' => '4.2',
+		'11.0' => '4.2',
+		'11.1' => '4.2',
+		'11.2' => '4.2',
+		'11.3' => '4.2',
+		'11.4' => '4.2',
+		'11.5' => '4.2',
+		'11.6' => '4.2',
+		'12.0' => '4.2',
+		'12.1' => '4.2',
+		'12.2' => '4.2',
+		'12.3' => '4.2',
+		'12.4' => '4.2',
+		'12.5' => '4.2',
+		'12.6' => '4.2',
+		'13.0' => '4.2',
+		'13.1' => '4.2',
 	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
-		$current_system = "Mac OS X $sw_vers";
+		$current_system = "macOS $sw_vers";
 		$gcc = $system_gcc_default{get_osx_vers()};
 	} else {
 		$current_system = "Darwin " . get_kernel_vers_long();
@@ -1400,7 +1416,7 @@ sub enforce_gcc {
 	# We don't want to differentiate between 4.0.0 and 4.0.1 here
 	$gcc_select =~ s/(\d+\.\d+)\.\d+/$1/;
 
-	if ($gcc_select !~ /^$gcc/) {
+	if (defined $gcc && $gcc_select !~ /^$gcc/) {
 		$message =~ s/CURRENT_SYSTEM/$current_system/g;
 		$message =~ s/INSTALLED_GCC/$gcc_select/g;
 		$message =~ s/EXPECTED_GCC/$gcc/g;
@@ -1414,7 +1430,7 @@ sub enforce_gcc {
 
     my $os_x_version = get_osx_vers();
 
-Returns OS X major and minor versions (if that's what this platform
+Returns macOS major and minor versions (if that's what this platform
 appears to be, as indicated by being able to run /usr/bin/sw_vers).
 The output of that command is parsed and cached in a global configuration
 option in the Fink::Config package so that multiple calls to this function
@@ -1427,7 +1443,11 @@ sub get_osx_vers {
 	my $darwin_osx = get_darwin_equiv();
 	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
 	if ($sw_vers != $darwin_osx) {
-		die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+		if (($sw_vers == 11.6 && $darwin_osx == 11.5) || ($sw_vers == 12.6 && $darwin_osx == 12.5)) {
+			# special cases in Big Sur and Monterey where it's OK to have a mismatch
+		} else {
+			die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
+		}
 	}
 	return $sw_vers;
 }
@@ -1436,7 +1456,7 @@ sub get_osx_vers {
 
     my $os_x_version = get_osx_vers_long();
 
-Returns full OS X version (if that's what this platform appears to be,
+Returns full macOS version (if that's what this platform appears to be,
 as indicated by being able to run /usr/bin/sw_vers). The output of that
 command is parsed and cached in a global configuration option in the
 Fink::Config package so that multiple calls to this function do not
@@ -1460,12 +1480,35 @@ sub get_osx_vers_long {
 	return Fink::Config::get_option('sw_vers_long');
 }
 
+=item get_host_multiarch
+
+    my $host_multiarch = get_host_multiarch();
+
+Returns the current hosts multiarch value as reported by
+`dpkg-architecture -qDEB_HOST_MULTIARCH`. The output of that
+command is parsed and cached in a global configuration option in the
+Fink::Config package so that multiple calls to this function do not
+result in repeated spawning of dpkg-architecture processes.
+
+=cut
+
+sub get_host_multiarch {
+	if (not defined Fink::Config::get_option('host_multiarch') or Fink::Config::get_option('host_multiarch') eq "0" and -x "$Fink::Config::basepath/bin/dpkg-architecture" && Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1')) {
+		if (open(MYARCH, "dpkg-architecture -qDEB_HOST_MULTIARCH |")) {
+                        chomp(my $hostarch = <MYARCH>);
+			Fink::Config::set_options( { 'host_multiarch' => $hostarch } );
+			close(MYARCH);
+		}
+	}
+	return Fink::Config::get_option('host_multiarch');
+}
+
 =item get_darwin_equiv
 
 	my $os_x_version = get_darwin_equiv($kernel_major_version);
 
 For a given kernel major version (i.e., the "8" of "8.6.1"), return
-the OS X version expected to be used on it. Returns undef if it
+the macOS version expected to be used on it. Returns undef if it
 couldn't be determined.
 
 =cut
@@ -1475,7 +1518,22 @@ sub get_darwin_equiv {
 		'1' => '10.0',
 	);
 	my $kernel_vers = get_kernel_vers();
-	return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
+	my $kernel_vers_minor = get_kernel_vers_minor();
+	if ($kernel_vers <= 19) {
+		# darwin19 == 10.15
+		return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
+	} elsif ($kernel_vers == 20) {
+		# darwin20.1 == 11.0
+		# darwin20.2 == 11.1
+		# darwin20.6 == 11.5 or 11.6 handled in get_osx_vers()
+		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers_minor-1);
+	} elsif ($kernel_vers == 21) {
+		# darwin21.1 == 12.0
+		return $darwin_osx{$kernel_vers} || '12.' . ($kernel_vers_minor-1);
+	} elsif ($kernel_vers >= 22) {
+		# darwin22.1 == 13.0
+		return $darwin_osx{$kernel_vers} || '13.' . ($kernel_vers_minor-1);
+	}
 }
 
 =item get_kernel_vers
@@ -1492,6 +1550,16 @@ sub get_kernel_vers {
 		return $kernel_version;
 	} else {
 		my $error = "Couldn't determine major version number for $kernel_version kernel!";
+		die $error . "\n";
+	}
+}
+
+sub get_kernel_vers_minor {
+	my $kernel_version_minor = get_kernel_vers_long();
+	if ($kernel_version_minor =~ s/^\d+\.(\d+).*/$1/) {
+		return $kernel_version_minor;
+	} else {
+		my $error = "Couldn't determine minor version number for $kernel_version_minor kernel!";
 		die $error . "\n";
 	}
 }
@@ -1537,7 +1605,7 @@ sub get_system_perl_version {
 
     my $sdkpath = get_sdkpath();
 
-On darwin>=18 (OS X >= 10.14), returns the path to the active macOS
+On darwin>=18 (macOS >= 10.14), returns the path to the active macOS
 SDK. On lower kernels, or if `xcrun` could not determine the SDK path,
 a null string is returned. The value is cached, so multiple calls to
 this function do not result in repeated spawning of xcrun processes.

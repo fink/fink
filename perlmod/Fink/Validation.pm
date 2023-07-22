@@ -89,6 +89,8 @@ our %check_hardcode_fields = map {$_, 1}
 		 postinstscript
 		 prermscript
 		 postrmscript
+		 debconf
+		 triggers
 		 conffiles
 		 daemonicfile
 		),
@@ -127,6 +129,7 @@ our %allowed_arch_values = map {lc $_, 1}
 	 'powerpc',
 	 'i386',
 	 'x86_64',
+	 'arm64',
 	);
 
 # List of all valid fields,
@@ -217,6 +220,7 @@ our %valid_fields = map {$_, 1}
 		 'postinstscript',
 		 'prermscript',
 		 'postrmscript',
+		 'debconf',
 		 'conffiles',
 		 'infodocs',
 		 'daemonicfile',
@@ -228,6 +232,16 @@ our %valid_fields = map {$_, 1}
 		 'descpackaging',
 		 'descport',
 		 'infotest',
+		 'triggers',
+		)
+	);
+
+# List of all valid fields, that are now depreacted
+our %deprecated_fields = map {$_, 1}
+	(
+		(
+#  build phase:
+		 'infodocs',
 		)
 	);
 
@@ -266,6 +280,8 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'prermscript',
 		 'postrmscript',
 		 'conffiles',
+		 'debconf',
+		 'conffiles',
 		 'infodocs',
 		 'daemonicfile',
 		 'daemonicname',
@@ -276,6 +292,16 @@ our %splitoff_valid_fields = map {$_, 1}
 		 'descusage',
 		 'descpackaging',
 		 'descport',
+		 'triggers',
+		)
+	);
+
+# List of all fields which are legal in a splitoff, that are now depreacted
+our %splitoff_deprecated_fields = map {$_, 1}
+	(
+		(
+#  build phase:
+		 'infodocs',
 		)
 	);
 
@@ -324,6 +350,18 @@ our %allowed_testsuitesize_values = map {lc $_, 1}
 	 'small',
 	 'medium',
 	 'large',
+	);
+
+# Triggers have no required fields right now.
+our @triggers_required_fields = map {lc $_} ();
+
+# Extra fields valid inside Triggers
+our %triggers_valid_fields = map {lc $_, 1}
+	(
+	 'activate',
+	 'activate-noawait',
+	 'interest',
+	 'interest-noawait',
 	);
 
 END { }				# module clean-up code here (global destructor)
@@ -386,7 +424,7 @@ END { }				# module clean-up code here (global destructor)
 sub validate_info_file {
 	my $filename = shift;
 	my $val_prefix = shift;
-	my ($properties, $info_level, $test_properties);
+	my ($properties, $info_level, $test_properties, $triggers_properties);
 	my ($pkgname, $pkginvarname, $pkgversion, $pkgrevision, $pkgepoch, $pkgfullname, $pkgdestdir, $pkgpatchpath);
 	my $value;
 	my $checksum;
@@ -424,6 +462,9 @@ sub validate_info_file {
 	$test_properties = &read_properties_var(
 		"InfoTest of $filename",
 		$properties->{infotest}, {remove_space => 1}) if $properties->{infotest};
+	$triggers_properties = &read_properties_var(
+		"Triggers of $filename",
+		$properties->{triggers}, {remove_space => 1}) if $properties->{triggers};
 
 	# determine the base path
 	if (defined $val_prefix) {
@@ -508,6 +549,8 @@ sub validate_info_file {
 					$expand->{"lib"} = "lib/x86_64";
 				} elsif ($config->param('Architecture') eq "x86_64" ) {
 					print "Warning: the -64bit type may have unexpected effects under x86_64 Architecture. ($filename)\n";
+					$looks_good = 0;
+				} elsif ($config->param('Architecture') eq "arm64" ) {
 					$looks_good = 0;
 				} else {
 					die "Your Architecture is not suitable for 64bit libraries.\n";
@@ -698,10 +741,18 @@ sub validate_info_file {
 				 is_infotest => 1,
 			 ) == 0) {
 		$looks_good = 0;
+	} elsif ($properties->{triggers} and &validate_info_component(
+				 properties => $triggers_properties,
+				 filename => $filename,
+				 info_level => $info_level,
+				 expand => $expand,
+				 has_triggers => 1,
+			 ) == 0) {
+		$looks_good = 0;
 	}
 
 	my $field_check = sub {
-		my($field, $value, $in_infotest) = @_;
+		my($field, $value, $in_infotest, $in_triggers) = @_;
 
 		# Warn if field is obsolete
 		if ($obsolete_fields{$field}) {
@@ -780,6 +831,11 @@ sub validate_info_file {
 			$splitoff_properties =~ s/^\s+//gm;
 			$splitoff_properties = &read_properties_var("$field of \"$filename\"", $splitoff_properties);
 
+			my $splitoff_triggers_properties;
+			$splitoff_triggers_properties = &read_properties_var(
+				"Triggers of $filename",
+				$splitoff_properties->{triggers}, {remove_space => 1}) if $splitoff_properties->{triggers};
+
 			# make sure have InfoN (N>=2) if use Info2 features
 			if ($info_level < 2) {
 				# fink-0.16.1 can't even index if unknown %-exp in *any* field!
@@ -793,12 +849,21 @@ sub validate_info_file {
 			}
 
 			if (&validate_info_component(
-					 properties => $splitoff_properties,
-					 splitoff_field => $splitoff_field,
-					 filename => $filename,
-					 info_level => $info_level,
-					 expand => { 'N' => $pkgname, %{$expand} },
-					 builddepends => $properties->{builddepends},
+					properties => $splitoff_properties,
+					splitoff_field => $splitoff_field,
+					filename => $filename,
+					info_level => $info_level,
+					expand => { 'N' => $pkgname, %{$expand} },
+					builddepends => $properties->{builddepends},
+				) == 0) {
+				$looks_good = 0;
+			} elsif ($splitoff_properties->{triggers} && &validate_info_component(
+					properties => $splitoff_triggers_properties,
+					splitoff_field => $splitoff_field,
+					filename => $filename,
+					info_level => $info_level,
+					expand => { 'N' => $pkgname, %{$expand} },
+					has_triggers => 1,
 				) == 0) {
 				$looks_good = 0;
 			}
@@ -818,10 +883,13 @@ sub validate_info_file {
 
 	# Loop over all fields and verify them
 	while (my($field, $value) = each(%$properties)) {
-		$field_check->($field, $value, 0);
+		$field_check->($field, $value, 0, 0);
 	}
 	while (my($field, $value) = each(%$test_properties)) {
-		$field_check->($field, $value, 1);
+		$field_check->($field, $value, 1, 0);
+	}
+	while (my($field, $value) = each(%$triggers_properties)) {
+		$field_check->($field, $value, 0, 1);
 	}
 
 	if (exists $properties->{runtimevars} and defined $properties->{runtimevars}) {
@@ -1241,11 +1309,12 @@ sub validate_info_component {
 	my $info_level = $options{info_level};
 	my $expand = $options{expand};
 	my $is_infotest = $options{is_infotest};
+	my $has_triggers = $options{has_triggers};
 
 	# make sure this $option is available even in parent
 	$options{builddepends} = $properties->{builddepends} unless $splitoff_field;
 
-	my (@pkg_required_fields, %pkg_valid_fields);
+	my (@pkg_required_fields, %pkg_valid_fields, %pkg_deprecated_fields);
 
 	my $is_splitoff = 0;
 	$splitoff_field = "" unless defined $splitoff_field;
@@ -1254,12 +1323,21 @@ sub validate_info_component {
 		$splitoff_field = sprintf ' of "%s"', $splitoff_field;
 		@pkg_required_fields = @splitoff_required_fields;
 		%pkg_valid_fields = %splitoff_valid_fields;
+		%pkg_deprecated_fields = %splitoff_deprecated_fields;
+		if ($has_triggers) {
+			@pkg_required_fields = @triggers_required_fields;
+			%pkg_valid_fields = (%triggers_valid_fields, %splitoff_valid_fields);
+		}
 	} elsif ($is_infotest) {
 		@pkg_required_fields = @infotest_required_fields;
 		%pkg_valid_fields = (%infotest_valid_fields, %valid_fields);
+	} elsif ($has_triggers) {
+		@pkg_required_fields = @triggers_required_fields;
+		%pkg_valid_fields = (%triggers_valid_fields, %valid_fields);
 	} else {
 		@pkg_required_fields = @required_fields;
 		%pkg_valid_fields = %valid_fields;
+		%pkg_deprecated_fields = %deprecated_fields;
 	}
 
 	my $value;
@@ -1278,8 +1356,19 @@ sub validate_info_component {
 	}
 
 	# dpkg install-time script stuff
-	foreach my $field (qw/preinstscript postinstscript prermscript postrmscript/) {
+	foreach my $field (qw/preinstscript postinstscript prermscript postrmscript debconf/) {
 		next unless defined ($value = $properties->{$field});
+
+		if ($field eq "debconf") {
+			my $sub_properties = &read_properties_var(
+				"Debconf of ".$filename,
+				$value,
+				{remove_space => 1}
+			);
+
+			$value = $sub_properties->{configscript};
+			next unless defined ($value);
+		}
 
 		# A #! line is worthless
 		if ($value =~ /^\s*\#!\s*(.*)/) {
@@ -1336,6 +1425,11 @@ sub validate_info_component {
 			$looks_good = 0;
 		}
 
+		# Warn if field is deprecated
+		if ($pkg_deprecated_fields{$field}) {
+			print "Warning: Field \"$field\"$splitoff_field is deprecated. ($filename)\n";
+		}
+
 		# Warn if field is unknown
 		unless ($pkg_valid_fields{$field}) {
 			unless (!$is_splitoff and
@@ -1344,8 +1438,10 @@ sub validate_info_component {
 					  or $field =~ m/^(test)?tar([2-9]|[1-9]\d+)filesrename$/
 					  ) ) {
 				my $test = "";
+				my $triggers = "";
 				$test = " inside InfoTest" if $is_infotest;
-				print "Warning: Field \"$field\"$splitoff_field is unknown${test}. ($filename)\n";
+				$triggers = " inside Triggers" if $has_triggers;
+				print "Warning: Field \"$field\"$splitoff_field is unknown${test}${triggers}. ($filename)\n";
 				$looks_good = 0;
 			}
 		}
@@ -1480,7 +1576,7 @@ sub validate_info_component {
 			# default value of $libarch, if absent, is "32" for the
 			# powerpc and i386 architectures, and "64" for x86_64
 			my $libarch = "32";
-			if ($config->param('Architecture') eq "x86_64" ) {
+			if ($config->param('Architecture') eq "x86_64" || $config->param('Architecture') eq "arm64") {
 				$libarch = "64";
 			}
 			# strip off the end of the last @shlib_deps entry (the stuff
@@ -1521,6 +1617,58 @@ sub validate_info_component {
 		$looks_good = 0 unless _require_dep(\%options, { build => {'fink' => '0.27.2'} }, 'use of conditionals in ConfFiles', $filename);
 	}
 
+	if (defined $properties->{triggers}) {
+		# Packages using Triggers must BuildDepends on a fink that
+		# supports it
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.45.99.git'} }, 'use of Triggers', $filename);
+	}
+
+	# Debconf
+	if (defined $properties->{debconf}) {
+		# Packages using Debconf requires bdep on fink that supports it
+		# and dep on debconf
+		$looks_good = 0 unless _require_dep(\%options, {build => {'fink' => '0.45.99.git'} }, 'use of Triggers', $filename);
+		my $ckdepends = &pkglist2lol($properties->{depends});
+
+		my $has_debconf_dep = 0;
+		$has_debconf_dep = 1 if ($properties->{package} eq "debconf");
+		foreach (@$ckdepends) {
+			foreach my $atom (@$_) {
+				$atom =~ s/^\(.*?\)\s*//;
+				$has_debconf_dep = 1 if $atom =~ /^debconf\s*\(?\s*(>>|>=)?\s*(.*?)\)?\s*$/;
+				last if ($has_debconf_dep == 1);
+			}
+			last if ($has_debconf_dep == 1);
+		}
+		if (not $has_debconf_dep) {
+			print "Warning: Package contains a Debconf field but does not depend on the package \"debconf\"$splitoff_field. ($filename)\n";
+			$looks_good = 0;
+		}
+
+		my $sub_properties = &read_properties_var(
+			"Debconf of ".$filename,
+			$properties->{debconf},
+			{remove_space => 1}
+		);
+		
+		# if Debconf -> PODirectory then bdep on po-debconf
+		if (defined $sub_properties->{podirectory}) {
+			my $ckbuilddepends = &pkglist2lol($options{builddepends});
+
+			my $has_podebconf_bdep = 0;
+			foreach (@$ckbuilddepends) {
+				foreach my $atom (@$_) {
+					$atom =~ s/^\(.*?\)\s*//;
+					$has_podebconf_bdep = 1 if $atom =~ /^po-debconf\s*\(?\s*(>>|>=)?\s*(.*?)\)?\s*$/;
+				}
+			}
+			if (not $has_podebconf_bdep) {
+				print "Warning: Package contains a Debconf PO directory but does not builddepend on the package \"po-debconf\"$splitoff_field. ($filename)\n";
+				$looks_good = 0;
+			}
+		}
+	}
+
 	# Special checks when package building script uses an explicit interp
 
 	foreach my $field (qw/patchscript compilescript installscript testscript/) {
@@ -1551,19 +1699,24 @@ sub validate_info_component {
 
 	# support for new script templates
 	# TODO: This field is not documented.
-	if (exists $properties->{defaultscript}) {
+	if (exists $properties->{defaultscript} && !$is_splitoff) {
 		$value = lc $properties->{defaultscript};
 		my $ds_min = {
 			'autotools'   => '0.30.0',
 			'makemaker'   => '0.30.0',
 			'ruby'        => '0.30.0',
 			'modulebuild' => '0.30.2',
+			'debhelper'   => '0.45.99.git',
 		}->{$value};
 		if (defined $ds_min) {
 			$looks_good = 0 unless _require_dep($properties, { build => {'fink' => $ds_min} }, "use of DefaultScript:$value", $filename);
 		} else {
 			print "Warning: unknown DefaultScript type \"$value\". ($filename)\n";
 			$looks_good = 0;
+		}
+
+		if ($value eq 'debhelper') {
+			$looks_good = 0 unless _require_dep($properties, { build => {'debhelper' => undef} }, "use of DefaultScript:$value", $filename);
 		}
 	}
 
@@ -1656,6 +1809,7 @@ sub validate_dpkg_unpacked {
 # - If a package has .omf sources, it should call update-scrollkeeper during Post(Inst,Rm}Script
 # - If a package Post{Inst,Rm}Script calls update-scrollkeeper, it should Depends:rarian-compat
 # - Only gettext should should have charset.alias
+# - Check Debconf scripts for ". %p/share/debconf/confmodule" call
 # - If a package *Script uses debconf, it should Depends:debconf
 #   (TODO: should be in preinst not postinst, should be PreDepends not Depends)
 # - if a pkg is a -pmXXX but installs files that are not in a XXX-specific path
@@ -1728,7 +1882,7 @@ sub _validate_dpkg {
 	}
 
 	# read some control script files
-	foreach my $scriptfile (qw/ preinst postinst prerm postrm /) {
+	foreach my $scriptfile (qw/ preinst postinst prerm postrm config templates /) {
 		# values for all normal scriptfiles are always valid array refs
 		$dpkg_script->{$scriptfile} = [];
 		my $filename = "$destdir/DEBIAN/$scriptfile";
@@ -1823,6 +1977,10 @@ sub _validate_dpkg {
 	my $install_info_called =
 		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}} &&
 		grep /install-info.*--info(-|)dir=$basepath\/share\/info /, @{$dpkg_script->{postinst}};
+
+	if ($install_info_called) {
+		print "\nWarning: install-info called found in dpkg scripts, please avoid this as Triggers in install-info will already do this for you.\n\n";
+	}
 
 	# during File::Find loop, we stack all error msgs
 	my $msgs;
@@ -2071,8 +2229,9 @@ sub _validate_dpkg {
 			my $infofile = $1;
 			if ($infofile eq 'dir') {
 				&stack_msg($msgs, "The texinfo table of contents file \"$filename\" must not be installed directly as part of the .deb");
-			} elsif (not $install_info_called) {
-				&stack_msg($msgs, "Texinfo file found but no InfoDocs field in package description.", $filename);
+			### Deprecated, InfoDocs is no longer required
+			#} else if (not $install_info_called) {
+			#	&stack_msg($msgs, "Texinfo file found but no InfoDocs field in package description.", $filename);
 			}
 		}
 

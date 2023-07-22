@@ -34,13 +34,18 @@ basepath="$1"
 architecture="$2"
 version=`cat VERSION`
 
+archdir="${architecture}-darwin"
+if [ "${architecture}" == "arm64" ]; then
+	archdir="aarch64-darwin"
+fi
+
 echo "Creating directories..."
 
 mkdir -p "$basepath"
 chmod 755 "$basepath"
 
 for dir in bin sbin \
-	lib lib/perl5 lib/perl5/Fink \
+	lib lib/${archdir} lib/perl5 lib/perl5/Fink \
 	lib/perl5/Fink/{Text,Tie,Notify,Checksum,Finally,SelfUpdate} \
 	lib/fink lib/fink/update lib/fink/update-packages \
 	etc etc/dpkg \
@@ -56,14 +61,18 @@ for dir in bin sbin \
   chmod 755 "$basepath/$dir"
 done
 
-if [ "$architecture" = "i386" ]; then
+if [ "${architecture}" == "arm64" ]; then
+  pushd "$basepath/lib" && ln -s "${archdir}" "arm64-darwin"; popd
+fi
+
+if [ "$architecture" == "i386" ]; then
   mkdir "$basepath/etc/profile.d"
   chmod 755 "$basepath/etc/profile.d"
 fi
 
 echo "Copying files..."
 
-if [ "$architecture" = "i386" ]; then
+if [ "$architecture" == "i386" ]; then
   install -c -p -m 755 fink.csh "$basepath/etc/profile.d"
   install -c -p -m 755 fink.sh "$basepath/etc/profile.d"
 fi

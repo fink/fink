@@ -54,7 +54,7 @@ use File::Basename;
 use Fink::FinkVersion;
 use version 0.77;
 
-use constant STATUS_PRESENT => "install ok installed";
+use constant STATUS_PRESENT => "install ok virtual";
 use constant STATUS_ABSENT  => "purge ok not-installed";
 
 use vars qw(
@@ -135,7 +135,7 @@ uname(1) call.  This should *always* exist.
 	$hash->{version} = Fink::Services::get_kernel_vers_long() . "-1";
 	$hash->{description} = "[virtual package representing the kernel]";
 	$hash->{descdetail} = <<END;
-This package represents the kernel (XNU (Darwin) on Mac OS X),
+This package represents the kernel (XNU (Darwin) on macOS),
 which is a core part of the operating system.
 END
 	$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
@@ -144,13 +144,13 @@ END
 
 =item "macosx"
 
-This test checks for the Mac OS X version by running the sw_vers(1)
-command and parsing the output.  It should exist on all Mac OS X
+This test checks for the macOS version by running the sw_vers(1)
+command and parsing the output.  It should exist on all macOS
 installations (but not pure Darwin systems).
 
 =cut
 
-	# create dummy object for system version, if this is OS X at all
+	# create dummy object for system version, if this is macOS at all
 	print STDERR "- checking OSX version... " if ($options{debug});
 
 	$hash = {};
@@ -167,7 +167,7 @@ installations (but not pure Darwin systems).
 		print STDERR "unknown\n" if ($options{debug});
 	}
 	$hash->{descdetail} = <<END;
-This package represents the Mac OS X software release.
+This package represents the macOS software release.
 It will not show as installed on pure Darwin systems.
 END
 	$hash->{compilescript} = &gen_compile_script($hash);
@@ -181,8 +181,8 @@ The package is present when the CPU is 64bit-capable.
 
 print STDERR "- checking for 64bit-cpu... " if ($options{debug});
 
-# different sysctl variables for intel and ppc
-	my @keys64 = ('hw.optional.x86_64', 'hw.optional.64bitops', 'hw.cpu64bit_capable');
+# different sysctl variables for arm, intel and ppc
+	my @keys64 = ('hw.optional.x86_64', 'hw.optional.arm64', 'hw.optional.64bitops', 'hw.cpu64bit_capable');
 
 	$hash = {};
 	$hash->{package} = "64bit-cpu";
@@ -430,23 +430,28 @@ directories exist.
 	# check all Javas on system so that we can generate virtual packages
 	# for each version (even those new at the time of this fink release) and
 	# add hardcoded patterns for Javas which are known to be available 
-	# on supported OS X so that their system-* packages will show up as
+	# on supported macOS so that their system-* packages will show up as
 	# potentially installable.
 	my @jdktest = ( split (/\n/, `/usr/libexec/java_home -V 2>&1`),
 					'1.4.2_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.4.2.jdk/Contents/Home',
 					'1.5.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.5.0.jdk/Contents/Home',
 					'1.6.0_AB-bCD-EFG.H, x86_64:	"Java SE 6"	/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home', # legacy location
-					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',					
-					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',					
+					'1.7.0_XY, x86_64:	"Java SE 7"	/Library/Java/JavaVirtualMachines/jdk1.7.0_XY.jdk/Contents/Home',
+					'1.8.0_XY, x86_64:	"Java SE 8"	/Library/Java/JavaVirtualMachines/jdk1.8.0_XY.jdk/Contents/Home',
 					'9, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home',
 					'9.0.Z, x86_64:	"Java SE 9"	/Library/Java/JavaVirtualMachines/jdk-9.0.Z.jdk/Contents/Home',
 					'10.0.Z, x86_64:	"Java SE 10"	/Library/Java/JavaVirtualMachines/jdk-10.0.Z.jdk/Contents/Home',
+					'11.0.Z, x86_64:	"OpenJDK 11.0.Z"	/Library/Java/JavaVirtualMachines/jdk-11.0.Z.jdk/Contents/Home',
+					'12.0.Z, x86_64:	"OpenJDK 12.0.Z"	/Library/Java/JavaVirtualMachines/jdk-12.0.Z.jdk/Contents/Home',
+					'13.0.Z, x86_64:	"OpenJDK 13.0.Z"	/Library/Java/JavaVirtualMachines/jdk-13.0.Z.jdk/Contents/Home',
+					'14.0.Z, x86_64:	"OpenJDK 14.0.Z"	/Library/Java/JavaVirtualMachines/jdk-14.0.Z.jdk/Contents/Home',
+					'15.0.Z, x86_64:	"OpenJDK 15.0.Z"	/Library/Java/JavaVirtualMachines/jdk-15.0.Z.jdk/Contents/Home',
 					);
 	my ($javadir, $latest_java, $latest_javadev, $java_test_dir, $java_cmd_dir, $java_inc_dir);
 	my $arch = Fink::FinkVersion::get_arch();
 	foreach (@jdktest) {
 		next unless /$arch/; #exclude off-Fink-architecture JDK's
-		my ($ver,$javadir) = m|(\d.*):.*\s(/.*)$|; #extract version and directory info
+		my ($ver,$javadir) = m|([_\.\dA-z]+),?\s+\(?.+\)?:?\s+\".+\"\s+(\/.+)$|; #extract version and directory info
 		my $testver; # for later
 		# Tweak $javadir to point to where stuff actually lives for JDK 1.6 and earlier.
 		$javadir = '/System/Library/Frameworks/JavaVM.framework/Versions' if ($javadir =~ /System/ or $ver =~ '1\.6\.0') ;
@@ -694,7 +699,7 @@ that is considered installed, based on the previous tests.
 	if (defined $latest_java) {
 		$hash = {};
 		$hash->{package}     = "system-java";
-		$hash->{status}      = "install ok installed";
+		$hash->{status}      = "install ok virtual";
 		$hash->{version}     = $latest_java . "-1";
 		$hash->{description} = "[virtual package representing Java $latest_java]";
 		$self->{$hash->{package}} = $hash;
@@ -710,7 +715,7 @@ version that is considered installed, based on the previous tests.
 	if (defined $latest_javadev) {
 		$hash = {};
 		$hash->{package}     = "system-java-dev";
-		$hash->{status}      = "install ok installed";
+		$hash->{status}      = "install ok virtual";
 		$hash->{version}     = $latest_javadev . "-1";
 		$hash->{description} = "[virtual package representing Java SDK $latest_java]";
 		$self->{$hash->{package}} = $hash;
@@ -936,7 +941,7 @@ as part of the Xcode tools.
 =cut
 
 	my @SDKDIRS;
-	# possible SDKs for known OS X versions and supported Xcodes.
+	# possible SDKs for known macOS versions and supported Xcodes.
 	if ($osxversion == 9) {
 		@SDKDIRS= qw(
 			MacOSX10.3.9.sdk
@@ -985,14 +990,33 @@ as part of the Xcode tools.
 	} elsif ($osxversion == 17) {
 		@SDKDIRS=qw(
 			MacOSX10.13.sdk
+			MacOSX10.14.sdk
 		);
 	} elsif ($osxversion == 18) {
 		@SDKDIRS=qw(
 			MacOSX10.14.sdk
+			MacOSX10.15.sdk
 		);
 	} elsif ($osxversion == 19) {
 		@SDKDIRS=qw(
 			MacOSX10.15.sdk
+			MacOSX11.1.sdk
+		);
+	} elsif ($osxversion == 20) {
+		@SDKDIRS=qw(
+			MacOSX11.0.sdk
+			MacOSX11.1.sdk
+			MacOSX11.3.sdk
+		);
+	} elsif ($osxversion == 21) {
+		@SDKDIRS=qw(
+			MacOSX11.3.sdk
+			MacOSX12.0.sdk
+		);
+	} elsif ($osxversion == 22) {
+		@SDKDIRS=qw(
+			MacOSX13.0.sdk
+			MacOSX13.1.sdk
 		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
@@ -1034,11 +1058,11 @@ as part of the Xcode tools.
 				$hash->{package} = "system-sdk-${shortversion}";
 			}
 			$hash->{status} = STATUS_ABSENT;
-			$hash->{description} = "[virtual package representing the Mac OS X $versiontext SDK]";
+			$hash->{description} = "[virtual package representing the macOS $versiontext SDK]";
 			$hash->{homepage} = "http://www.finkproject.org/faq/usage-general.php#virtpackage";
 			$hash->{builddependsonly} = "true";
 			$hash->{descdetail} = <<END;
-This package represents the Mac OS X $versiontext SDK
+This package represents the macOS $versiontext SDK
 provided by Apple as part of Xcode.  If it does not show as
 installed, you can download Xcode from Apple at:
 
@@ -1305,7 +1329,7 @@ the successful execution of "/usr/bin/clang -v".
 This package represents the presence of the clang compiler
 in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
-Xcode for your OS X version from Apple at:
+Xcode for your macOS version from Apple at:
 
   http://developer.apple.com/
 
@@ -1364,7 +1388,7 @@ the successful execution of "/usr/bin/llvm-gcc -v".
 This package represents the presence of the LLVM compiler
 in the development tools provided by Apple.  If it does
 not show as installed, you can download the latest
-Xcode for your OS X version from Apple at:
+Xcode for your macOS version from Apple at:
 
   http://developer.apple.com/
 
@@ -1417,7 +1441,7 @@ cc1plus.
 This package represents broken versions of the GCC compiler
 as shipped by Apple.  If this package shows as installed,
 you should see if there is a newer version of the developer
-tools for your OS X version at:
+tools for your macOS version at:
 
   http://developer.apple.com/
 
@@ -2044,7 +2068,7 @@ sub query_package {
 
 	if (exists $self->{$pkgname} and exists $self->{$pkgname}->{status} and not $config->mixed_arch()) {
 		my ($purge, $ok, $installstat) = split(/\s+/, $self->{$pkgname}->{status});
-		return $self->{$pkgname}->{version} if ($installstat eq "installed" and exists $self->{$pkgname}->{version});
+		return $self->{$pkgname}->{version} if (($installstat eq "installed" or $installstat eq "virtual") and exists $self->{$pkgname}->{version});
 	}
 	return undef;
 }

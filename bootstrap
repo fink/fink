@@ -133,7 +133,7 @@ if ($arch eq "i386") {
         }
 		if (!$is64bit && $vers > 10) {
 			# 10.7+ 32bit: non-supported configuration!
-			print "ERROR: fink requires a 64-bit-capable CPU for your version of OS X\n";
+			print "ERROR: fink requires a 64-bit-capable CPU for your version of macOS\n";
 			exit 1;
 		} elsif ($vers >= 11) {
 			# on 10.7+ we support only 64-bit
@@ -158,7 +158,7 @@ if ($arch eq "i386") {
 				my $arch_intro= "Your hardware is a 64bit-compatible intel " .
 						"processor, so you have the option of running Fink in ".
 						"64bit-only mode.  This is recommended for most ".
-						"users, since newer versions of OS X are all 64bit-only, ".
+						"users, since newer versions of macOS are all 64bit-only, ".
 						"so using the 64bit-only distribution should be closer ".
 						"to the distributions for newer OSes.  It used to be ".
 						"the case that the 32-bit distribution had significantly ".
@@ -179,7 +179,7 @@ if ($arch eq "i386") {
 				$arch = &prompt_selection("Choose a mode:", intro => $arch_intro, default => [ value => "i386" ], choices => [ "Default (mostly 32bit)" => "i386" , "64bit-only" => "x86_64" ]);
 				# it is already the case that $vers == 9 in this condition, so no need to check for it again:
 				if ($arch eq "x86_64") {
-					my $answer = &prompt_boolean("\nWARNING: On OS X 10.5, ".
+					my $answer = &prompt_boolean("\nWARNING: On Mac OS X 10.5, ".
 								     "selecting 64bit-only mode will ".
 								     "not allow you to build perl ".
 								     "modules that work with the ".
@@ -369,16 +369,31 @@ my $xcode_version;
 	} elsif ($vers == 14) {
 		$min_xcode="6.0";
 		$max_xcode="7.2.1";
-		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 	} elsif ($vers == 15) {
 		$min_xcode="7.0";
 		$max_xcode="8.2.1";
-	 } elsif ($vers >= 16) {
-                $min_xcode="8.0";
-                $max_xcode="99.99.99";
+	} elsif ($vers == 16) {
+		$min_xcode="8.0";
+		$max_xcode="9.2";
+	} elsif ($vers == 17) {
+		$min_xcode="9.0";
+		$max_xcode="10.1";
+	} elsif ($vers == 18) {
+		$min_xcode="10.0";
+		$max_xcode="11.3.1";
+	} elsif ($vers == 19) {
+		$min_xcode="11.0";
+		$max_xcode="12.4";
+	} elsif ($vers == 20) {
+		$min_xcode="12.0";
+		# Only set the maximum xcode version once it's definite to avoid deadlocks.
+		$max_xcode="99.99.99";
+	} elsif ($vers >= 21) {
+		$min_xcode="13.0";
+		$max_xcode="99.99.99";
 		# Only set the maximum xcode version once it's definite to avoid deadlocks.
 	} else {
-		die "ERROR:\n\tUnsupported OS X version.\n";
+		die "ERROR:\n\tUnsupported macOS version.\n";
 	}
 	print "Verifying that installed Xcode Command Line Tools version is supported...\n";
 	# Die if there are no Xcode CLI tools, at minimum.
@@ -704,6 +719,19 @@ if (($arch eq "x86_64") and ($distribution eq "10.5")) {
 }
 }
 
+### create f-v-p bootstrap
+
+{
+print "Creating f-v-p bootstrap configuration...\n";
+
+my $cmd = 'sed -e "s|@BASEPATH@|' . $installto . '|g" -e "s|@LIBPATH@|' . $homebase . '/perlmod|g" < "fink-virtual-pkgs.in" > "fink-virtual-pkgs-bootstrap";';
+   $cmd .= "chmod +x fink-virtual-pkgs-bootstrap;";
+
+if (&execute($cmd, quiet=>0)) {
+	exit 1;
+}
+}
+
 ### load the Fink modules
 
 require Fink::Config;
@@ -766,16 +794,17 @@ if ($distribution eq "10.6") {
 
 $cmd = "/usr/bin/env -i $perlexe $cmd $installto";
 
-if (&execute($cmd, quiet=>1)) {
+&execute($cmd, quiet=>0);
+if (&execute($cmd, quiet=>0)) {
 	print "\nERROR: Bootstrap phase 2 failed!\n";
 	exit 1;
 }
 
 Fink::Bootstrap::bootstrap3();
 
-### remove dpkg-bootstrap.info, dpkg-bootstrap.patch, and perl588-bootstrap.info to avoid later confusion
+### remove tar-bootstrap.info, tar-bootstrap.patch, dpkg-bootstrap.info, dpkg-bootstrap.patch, and perl588-bootstrap.info to avoid later confusion
 
-&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.patch $installto/fink/dists/stable/main/finkinfo/base/perl588-bootstrap.info");
+&execute("/bin/rm -f $installto/fink/dists/stable/main/finkinfo/base/tar-bootstrap.info $installto/fink/dists/stable/main/finkinfo/base/tar-bootstrap.patch $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.info $installto/fink/dists/stable/main/finkinfo/base/dpkg-bootstrap.patch $installto/fink/dists/stable/main/finkinfo/base/perl588-bootstrap.info");
 
 ### copy included package info tree if present
 
@@ -847,9 +876,9 @@ print "\n";
 &print_breaking(
     "Run '. $installto/bin/init.sh' to set up this terminal session ".
     "environment to use Fink. To make the software installed by Fink ".
-    "available in all of your future terminal shells, add ".
-    "'. $installto/bin/init.sh' to the init script '.profile' or ".
-    "'.bash_profile' in your home directory. The program ".
+    "available in all of your future terminal shells, add ". 
+    "'. $installto/bin/init.sh' to the init scripts '.zprofile', ".
+    "'.profile', or '.bash_profile' in your home directory. The program ".
     "$installto/bin/pathsetup.sh can help with this. Enjoy."
 );
 print "\n";

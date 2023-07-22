@@ -9,6 +9,12 @@ Minor
 
 * Validator should complain if %p/share/gtk-doc is not in a package which is BuildDependsOnly: true
 
+* http://www.debian.org/doc/debian-policy/ch-sharedlibs.html#s-sharedlibs-symbols
+
+* Implement "alternative dependancy templates" for symbols file
+
+* Implement Symbols: field in fink info files to custom symbols templates
+
 Medium
 ======
 

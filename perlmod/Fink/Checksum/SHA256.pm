@@ -45,6 +45,10 @@ sub new {
 
 	$match = '(\S*)\s*(:?\S*)';
 
+	if (!defined($basepath)) {
+		$basepath = "";
+	}
+
 	# external commands definitely needed (especially
 	# apple-supplied) because no perl implementation
 	if (-x "$basepath/bin/sha256deep") {
