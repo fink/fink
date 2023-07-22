@@ -1,10 +1,10 @@
 Package: locale-textdomain-pm
-Version: 1.32
-Revision: 2.1
+Version: 1.33
+Revision: 1.1
 Essential: yes
 Depends: file-sharedir-pm
 Source: mirror:cpan:authors/id/G/GU/GUIDO/libintl-perl-%v.tar.gz
-Source-MD5: 2bde66347614962a6f0f1bd1c36b5211
+Source-MD5: 2bf35c850af534b506330950f096ac03
 Type: perl
 PatchFile: %n.patch
 PatchFile-MD5: c44514779fabbde4c2d50af552c28aa4
@@ -33,4 +33,4 @@ Added FINKPATH/lib to LIBS in gettext_xs/Makefile.PL
 <<
 License: Artistic
 Maintainer: Daniel Macks <dmacks@netspace.org>
-Homepage: https://search.cpan.org/dist/libintl-perl
+Homepage: https://metacpan.org/dist/libintl-perl

@@ -1,6 +1,6 @@
 Package: text-unidecode-pm
 Version: 1.30
-Revision: 2
+Revision: 2.1
 Essential: true
 Description: US-ASCII transliterations of Unicode text
 License: Artistic
@@ -28,4 +28,4 @@ DescDetail: <<
 DescUsage: <<
  For detailed documentation, `perldoc Text::Unidecode`.
 <<
-Homepage: http://search.cpan.org/dist/Text-Unidecode/
+Homepage: https://metacpan.org/dist/Text-Unidecode/

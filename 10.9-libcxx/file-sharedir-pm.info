@@ -1,6 +1,6 @@
 Package: file-sharedir-pm
 Version: 1.118
-Revision: 1
+Revision: 1.1
 Essential: true
 Source: mirror:cpan:authors/id/R/RE/REHSACK/File-ShareDir-%v.tar.gz
 Source-MD5: 0084f730f4e3d4d89703d92b3ea82f54
@@ -37,5 +37,5 @@ DescPackaging: <<
 <<
 Description: Locate per-dist and per-module shared files
 License: Artistic/GPL
-Homepage: http://search.cpan.org/dist/File-ShareDir/
+Homepage: https://metacpan.org/dist/File-ShareDir/
 Maintainer: Daniel Macks <dmacks@netspace.org>
