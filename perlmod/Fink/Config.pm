@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -306,7 +306,7 @@ Common options:
 %opts{help,quiet,version,verbose,yes,use-binary-dist,prefix}
 
 See the fink(8) manual page for a complete list of commands and options.
-Visit http://www.finkproject.org for further information.
+Visit https://www.finkproject.org for further information.
 
 HELPFORMAT
 		# Err if no command

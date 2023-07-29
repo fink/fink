@@ -3,7 +3,7 @@
 
 These are the installation instructions for the "source" distribution based on "fink-0.41.1" , intended for use with OS X v.10.9 and later.
 
-This document does not apply to the "[binary](http://www.finkproject.org/download/index.php)" distribution.
+This document does not apply to the "[binary](https://www.finkproject.org/download/index.php)" distribution.
 
 There are instructions for both first time installation and upgrading from a previous version. Fast track instructions for the impatient are at the top.
 
@@ -284,7 +284,7 @@ You can now install additional packages with the "`fink`" command, like this:
     Do you want to continue? [Y/n]
     ...
 
-If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](http://www.finkproject.org/faq/). You can also ask on the [fink-users mailing list](http://www.finkproject.org/lists/fink-users.php), but expect to be pointed back at the documentation when your problem actually is well-documented.
+If these instructions don't work for you, well, you'll have to take the time to read through the rest of this document and the [online FAQ](https://www.finkproject.org/faq/). You can also ask on the [fink-users mailing list](https://www.finkproject.org/lists/fink-users.php), but expect to be pointed back at the documentation when your problem actually is well-documented.
 
  First Time Installation
 =========================
@@ -392,7 +392,7 @@ Fink uses virtual packages to declare dependencies on X11. As of OS 10.5, we don
 * 10.10-11: Only XQuartz 2.7.7 and later.
 
 For more information on installing and running X11, refer to the online X11
-on Darwin and Mac OS X document [http://www.finkproject.org/doc/x11/](http://www.finkproject.org/doc/x11/).
+on Darwin and Mac OS X document [https://www.finkproject.org/doc/x11/](https://www.finkproject.org/doc/x11/).
 
  Upgrading Fink
 ================
