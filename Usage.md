@@ -124,5 +124,5 @@ This command automates the process of upgrading to a new Fink release. It checks
 
  Further Questions
 -------------------
-If your questions are not answered by this document, read the FAQ at the Fink website: <http://www.finkproject.org/faq/>. If that still doesn't answer your questions, subscribe to the fink-users mailing list via <http://www.finkproject.org/lists/fink-users.php> and ask there.
+If your questions are not answered by this document, read the FAQ at the Fink website: <https://www.finkproject.org/faq/>. If that still doesn't answer your questions, subscribe to the fink-users mailing list via <https://www.finkproject.org/lists/fink-users.php> and ask there.
 

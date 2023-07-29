@@ -1,0 +1,36 @@
+Package: locale-textdomain-pm
+Version: 1.33
+Revision: 1.1
+Essential: yes
+Depends: file-sharedir-pm
+Source: mirror:cpan:authors/id/G/GU/GUIDO/libintl-perl-%v.tar.gz
+Source-MD5: 2bf35c850af534b506330950f096ac03
+Type: perl
+PatchFile: %n.patch
+PatchFile-MD5: c44514779fabbde4c2d50af552c28aa4
+PatchScript: sed "s|FINKPATH|%p|g" < %{PatchFile} | patch -p1
+DocFiles: COPYING Changes Credits FAQ NEWS README REFERENCES THANKS TODO
+UpdatePOD: true
+Description: Perl module for string internationalization
+DescDetail: <<
+This package is an internationalization library for Perl
+that aims to be compatible with the Uniforum message translations
+system as implemented for example in GNU gettext.
+
+This package is also called: libintl-perl.
+
+This package is a pure-perl implementation (gettext_pp). Fink scrapped
+the compiled C component (gettext_xs) as of 1.32-2 in order to avoid
+needing perl-versioning in fink core (newer dpkg, and texinfo).
+
+If anyone wants gettext_xs (libintl-perl-xs), let us know.
+<<
+DescPackaging: <<
+	Former maintainer: Matthias Ringwald <matthias@ringwald.ch>
+
+libintl not found during linking so gettext_xs not build properly
+Added FINKPATH/lib to LIBS in gettext_xs/Makefile.PL
+<<
+License: Artistic
+Maintainer: Daniel Macks <dmacks@netspace.org>
+Homepage: https://metacpan.org/dist/libintl-perl

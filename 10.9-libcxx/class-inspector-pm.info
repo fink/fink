@@ -1,0 +1,21 @@
+Package: class-inspector-pm
+Version: 1.36
+Revision: 1.1
+Essential: true
+Description: Get information about a class
+Type: perl
+License: Artistic/GPL
+Maintainer: Benjamin Reed <class-inspector-pm@fink.raccoonfink.com>
+Source: mirror:cpan:modules/by-module/Class/Class-Inspector-%v.tar.gz
+Source-MD5: 084c3aeec023639d21ecbaf7d4460b21
+UpdatePOD: true
+DocFiles: Changes LICENSE README
+Homepage: https://metacpan.org/dist/Class-Inspector
+DescDetail: <<
+Class::Inspector allows you to get information about a loaded class.
+Most or all of this information can be found in other ways, but they
+aren't always very friendly, and usually involve a relatively high
+level of Perl wizardry, or strange and unusual looking code.
+Class::Inspector attempts to provide an easier, more friendly
+interface to this information.
+<<

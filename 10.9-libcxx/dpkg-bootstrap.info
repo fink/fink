@@ -1,60 +1,197 @@
 Package: dpkg-bootstrap
-Version: 1.10.21
-Revision: 1221
+Version: 1.19.7
+Revision: 1
+GCC: 4.0
+Depends: tar-bootstrap
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-CustomMirror: <<
-	Primary: http://ftp.debian.org/debian/pool/main/d/%n/
-	Secondary: http://downloads.sourceforge.net/fink/
-<<
-Source: mirror:custom:dpkg_%v.tar.gz
+
+Source: mirror:sourceforge:fink/dpkg_%v.tar.gz
+Source-MD5: SHA256(b50e58b71223f66196b419f776c7791b5cc3a9aa07e1ccf85848b123517cdd51)
 SourceDirectory: dpkg-%v
-Source-MD5: a9f6c43891db74d727beab7dfc0ee663
+
+UpdateConfigGuessInDirs: build-aux
 PatchFile: dpkg.patch
-PatchFile-MD5: 822262f7b27fc51b5fe71c1a893e0f90
+PatchFile-MD5: 9fb88eddbf7d830c448eb7771642bb3a
+
 PatchScript: <<
-	#!/bin/sh -ev
-	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
-	echo "x86_64-darwin           darwin-x86_64   darwin-x86_64" >> archtable
-	pushd optlib
-		perl -pi -e 's/(getopt|getopt1).c//g' Makefile.in
-		rm getopt*
-	popd
+sed -e 's,@FINKPREFIX@,%p,g' -e 's,@ARCHITECTURE@,%m,g' %{PatchFile} | patch -p1
+
+patch -p1 < fink/patches/add-BOD.patch
+patch -p1 < fink/patches/build-fix.patch
+patch -p1 < fink/patches/c++filt-defaults.patch
+patch -p1 < fink/patches/full-path-calls.patch
+patch -p1 < fink/patches/location-fixes.patch
+patch -p1 < fink/patches/protect-system-dirs.patch
+patch -p1 < fink/patches/so-to-dylib.patch
+patch -p1 < fink/patches/fink-as-vendor.patch
+patch -p1 < fink/patches/extra-env.patch
+patch -p1 < fink/patches/extra-statusfile.patch
+patch -p1 < fink/patches/coreutils.patch
+patch -p1 < fink/patches/fink-bld_no_fakeroot.patch
+
+# Remove po4a and make sure it can't be found if it's installed
+# this is to keep fink policy happy since it has to build the same
+# everytime on all systems
+perl -pi -e 's,in po4a,in notpo4a,g' configure
+ 
+# Make sure all scripts have use lib %p/lib/perl5 to find the modules it needs
+perl -pi -e 's,^(\#\!\s?/usr/bin/perl.*)$,$1\nBEGIN \{ push\(\@INC\, \"\%p\/lib\/perl5\"\) \}\;,' %b/scripts/*.pl
+ 
+ # fix paths
+for i in %b/po/*.po %b/po/*.pot %b/doc/triggers.txt %b/man/*.man %b/man/*/*.man; do \
+	perl -pi -e 's,/usr,%p,g' $i; \
+	perl -pi -e 's,/var,%p/var,g' $i; \
+	perl -pi -e 's,/etc,%p/etc,g' $i; \
+	perl -pi -e 's,amd64,x86_64,g' $i; \
+done 
+
+# Fink uses "x86_64" instead of "amd64"
+cp scripts/t/Dpkg_Shlibs/objdump.basictags-amd64 scripts/t/Dpkg_Shlibs/objdump.basictags-x86_64
+perl -pi -e 's,amd64,x86_64,g' data/*table scripts/Makefile.in scripts/Makefile.am scripts/t/Dpkg_Shlibs/basictags.c scripts/t/Dpkg_Shlibs/basictags.symbols scripts/t/Dpkg_Shlibs/objdump.basictags-x86_64 scripts/t/Dpkg_Shlibs.t
+perl -pi -e "s,'-','-' && *p != '_',g" lib/dpkg/arch.c
+perl -pi -e "s,amd64_test,amd64:test,g" lib/dpkg/t/t-arch.c
+
+# add aarch64 for darwin
+/usr/bin/awk '/arm64/{print "arm\t\taarch64\t\t(aarch64|arm64)\t\t64\tlittle"}1' data/cputable > data/cputable.new
+mv data/cputable.new data/cputable
+/usr/bin/awk '/darwin/{print "base-bsd-darwin-arm\t\tdarwin-arm64"}1' data/tupletable > data/tupletable.new
+mv data/tupletable.new data/tupletable
+
+# Fix for tar (Slightly modified for dpkg-bootstrap)
+if [ "%n" = "dpkg-bootstrap" ]; then \
+	if [[ $(uname -a | cut -d' ' -f3) > 12 ]]; then \
+		perl -pi -e 's,\"tar\",\"/usr/bin/tar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+		perl -pi -e 's,--warning=no-timestamp,-v,g' dpkg-deb/extract.c; \
+		perl -pi -e 's,--format=gnu,--format=ustar,g' dpkg-deb/build.c; \
+	else \
+		perl -pi -e 's,\"tar\",\"/usr/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+		perl -pi -e 's,--warning=no-timestamp,--format=gnu,g' dpkg-deb/extract.c; \
+	fi \
+else \
+	perl -pi -e 's,\"tar\",\"%p/bin/gnutar\",g' dpkg-deb/build.c dpkg-deb/extract.c lib/dpkg/dpkg.h lib/dpkg/subproc.c; \
+fi
+
+# Fix for older gcc ie: 10.5
+perl -pi -e 's,-Wvla ,,g' configure
+
+# Move dselect and dpkg-dev locals for cleaner Install Phases
+perl -pi -e 's,localedir = \$\(datadir\)\/locale,localedir = \$(datadir)/locale-dselect,g' dselect/Makefile.in
+perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-dselect,g' dselect/po/Makefile.in.in
+perl -pi -e 's,localedir = \@localedir\@,localedir = \@localedir\@-perl,g' scripts/Makefile.in scripts/po/Makefile.in.in
+
+# Do not require autotools
+perl -pi -e 's,ACLOCAL=.*$,ACLOCAL=echo,g' configure
+perl -pi -e 's,AUTOCONF=.*$,AUTOCONF=echo,g' configure
+perl -pi -e 's,AUTOMAKE=.*$,AUTOMAKE=echo,g' configure
+perl -pi -e 's,AUTOHEADER=.*$,AUTOHEADER=echo,g' configure
+perl -pi -e 's,ACLOCAL_AMFLAGS =.*$,ACLOCAL_AMFLAGS = ,g' Makefile.in
+
+# No librt here
+perl -pi -e 's,-lrt ,,g' lib/dpkg/t/Makefile.*
+
+# Fix Tests
+perl -pi -e 's,dd,gdd,g' t-func/deb-format.at t-func/deb-split.at
+perl -pi -e 's,test_needs_srcdir_switch[\(][\)];,test_needs_author();\ntest_needs_srcdir_switch();,g' t/module-version.t 
+
+# Fix Dpkg.pm values
+perl -pi -e "s,'make','/usr/bin/make',g" scripts/Dpkg.pm
+perl -pi -e "s,'tar','%p/bin/gnutar',g" scripts/Dpkg.pm
+perl -pi -e "s,'/etc/dpkg','%p/etc/dpkg',g" scripts/Dpkg.pm
+perl -pi -e "s,'/var/lib/dpkg','%p/var/lib/dpkg',g" scripts/Dpkg.pm
+
+# Reduce the perl requirement
+perl -pi -e 's,5.20.2,5.16.2,g' configure
+
+# just for building don't force GNU patch (we don't want patch to be essential)
+perl -pi -e "s,GNU patch,patch,g" configure
 <<
-# not sure we want to haul in fink-package-precedence but may as well
-# stash the data for possible manual analysis
-SetCPPFLAGS: -MD
-NoSetMAKEFLAGS: true
-SetMAKEFLAGS: -j1
-CompileScript: <<
-	./configure %c
-	/usr/bin/make -w
-<<
+
+SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
+SetCPPFLAGS: -D_FORTIFY_SOURCE=2
+SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
+SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie
+
+# Use %P for all state and admindirs for pre fink build
 ConfigureParams: <<
-	--build=%m-apple-darwin \
-	--without-zlib \
-	--without-dselect \
-	--without-start-stop-daemon \
-	--without-sgml-doc \
+	--with-finkvirtuals=%p/bin/fink-virtual-pkgs \
+	--with-dpkg-env-script=%p/bin/init.sh \
+	--disable-dselect \
+	--disable-start-stop-daemon \
 	--with-admindir=%P/var/lib/dpkg \
 	--mandir=%p/share/man \
 	--infodir=%p/share/info \
+	--sysconfdir=%p/etc \
+	--sbindir=%p/sbin \
+	--localstatedir=%P/var \
+	--with-zlib \
+	--without-liblzma \
+	--with-bz2 \
 	--srcdir=%b \
-	--without-libintl-prefix \
-	--without-libiconv-prefix \
-	--disable-nls
+	--build=%m-apple-darwin \
+	--disable-linker-optimisations \
+	--with-dpkg-deb-compressor=gzip \
+	PERL_LIBDIR=%p/lib/perl5 \
 	PERL=/usr/bin/perl \
-	SED=/usr/bin/sed
+	TAR=%p/bin/tar
 <<
+
+InfoTest: <<
+	TestConfigureParams: <<
+		--disable-silent-rules
+	<<
+	TestDepends: <<
+		patch,
+		io-string-pm,
+		time-date-pm,
+		objtools,
+		sensible-utils
+	<<
+	TestScript: <<
+		make check || exit 2
+	<<
+<<
+
 InstallScript: <<
-	mkdir -p %i/share/doc/dpkg
-	/usr/bin/make install DESTDIR=%d
+install -d -m 0755 %i/share/doc/dpkg
+
+make install DESTDIR=%d
+
+install -d -m 0755 %i/etc/dpkg/origins
+install -c -p -m 644 fink/origins %i/etc/dpkg/origins/fink
+install -c -p -m 644 debian/dselect.cfg %i/etc/dpkg
+## currently in fink
+# install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
+install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
+install -c -p -m 644 fink/buildflags.conf %i/etc/dpkg
+rm -rf %i/lib/dpkg/methods/*
+
+install -m 0755 fink/md5sum %i/bin
+
+install -d -m 0755 %i/etc/cron.daily
+install -d -m 0755 %i/var/backups
+install -m 0644 fink/dpkg.cron.daily %i/etc/cron.daily/dpkg
+
+# install fink as a vendor
+install -m 0644 scripts/Dpkg/Vendor/Fink.pm %i/lib/perl5/Dpkg/Vendor/Fink.pm
+
+# Bootstrap ONLY, crate missing directories, and reset status file
+%i/bin/dpkg --configure -a
+rm -rf %i/../var/lib/dpkg/status %i/../var/lib/dpkg/status-old
+touch %i/../var/lib/dpkg/status
 <<
-Description: The Debian package manager (bootstrap only)
+ConfFiles: <<
+	%p/etc/dpkg/origins/fink
+<<
+DocFiles: <<
+	ABOUT-NLS AUTHORS COPYING ChangeLog NEWS
+	README* THANKS TODO
+<<
+Description: The Debian package manager (bootstrap package)
 DescDetail: <<
-dpkg installs and removes binary packages; it is the base of the
-distribution. This package also contains some helper programs. This
-package does not build dselect and thus doesn't require ncurses. It is
-intended to be used during bootstrap.
+This package provides the low-level infrastructure for handling the
+installation and removal of Debian software packages.
+.
+For Debian package development tools, install dpkg-dev.
 <<
 DescPackaging: <<
   admindir goes in %P (eventual live basedir) not %p (bootstrap
@@ -65,61 +202,7 @@ DescPackaging: <<
   of bootstrap and those fields are not relevant there
 <<
 DescPort: <<
-1.10.9 
-- Removed --without-zlib flag
-- Gets confused about top_srcdir without the --srcdir arg.
-- Fixed bug with BR manpage
-- Patched update-rc.d out of the app check code, not needed on OS X.
-
-Pre-Jaguar: Needed fixes to use the right architecture, disable code that uses
-unimplemented functions on Darwin and other stuff.
-
-Added code to support the pseudo package 'macosx' and 'darwin'.
-
-Fix to install-info script to prevent a certain problem with section titles.
-
-Patched to run 'fink-virtual-pkgs' to see what packages we have outside of $prefix.
-
-Patched to suppress warning about BuildDependsOnly control field.
-
-Previous versions by Christoph Pfisterer.
-
-Patched to not remove Darwin's system-critical symlinks (/etc /tmp /var)
-
-Patched to hardcode complete paths to our component executables
-instead of relying on PATH
-
-Patch 'dpkg -b' tar invocation to avoid warning under tar>=1.16
-See: http://permalink.gmane.org/gmane.os.apple.fink.core/1281
-
-Patch 'dpkg -b' tar invocation to not die if tar returns exit code 1.
-(Exit 1 is a non-fatal error for tar; exit 2 is fatal.)  patch written by vasi
-
-Fink's make-3.81-1 breaks compiling so use Apple's to be safe.
-
-The on-board getopt needs tweaking for darwin, but isn't needed at all
-because libSystem has what dpkg needs, so just scrap it.
-
-Remove un/misused variable in dpkg enquiry.c (solve bus error in --architecture)
-
-Filesystem may be case-insensitive, so do case-insensitive check for
-"dpkg -i" replacing files in an already-installed other package
-
-Patched off-by-one bug in main/help.c:preexecscript argv processing
-(backported from upstream dpkg-1.13.16)
-
-Patched to use %p/lib/fink/dpkg-base-files/ wrappers for .deb scripts
-(for use with the dpkg-base-files module)
-NB: wrapper runs even if no .deb script.
-
-stpncpy test may fail due to wrong prototype even if we have the
-function, so remove AIX-bug-specific hack
-
-Protect build against increasingly strict character-class regex in
-sed. See: https://github.com/fink/scripts/issues/45
-
-Link build-dir libs directly and pass all local -I flags early (avoid
-masking by external/globally installed other packages).
+See dpkg DescPort
 <<
 License: GPL
-Homepage: http://packages.qa.debian.org/d/dpkg.html
+Homepage: https://wiki.debian.org/Teams/Dpkg

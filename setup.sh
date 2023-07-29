@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -34,13 +34,18 @@ version=`cat VERSION`
 perlexe="/usr/bin/perl"
 
 osMajorVer=`uname -r | cut -d. -f1`
+osMinorVer=`uname -r | cut -d. -f2`
 
 if [ $osMajorVer -eq 11 -o $osMajorVer -eq 12 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.12"
 elif [ $osMajorVer -eq 13 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.16"
-elif [ $osMajorVer -gt 13 ]; then
+elif [ $osMajorVer -gt 13 -a $osMajorVer -le 19 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.18"
+elif [ $osMajorVer -eq 20 -a $osMinorVer -le 3 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.28"
+elif [ $osMajorVer -eq 20 -o $osMajorVer -ge 21 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.30"
 fi
 
 
@@ -49,7 +54,7 @@ sed -e "s|@BASEPATH@|$basepath|g" -e "s|@PERLEXE@|$perlexe|g" < fink.in > fink
 
 for bin in fink-{virtual-pkgs,instscripts,scanpackages}; do
 	echo "Creating $bin..."
-	sed "s|@BASEPATH@|$basepath|g" < "$bin.in" > "$bin"
+	sed -e "s|@BASEPATH@|$basepath|g" -e "s|@LIBPATH@|\$basepath/lib/perl5|g" < "$bin.in" > "$bin"
 done
 
 echo "Creating pathsetup.sh..."

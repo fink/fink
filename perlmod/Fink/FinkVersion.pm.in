@@ -89,7 +89,12 @@ assumptions.
 =cut
 
 sub get_arch {
-	return '@ARCHITECTURE@';
+	if ('@ARCHITECTURE@' eq 'arm') {
+		# This is so dpkg knows we are arm64 and not 32bit arm
+		return 'arm64';
+	} else {
+		return '@ARCHITECTURE@';
+	}
 }
 
 =item default_binary_version

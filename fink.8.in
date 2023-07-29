@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.Dd November 2015
+.Dd August 2020
 .Dt FINK 8
 .Sh NAME
 .Nm fink
@@ -18,7 +18,7 @@
 .Sh DESCRIPTION
 .Nm
 is a package management system that aims to bring the full world
-of GNU and other common Open Source software to Darwin and Mac OS X.
+of GNU and other common Open Source software to Darwin and macOS.
 .Pp
 With the help of
 .Xr dpkg 8
@@ -757,7 +757,7 @@ for more information.
 .\"
 .\"
 .Sh HOMEPAGE
-http://www.finkproject.org/
+https://www.finkproject.org/
 .\"
 .\"
 .\" BUGS
@@ -781,7 +781,7 @@ This manpage is maintained by the Fink Core Group <fink-core@lists.sourceforge.n
 .\"
 .Sh ACKNOWLEDGEMENTS
 .Nm
-is developed and maintained by The Fink Project (http://www.finkproject.org).
+is developed and maintained by The Fink Project (https://www.finkproject.org).
 .\"
 .\"
 .\" SEE ALSO

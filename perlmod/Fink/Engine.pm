@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2019 The Fink Package Manager Team
+# Copyright (c) 2001-2021 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -219,7 +219,7 @@ sub process {
 		# check if 'apt-get --ignore-breakage' is implemented
 		if ($aptgetflag == 2 and not $apt_problem) {
 			# only for the commands that needs them
-			if (&execute("$basepath/bin/apt-get --ignore-breakage 1>/dev/null 2>/dev/null", quiet=>1)) {
+			if (&execute("$basepath/bin/apt-get --ignore-breakage --print-uris install 1>/dev/null 2>/dev/null", quiet=>1)) {
 				&print_breaking("ERROR: You have the 'UseBinaryDist' option enabled but the ".
 				   "'apt-get' tool installed on this system doesn't support it. Please ".
 				   "update your Fink installation (with e.g. 'fink selfupdate').");
@@ -2590,6 +2590,9 @@ HELPFORMAT
 					) {
 				my $deplist = $pkg->pkglist($_);
 				printf "%s: %s\n", $_, $deplist if defined $deplist;
+			} elsif ($_ eq 'testdepends' or $_ eq 'testconflicts') {
+				$_ =~ /test(.*)/;
+				printf "%s: %s\n", $_, "[merged into build$1]";
 			} elsif ($_ eq 'essential'         or $_ eq 'builddependsonly'  or
 					 $_ =~ /^noset/            or $_ eq 'noperltests'       or
 					 $_ eq 'updatepod'

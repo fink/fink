@@ -10,6 +10,19 @@ For a more comprehensive changelog of the latest experimental code, see:
 | fink 0.45.x
 \-------------
 
+0.45.6 "Fuhgeddaboudit" (2022-02-19)
+
+	* Hot fix for #240. Don't break when Pre-Depends is empty.
+
+0.45.5 "Fui" (2022-01-20)
+
+	* Support for Pre-Depends.
+	* Validator improvements.
+
+0.45.4 "Fuji" (2021-11-03)
+
+	* Support XQuartz 2.8+.
+
 0.45.3 "No word" (2021-03-06)
 
 	* Restore default path to /sw for 10.14 and earlier.

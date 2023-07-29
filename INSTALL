@@ -7,7 +7,7 @@ $
 These are the installation instructions for the "source" distribution based
 on "fink-0.41.1" , intended for use with OS X v.10.9 and later.
 
-This document does not apply to the "binary [http://www.finkproject.org/download/index.php]"
+This document does not apply to the "binary [https://www.finkproject.org/download/index.php]"
 distribution.
 
 There are instructions for both first time installation and upgrading from a
@@ -291,8 +291,8 @@ You can now install packages with the "fink" command, like this:
    ...
 
 If these instructions don't work for you, well, you'll have to take the time
-to read through the rest of this document and the online FAQ [http://www.finkproject.org/faq/]. You
-can also ask on the fink-users mailing list [http://www.finkproject.org/lists/fink-users.php], but
+to read through the rest of this document and the online FAQ [https://www.finkproject.org/faq/]. You
+can also ask on the fink-users mailing list [https://www.finkproject.org/lists/fink-users.php], but
 expect to be pointed back at the documentation when your problem actually is
 well-documented.
 
@@ -456,7 +456,7 @@ don't provide any packages of our own. The supported options are:
  * 10.10-11: Only XQuartz 2.7.7 and later.
 
 For more information on installing and running X11, refer to the online X11
-on Darwin and Mac OS X document [http://www.finkproject.org/doc/x11/].
+on Darwin and Mac OS X document [https://www.finkproject.org/doc/x11/].
 
 
  Upgrading Fink

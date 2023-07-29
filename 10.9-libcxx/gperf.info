@@ -1,0 +1,53 @@
+Package: gperf
+Version: 3.1
+Revision: 2
+Essential: yes
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+CustomMirror: <<
+	Primary: http://ftpmirror.gnu.org/%n/
+	Secondary: http://downloads.sourceforge.net/fink/
+<<
+Source: mirror:custom:%n-%v.tar.gz
+Source-Checksum: SHA256(588546b945bba4b70b6a3a616e80b4ab466e3f33024a352fc2198112cdbb3ae2)
+ConfigureParams: --docdir=%p/share/doc/%n
+# There are external deps but mis-orders -I flags, so don't bother
+# setting fink's to avoid needlessly-disconcerting compiler commands.
+# Upstream rejects handling of standard flag variables. See:
+# http://savannah.gnu.org/patch/index.php?9418
+NoSetCPPFLAGS: true
+NoSetLDFLAGS: true
+GCC: 4.0
+DocFiles: <<
+AUTHORS COPYING* ChangeLog* NEWS README
+<<
+InfoDocs: gperf.info
+InstallScript: make install DESTDIR=%d
+#
+InfoTest: <<
+	TestScript: make -j1 -k check || exit 2
+	TestDepends:
+	TestSuiteSize: small
+<<
+Description: Perfect hash function generator
+DescDetail: <<
+This is GNU gperf. It is a program that generates perfect
+hash functions for sets of key words. A perfect hash function is:
+
+A hash function and a data structure that allows
+recognition of a key word in a set of words using
+exactly 1 probe into the data structure.
+
+The doc/gperf.html file explains how the program works,
+the form of the input, what options are available, and hints on
+choosing the best options for particular key words set.
+<<
+DescPackaging: <<
+Test suite is not parallelized because tests clobber each other's
+object files and output files... lame.  
+
+Former maintainer: Chuck Robey <chuckr@chuckr.org>
+
+Former maintainer: David Fang <fangism@users.sourceforge.net>
+<<
+Homepage: https://www.gnu.org/software/gperf/gperf.html
+License: GPL

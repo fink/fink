@@ -1,0 +1,41 @@
+Package: file-sharedir-pm
+Version: 1.118
+Revision: 1.1
+Essential: true
+Source: mirror:cpan:authors/id/R/RE/REHSACK/File-ShareDir-%v.tar.gz
+Source-MD5: 0084f730f4e3d4d89703d92b3ea82f54
+Type: perl
+
+# Has bundled version of File::ShareDir::Install that is used if
+# no ext one present. Use it to avoid circular deps
+#BuildDepends: file-sharedir-install-pm%type_pkg[perl] (>= 0.03)
+# The bundled one doesn't seem to be found at test-time:
+# https://github.com/fink/fink-distributions/issues/711
+# but the external one doesn't seem to be needed by tests and
+# obviously the bundled one exists, so remove the test for it
+PatchScript: <<
+	perl -ni -e 'print unless /File::ShareDir::Install/' META.yml
+<<
+
+# in perl core but will be removed in 5.19.4/5.21.0
+#BuildDepends: inc-latest-pm%type_pkg[perl]
+
+Depends: <<
+	class-inspector-pm (>= 1.12)
+<<
+
+# Optional runtime recommendations:
+#Recommends: params-util-pm%type_pkg[perl] (>= 1.07)
+#Recommends: list-moreutils-pm%type_pkg[perl] (>= 0.428)
+
+UpdatePOD: True
+DocFiles: Changes LICENSE README.md
+DescPackaging: <<
+	Patch to avoid needless warning in a reasonable situation.
+	See: https://rt.cpan.org/Public/Bug/Display.html?id=40158 and
+	Test-File-ShareDir-1.001002/t/07_util_withdist.t line 49
+<<
+Description: Locate per-dist and per-module shared files
+License: Artistic/GPL
+Homepage: https://metacpan.org/dist/File-ShareDir/
+Maintainer: Daniel Macks <dmacks@netspace.org>

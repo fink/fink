@@ -1,11 +1,11 @@
 Package: tar
 Version: 1.29
-Revision: 2
+Revision: 2.1
 Essential: yes
-Conflicts: dpkg (<= 1.10.21-1244)
+Conflicts: tar-bootstrap, dpkg (<= 1.10.21-1244)
+Replaces: tar-bootstrap
 #Breaks: dpkg (<= 1.10.21-1244)
 Depends: <<
-	dpkg (>> 1.10.21-1244) | dpkg-bootstrap,
 	base-files,
 	bzip2,
 	gzip,

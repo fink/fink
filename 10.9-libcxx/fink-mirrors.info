@@ -18,7 +18,7 @@ by fink to download sourcefiles.
 <<
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
-Homepage: http://www.finkproject.org
+Homepage: https://www.finkproject.org
 
 CustomMirror: <<
 Primary: http://downloads.sourceforge.net

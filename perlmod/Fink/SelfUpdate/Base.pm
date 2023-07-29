@@ -3,7 +3,7 @@
 # Fink::SelfUpdate::Base class
 #
 # Fink - a package manager that downloads source and installs it
-# Copyright (c) 2007-2016 The Fink Package Manager Team
+# Copyright (c) 2007-2020 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -89,13 +89,13 @@ sub devtools_check {
 	my $line4 = "";
 	my $osxversion = Fink::VirtPackage->query_package("macosx");
 
-	# OS X versioned text.  
+	# macOS versioned text.  
 	if (&version_cmp ("$osxversion", "<<", "10.6")) {
 		$line2 = "\n".
-				 "Xcode, available on your original OS X install disk, or from "; 
+				 "Xcode, available on your original Mac OS X install disk, or from "; 
 	} elsif (&version_cmp ("$osxversion", "<<", "10.7")) {
 		$line2 = "\n".
-				 "Xcode, available on your original OS X install disk, from the App Store, or from\n";
+				 "Xcode, available on your original Mac OS X install disk, from the App Store, or from\n";
 	} elsif (&version_cmp ("$osxversion", "<<", "10.8")) {
 		$line2 = ":\n".
 		         "* Xcode 4.1.x or Xcode 4.2.x from the App store or from\n"; 

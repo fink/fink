@@ -64,7 +64,7 @@ It also has a complete list of available commands.
 
 Further Questions?
 --------------------
-If the documentation included here doesn't answer your question, stroll over to the Fink website at [http://www.finkproject.org/](http://www.finkproject.org/) and check out the Help page there: [http://www.finkproject.org/help/](http://www.finkproject.org/help/). 
+If the documentation included here doesn't answer your question, stroll over to the Fink website at [https://www.finkproject.org/](https://www.finkproject.org/) and check out the Help page there: [https://www.finkproject.org/help/](https://www.finkproject.org/help/). 
 It will point you at the other documentation that is available and sources for support if you need it.
 
 If you'd like to contribute to Fink, the Help page mentioned above also has a list of things you can do, like testing or creating packages.
@@ -73,9 +73,9 @@ If you'd like to contribute to Fink, the Help page mentioned above also has a li
 
 Staying Informed
 ------------------
-The project's website is at [http://www.finkproject.org/](http://www.finkproject.org/).
+The project's website is at [https://www.finkproject.org/](https://www.finkproject.org/).
 
-To be informed of new releases, go to [http://www.finkproject.org/lists/fink-announce.php](http://www.finkproject.org/lists/fink-announce.php) and subscribe to the
+To be informed of new releases, go to [https://www.finkproject.org/lists/fink-announce.php](https://www.finkproject.org/lists/fink-announce.php) and subscribe to the
 `fink-announce` mailing list. 
 The list is moderated and low-traffic.
 
