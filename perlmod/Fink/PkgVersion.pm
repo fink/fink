@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2022 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -5555,6 +5555,9 @@ sub get_env {
 			delete $script_env{$varname};
 		}
 	}
+
+	# special case for LDFLAGS to always have headerpad_max_install_names
+	$script_env{'LDFLAGS'} = $script_env{'LDFLAGS'} . " -Wl,-headerpad_max_install_names";
 
 	# If UseMaxBuildJobs is absent or set to True, turn on MaxBuildJobs
 	# (unless phase is 'installing')
