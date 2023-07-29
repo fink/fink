@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2021 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -287,6 +287,9 @@ GCC_MSG
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "12.0";
+	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin22\.[0-6]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "13.0";
 	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin22\./) {
 		&print_breaking("This system was not released at the time " .
 			"this Fink release was made.  Prerelease versions " .
