@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2021 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -4532,7 +4532,7 @@ EOF
 				# user can request it to be non-fatal
 				warn "Validation of .deb failed, but continuing with the package building process anyway as requested. Installing this package may damage other packages and create other unexpected results.\n";
 			} else {
-				$self->package_error( phase => '.deb validation', preamble => "If you are the maintainer, please correct the above problems and try\nagain! Otherwise, consider this a bug that should be reported." );
+				$self->package_error( phase => '.deb validation', preamble => "If you are the maintainer, please correct the above problems and try\nagain! If you are a Fink user, please report this error to the package maintainer or file it as a issue on github." );
 			}
 		}
 		Fink::Config::set_options(\%saved_options);
