@@ -5558,7 +5558,7 @@ sub get_env {
 
 	# If UseMaxBuildJobs is absent or set to True, turn on MaxBuildJobs
 	# (unless phase is 'installing')
-	# UseMaxBuildJobs:true (explicit or absent) overrides SetNoMAKEFLAGS
+	# UseMaxBuildJobs:true (explicit or absent) overrides NoSetMAKEFLAGS
 	# but SetMAKEFLAGS values override MaxBuildJobs
 	if ((!$self->has_param('UseMaxBuildJobs') || $self->param_boolean('UseMaxBuildJobs')) && !($phase eq 'installing') && $config->has_param('MaxBuildJobs')) {
 		my $mbj = $config->param('MaxBuildJobs');
