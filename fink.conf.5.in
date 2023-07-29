@@ -102,7 +102,7 @@ but this is not necessary in most circumstances. The default trees are
 .Pp
 The order of trees is meaningful, as packages from later trees may override
 packages from earlier ones.
-.It Cm Distribution: Ar 10.9, 10.10, 10.11, 10.12, 10.13, 10.14, 10.14.5, 10.15 or 11.0.
+.It Cm Distribution: Ar 10.9, 10.10, 10.11, 10.12, 10.13, 10.14, 10.14.5, 10.15, 11.0, 11.3, 12.0 or 13.0.
 .Nm fink
 needs to know which version of macOS you are running. Mac OS X versions up to 10.8 are no longer supported by this version of
 .Nm fink.
