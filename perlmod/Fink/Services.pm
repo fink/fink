@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2021 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1443,7 +1443,7 @@ sub get_osx_vers {
 	my $darwin_osx = get_darwin_equiv();
 	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
 	if ($sw_vers != $darwin_osx) {
-		if (($sw_vers == 11.6 && $darwin_osx == 11.5) || ($sw_vers == 12.6 && $darwin_osx == 12.5)) {
+		if (($sw_vers == 11.6 && $darwin_osx == 11.5) || ($sw_vers == 11.7 && $darwin_osx == 11.5) || ($sw_vers == 12.6 && $darwin_osx == 12.5)) {
 			# special cases in Big Sur and Monterey where it's OK to have a mismatch
 		} else {
 			die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
@@ -1525,10 +1525,11 @@ sub get_darwin_equiv {
 	} elsif ($kernel_vers == 20) {
 		# darwin20.1 == 11.0
 		# darwin20.2 == 11.1
-		# darwin20.6 == 11.5 or 11.6 handled in get_osx_vers()
+		# darwin20.6 == 11.5, 11.6, 11.7 handled in get_osx_vers()
 		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers_minor-1);
 	} elsif ($kernel_vers == 21) {
 		# darwin21.1 == 12.0
+		# darwin21.6 == 12.5 or 12.6 handled in get_osx_vers()
 		return $darwin_osx{$kernel_vers} || '12.' . ($kernel_vers_minor-1);
 	} elsif ($kernel_vers >= 22) {
 		# darwin22.1 == 13.0
