@@ -1,5 +1,4 @@
-Generated from $Fink: readme.en.xml,v 1.12 2014/10/19 03:24:37 alexkhansen
-Exp $
+Generated from $Fink: readme.en.xml,v 1.14 2023/08/04 6:29:59 nieder Exp $
 
  Fink ReadMe
 =============
@@ -31,8 +30,8 @@ You need:
  * An installed Mac OS X system, version 10.7 or later.
 
  * The Xcode Command Line Tools are mandatory. This package can be installed
-   either by downloading it directly via developer.apple.com/xcode/, or by
-   running the
+   either by either by downloading it directly via
+   developer.apple.com/xcode/, or by running the
 
       xcode-select --install
 
@@ -61,8 +60,8 @@ You need:
    from a Terminal.app window should suffice to make the system download it
    for you.
 
- * XQuartz to satisfy x11-dev build dependencies. This package can be installed
-   by downloading it directly via https://xquartz.org.
+ * XQuartz to satisfy "x11-dev" build dependencies. This package can be
+   installed by downloading it directly via <https://xquartz.org>.
 
  * Internet access. All source code is downloaded from mirror sites.
 

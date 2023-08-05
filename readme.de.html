@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!--
+Generated from $Fink: readme.de.xml,v 1.2 2023/08/04 6:29:59 nieder Exp $
+-->
+<title>Fink Documentation - Fink Lies-Mich</title></head><body>
+<table width="100%" cellspacing="0">
+<tr valign="bottom">
+<td align="center">
+Available Languages:  | 
+Deutsch | 
+<a href="readme.en.html">English</a> | 
+<a href="readme.es.html">Espa&ntilde;ol</a> | 
+<a href="readme.fr.html">Fran&ccedil;ais</a> | 
+<a href="readme.ja.html">&#26085;&#26412;&#35486; (Nihongo)</a> | 
+<a href="readme.pt.html">Portugu&ecirc;s</a> | 
+<a href="readme.ru.html">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081; (Russkiy)</a> | 
+<a href="readme.zh.html">&#20013;&#25991; (&#31616;) (Simplified Chinese)</a> | 
+</td>
+</tr>
+</table>
+<h1 align="center">Fink Lies-Mich</h1>
+<p>
+Dies ist Fink, ein Paketmanager, der die ganze Welt an
+Open-Source-Programmen auf Darwin und Mac OS X zur Verfügung stellt.
+</p>
+<p>
+Fink bearbeitet mittels dpkg eine separate Verzeichnishierarchie. Es lädt
+die originalen Quellen herunter, passt sie je nach Notwendigkeit an,
+konfiguriert sie für Darwin, übersetzt und installiert sie. Die
+Informationen über Verfügbarkeit und benötigte Anpassungen (die
+"Paketbeschreibungen") werden separat gehalten, sind aber normalerweise in
+der Distribution enthalten. Der tatsächliche Quellcode wird je nach
+Bedarf aus dem Internet geladen.
+</p>
+<p>
+Obwohl Fink nicht vollständig ausgereift ist und noch immer scharfe Kanten
+und fehlende Feature hat, wird es von sehr vielen Leute äußerst erfolgreich
+eingesetzt. Lesen sie bitte die Anleitungen sorgfältig und seien sie
+bitte nicht zu überrascht, wenn einmal etwas nicht so funktioniert, wie
+sie es erwartet haben. Für die meisten Fehler gibt es gute Erklärungen, wie
+man sie beheben kann; schauen sie die Webseiten durch, wenn sie Hilfe
+brauchen.
+</p>
+<p>
+Fink steht unter den Lizenzbedingungen der GNU General Public License.
+Für weitere details lesen sie bitte die Datei COPYING.
+</p>
+<h3><a name="readme.req">Voraussetzungen</a></h3>
+<p>
+Sie brauchen:
+</p>
+<ul>
+<li><p>
+Ein installiertes Mac OS X, Version 10.7 oder höher.
+</p></li>
+<li><p>
+Ohne die Xcode Command Line Tools geht gar nichts. Unter Mac OS X 10.7 und
+10.8 kann man dieses Paket im Programm Xcode über dem Menüpunkt
+"Preferences" bei "Downloads" unter "Components" direkt von
+developer.apple.com/xcode/ herunter laden. Unter Mac OS X 10.9 und 10.10 muss man
+das Kommando
+</p>
+<pre>xcode-select --install</pre>
+<p>
+ausführen und den Knopf <b>Install</b> in dem Fenster anklicken, das
+aufgeht oder man installiert das komplette Programm Xcode, je nach eigener
+Vorliebe. Das obige Kommando benutzt man auch für ein Update der Tools,
+vor allem dann, wenn es Probleme beim Erstellen von Paketen gibt.
+</p>
+<p>
+Bei einem manuellen Download muss man darauf achten, dass die Versionen der
+Tools und Mac OS X und falls installiert auch von Xcode zusammen passen.
+</p></li>
+<li><p>Java. Die Eingabe von</p>
+<pre>javac</pre>
+<p>
+in einem Fenster des Programms Terminal sollte ausreichen, damit das System
+Java für sie herunter lädt und installiert.
+</p></li>
+<li><p>
+XQuartz to satisfy <tt style="white-space: nowrap;">x11-dev</tt> build dependencies. This package can be installed
+by downloading it directly via <a href="https://xquartz.org">https://xquartz.org</a>.
+</p></li>
+<li><p>
+Internet Zugang. Die Quellcodes werden von "Spiegel"-Seiten herunter
+geladen.
+</p></li>
+<li><p>
+Geduld. Das Erstellen dauert bei einigen sehr großen Paketen ganz schön
+lange. Je nach Rechnerleistung kann es Stunden oder in Extremfällen sogar
+Tage dauern. Vieles ist aber auch in Minuten erledigt.
+</p></li>
+</ul>
+<h3><a name="readme.install">Installation</a></h3>
+<p>
+Die Installation ist im Detail in der Datei "INSTALL" beschrieben. Bitte
+sorgfältig lesen, denn das ganze ist nicht trivial. Auch ein Upgrade ist
+dort beschrieben.
+</p>
+<h3><a name="readme.usage">Benutzung von Fink</a></h3>
+<p>
+Die Datei "USAGE" beschreibt, wie man die Pfade einstellen muss und wie man Pakete
+installiert und entfernt. Sie enthält auch eine komplette Liste der Kommandos.
+</p>
+<h3><a name="readme.questions">Weitere Frage?</a></h3>
+<p>
+Sollte diese Dokumentation ihre Frage nicht beantworten, besuchen sie die
+Webseite von Fink
+<a href="/">/</a>
+vor allem die Hilfe-Seite:
+<a href="/help/">/help/</a>.
+Dort gibt es weitere Dokumentationen und Hinweise, wenn sie weitere
+Unterstützung brauchen.
+</p>
+<p>
+Möchten sie selbst etwas zu Fink beitragen, dann folgenden sie den Links
+auf der Hilfe-Seite. Beispiele sind das Testen oder Erstellen von Paketen.
+</p>
+<h3><a name="readme.uptodate">Informiert bleiben</a></h3>
+<p>
+Die Webseite des Projekts ist
+<a href="/">/</a>.
+</p>
+<p>
+Wollen sie über neue Versionen informiert werden, besuchen sie die Seite
+<a href="/lists/fink-announce.php">http://finkproject.org/lists/fink-announce.php</a>
+und abonnieren sie die Mailing-Liste "fink-announce". Sie ist moderiert
+und hat wenig Meldungen.
+</p>
+<hr><h2>Copyright Notice</h2><p>Copyright (c) 2001 Christoph Pfisterer,
+Copyright (c) 2001-2023 The Fink Project.
+You may distribute this document in print for private purposes,
+provided the document and this copyright notice remain complete and
+unmodified. Any commercial reproduction and any online publication
+requires the explicit consent of the author.</p><hr>
+<p>Generated from <i>$Fink: readme.de.xml,v 1.2 2023/08/04 6:29:59 nieder Exp $</i></p></body></html>
