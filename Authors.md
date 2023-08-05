@@ -7,17 +7,15 @@ Christoph Pfisterer <cp@chrisp.de>
 
 Current maintainers
 ------------------
-Alexander Hansen  <alexkhansen@users.sourceforge.net>
-
-Max Horn <max@quendi.de>
+Justin F. Hallett <thesin@southofheaven.net>
 
 Daniel Macks <dmacks@netspace.org>
 
 Dave Morrison <drm@finkproject.org>
 
-Benjamin Reed <rangerrick@users.sourceforge.net>
+Hanspeter Niederstrasser <nieder@users.sourceforge.net>
 
-Dave Vasilevsky  <vasi@users.sourceforge.net>
+Dave Vasilevsky <vasi@users.sourceforge.net>
 
 Contributors
 ------------
@@ -31,11 +29,15 @@ Brendan Cully <brendan@finkproject.org>
 
 Finlay Dobbie <finlayd@users.sourceforge.net>
 
-Justin F. Hallett <thesin@southofheaven.net>
+Alexander Hansen <alexkhansen@users.sourceforge.net>
 
-Mohammad A. Haque  <batmanppc@users.sourceforge.net>
+Mohammad A. Haque <batmanppc@users.sourceforge.net>
 
 Ben Hines <benh57@users.sourceforge.net>
+
+Derek Homeier <dhomeie@gwdg.de>
+
+Max Horn <max@quendi.de>
 
 Jack Howarth <howarth@bromo.med.uc.edu>
 
@@ -49,11 +51,11 @@ Remi Mommsen <remigius.mommsen@cern.ch>
 
 Matthias Neeracher <neeracher@mac.com>
 
-Hanspeter Niederstrasser <nieder@users.sourceforge.net>
-
 Peter O'Gorman <ogorman@users.sourceforge.net>
 
 Daniel Parks <daniel@maywallacedesign.com>
+
+Benjamin Reed <rangerrick@users.sourceforge.net>
 
 Matthew Sachs <msachs@apple.com>
 
@@ -62,5 +64,4 @@ Christian Schaffner <chris01@users.sourceforge.net>
 Michael G Schwern <schwern@pobox.com>
 
 Chris Zubrzycki <beren12@users.sourceforge.net>
-
 
