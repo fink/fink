@@ -296,6 +296,15 @@ GCC_MSG
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "13.0";
+	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.[0]/) {
+		&print_breaking("This system is supported and tested.");
+		$distribution = "14.0";
+	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of macOS might work with Fink, but there are no " .
+			"guarantees.");
+		$distribution = "14.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
 			"supported by Fink.");
@@ -1141,6 +1150,7 @@ sub get_selfupdatetrees {
 		"11.3" => "10.9-libcxx",
 		"12.0" => "10.9-libcxx",
 		"13.0" => "10.9-libcxx",
+		"14.0" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};

@@ -997,26 +997,30 @@ as part of the Xcode tools.
 			MacOSX10.14.sdk
 			MacOSX10.15.sdk
 		);
-	} elsif ($osxversion == 19) {
+	} elsif ($osxversion == 19) { # macOS 10.15
 		@SDKDIRS=qw(
 			MacOSX10.15.sdk
 			MacOSX11.1.sdk
 		);
-	} elsif ($osxversion == 20) {
+	} elsif ($osxversion == 20) { # macOS 11
 		@SDKDIRS=qw(
 			MacOSX11.0.sdk
 			MacOSX11.1.sdk
 			MacOSX11.3.sdk
 		);
-	} elsif ($osxversion == 21) {
+	} elsif ($osxversion == 21) { # macOS 12
 		@SDKDIRS=qw(
 			MacOSX11.3.sdk
 			MacOSX12.0.sdk
 		);
-	} elsif ($osxversion == 22) {
+	} elsif ($osxversion == 22) { # macOS 13
 		@SDKDIRS=qw(
 			MacOSX13.0.sdk
 			MacOSX13.1.sdk
+		);
+	} elsif ($osxversion == 23) { # macOS 14
+		@SDKDIRS=qw(
+			MacOSX14.0.sdk
 		);
 	}
 #   Portable SDK path finder which works on 10.5 and later
