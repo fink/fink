@@ -1368,7 +1368,7 @@ sub cleanup_sources {
 Remove directories from %p/src/fink.build (or as set in fink.conf). The 
 following options are known:
 
-= over 4
+=over 4
 
 =item dryrun
 
