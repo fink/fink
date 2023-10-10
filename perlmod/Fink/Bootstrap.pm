@@ -330,7 +330,7 @@ Returns 0 on success, 1 on failure.
 
 sub inject_package {
 
-	import Fink::Services qw(&read_config);
+	Fink::Services->import(qw(&read_config));
 	require Fink::Config;
 
 	### Note to developers: Fink::Config loads Fink::FinkVersion, but it is

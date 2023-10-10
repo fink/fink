@@ -45,7 +45,7 @@ require Fink::Engine;
 require Fink::Configure;
 require Fink::Bootstrap;
 require Fink::Services;
-import Fink::Services qw(&read_config);
+Fink::Services->import(qw(&read_config));
 
 ### bootstrap phase 2
 

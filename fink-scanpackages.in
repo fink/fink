@@ -6,7 +6,7 @@ use strict;
 my $PREFIX  = '@BASEPATH@';
 my $LIB = "$PREFIX/lib/perl5";
 require lib;
-import lib $LIB;
+lib->import($LIB);
 require Fink::Scanpackages;
 die "ERROR: Can't find a Fink installation in '$PREFIX'!\n"
 	unless $INC{'Fink/Scanpackages.pm'} =~ m,^\Q$LIB,;

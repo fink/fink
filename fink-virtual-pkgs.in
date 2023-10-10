@@ -1,8 +1,8 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 #
 # fink-virtual-pkgs
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2020 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,8 +19,9 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
 #
 
-require 5.008_001;  # perl 5.8.1 or newer required
+use 5.008_001;  # perl 5.8.1 or newer required
 use strict;
+use warnings;
 use Getopt::Long;
 use File::Temp qw/ tempfile /;
 use Fcntl;
@@ -133,8 +134,8 @@ else
 # We are running without fink modules, so just kernel and macOS pkgs
 	my $macosx_version = 0;
 	if (-x "/usr/bin/sw_vers") {
-		open(SW_VERS, "/usr/bin/sw_vers |") or die "Couldn't determine system version: $!\n";
-		while (<SW_VERS>) {
+		open my $sw_vers, '-|', '/usr/bin/sw_vers' or die "Couldn't determine system version: $!\n";
+		while (<$sw_vers>) {
 			chomp;
 			if (/(ProductVersion\:)\s*([^\s]*)/) {
 				$macosx_version = $2;
@@ -169,8 +170,8 @@ if (defined $options{outfile}) {
 	select STDOUT;
 
 	if ($tmpfile) {
-		rename $tmpfile, $options{outfile} || die "Can not rename $tmpfile to $options{outfile}: $!\n";
-		chmod 0644, $options{outfile} || die "Can not chmod $options{outfile}: $!\n";
+		rename($tmpfile, $options{outfile}) or die "Can not rename $tmpfile to $options{outfile}: $!\n";
+		chmod(0644, $options{outfile}) or die "Can not chmod $options{outfile}: $!\n";
 	}
 }
 
@@ -206,12 +207,12 @@ sub UseFinkModules {
 	eval { 
         die unless -d "$libpath";
         require lib;
-        import lib "$libpath";
+        lib->import($libpath);
 
 		require Fink::FinkVersion;
 		require Fink::VirtPackage;
 		require Fink::Services;
-		import Fink::Services qw(parse_fullversion read_config)
+		Fink::Services->import(qw(parse_fullversion read_config));
 	};
 
 	$standalone = 1 if $@;
@@ -232,7 +233,7 @@ sub UseFinkModules {
 	if ($standalone == 1)
 	{
 		require POSIX;
-		import POSIX qw(uname);
+		POSIX->import(qw(uname));
 	}
 
 }

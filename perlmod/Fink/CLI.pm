@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -628,7 +628,7 @@ sub get_term_width {
 	use POSIX qw(isatty);
 	if (isatty(fileno STDOUT)) {
 		if (eval { require Term::ReadKey; 1; }) {
-			import Term::ReadKey qw(&GetTerminalSize);
+			Term::ReadKey->import(qw(&GetTerminalSize));
 			($width, $dummy, $dummy, $dummy) = &GetTerminalSize();
 		} else {
 			$width =~ s/.*co#([0-9]+).*/$1/ if defined ($width = $ENV{TERMCAP});

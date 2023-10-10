@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 # -*- mode: Perl; tab-width: 4; -*-
 #
 # inject.pl - perl script to install a CVS version of one of the
@@ -6,7 +6,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2016 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,13 +26,14 @@
 $| = 1;
 use 5.008_001;  # perl 5.8.1 or newer required
 use strict;
+use warnings;
 
 use FindBin;
 use lib "$FindBin::RealBin/perlmod";
 use File::Copy;
 
 require Fink::Services;
-import Fink::Services qw(&execute);
+Fink::Services->import(qw(&execute));
 
 ### use sudo
 
@@ -63,7 +64,7 @@ my $package = "fink";
 
 ### check if we're unharmed, and specify files for tarball
 
-import Fink::Bootstrap qw(&check_files &fink_packagefiles);
+Fink::Bootstrap->import(qw(&check_files &fink_packagefiles));
 
 my $res = check_files();
 if ($res == 1 ) {
@@ -80,7 +81,7 @@ system "./pre-build-test.sh" and exit 1;
 
 ### run the inject_package script
 
-import Fink::Bootstrap qw(&inject_package);
+Fink::Bootstrap->import(qw(&inject_package));
 
 my $param = shift;
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env -i /usr/bin/perl -w
+#!/usr/bin/env -i /usr/bin/perl
 # -*- mode: Perl; tab-width: 4; -*-
 # vim: ts=4 sw=4 noet
 #
@@ -40,9 +40,9 @@ unlink "$FindBin::RealBin/perlmod/Fink/FinkVersion.pm";
 
 # load some Fink modules
 require Fink::CLI;
-import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
+Fink::CLI->import(qw(&print_breaking &prompt &prompt_boolean &prompt_selection));
 require Fink::Services;
-import Fink::Services qw(&execute &version_cmp &is_accessible);
+Fink::Services->import(qw(&execute &version_cmp &is_accessible));
 
 $| = 1;
 
@@ -222,9 +222,9 @@ close $outputhandle;
 
 print "Checking package...";
 require Fink::Bootstrap;
-import Fink::Bootstrap qw(&check_host &check_files);
+Fink::Bootstrap->import(qw(&check_host &check_files));
 require Fink::FinkVersion;
-import Fink::FinkVersion qw(&fink_version &default_binary_version &get_arch);
+Fink::FinkVersion->import(qw(&fink_version &default_binary_version &get_arch));
 
 if( check_files() == 1 ) {
 	exit 1;
@@ -234,10 +234,10 @@ printf " looks good (fink-%s).\n", fink_version();
 ### load some modules
 
 require Fink::Services;
-import Fink::Services qw(&read_config &execute);
+Fink::Services->import(qw(&read_config &execute));
 require Fink::CLI;
-import Fink::CLI qw(&print_breaking &prompt &prompt_boolean &prompt_selection);
-import Fink::Bootstrap qw(&create_tarball &fink_packagefiles &copy_description &get_version_revision &get_selfupdatetrees &get_bsbase);
+Fink::CLI->import(qw(&print_breaking &prompt &prompt_boolean &prompt_selection));
+Fink::Bootstrap->import(qw(&create_tarball &fink_packagefiles &copy_description &get_version_revision &get_selfupdatetrees &get_bsbase));
 
 ### check if we like this system
 
