@@ -170,6 +170,7 @@ if (defined $options{outfile}) {
 
 	if ($tmpfile) {
 		rename $tmpfile, $options{outfile} || die "Can not rename $tmpfile to $options{outfile}: $!\n";
+		chmod 0644, $options{outfile} || die "Can not chmod $options{outfile}: $!\n";
 	}
 }
 
