@@ -63,7 +63,7 @@ if (defined $options{outfile}) {
 	$options{outfile} = '/tmp/finkaptstatus' if $options{apt};
 }
 if (defined $options{outfile}) {
-	($tmpfh, $tmpfile) = tempfile();
+	($tmpfh, $tmpfile) = tempfile(PERMS => 0644);
 	select $tmpfh;
 }
 if ($standalone == 0) {
