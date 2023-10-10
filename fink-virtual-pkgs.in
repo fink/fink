@@ -28,6 +28,7 @@ use Fcntl;
 my $standalone = 0;
 my $basepath = "@BASEPATH@";
 my $libpath = "@LIBPATH@";
+my $tmpfh;
 my $tmpfile = 0;
 my $config;
 
@@ -62,9 +63,8 @@ if (defined $options{outfile}) {
 	$options{outfile} = '/tmp/finkaptstatus' if $options{apt};
 }
 if (defined $options{outfile}) {
-	$tmpfile = tempfile();
-	sysopen(FH, $tmpfile, O_WRONLY | O_EXCL | O_CREAT) || die "Can not open file $tmpfile for writing: $!\n";
-	select FH;
+	($tmpfh, $tmpfile) = tempfile();
+	select $tmpfh;
 }
 if ($standalone == 0) {
 	$dlist = Fink::VirtPackage->list(%options);
@@ -167,7 +167,6 @@ else
 }
 if (defined $options{outfile}) {
 	select STDOUT;
-	close FH;
 
 	if ($tmpfile) {
 		rename $tmpfile, $options{outfile} || die "Can not rename $tmpfile to $options{outfile}: $!\n";
