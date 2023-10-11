@@ -1494,14 +1494,15 @@ result in repeated spawning of dpkg-architecture processes.
 =cut
 
 sub get_host_multiarch {
-	if (not defined Fink::Config::get_option('host_multiarch') or Fink::Config::get_option('host_multiarch') eq "0" and -x "$Fink::Config::basepath/bin/dpkg-architecture" && Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1')) {
+	if (not defined Fink::Config::get_option('host_multiarch', undef) and -x "$Fink::Config::basepath/bin/dpkg-architecture" && Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1')) {
 		if (open(MYARCH, "dpkg-architecture -qDEB_HOST_MULTIARCH |")) {
                         chomp(my $hostarch = <MYARCH>);
 			Fink::Config::set_options( { 'host_multiarch' => $hostarch } );
 			close(MYARCH);
 		}
 	}
-	return Fink::Config::get_option('host_multiarch');
+
+	return Fink::Config::get_option('host_multiarch', undef);
 }
 
 =item get_darwin_equiv
