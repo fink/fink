@@ -2044,6 +2044,7 @@ sub store_rename {
 	my ($ref, $file) = @_;
 	my ($dummy, $tmp) = tempfile("$file.XXXXX");
 
+	return 0 unless defined($ref);
 	return 0 unless eval { require Storable };
 	if (Storable::store($ref, $tmp)) {
 		chmod 0644, $tmp; # Should be world-readable
