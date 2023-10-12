@@ -1489,20 +1489,27 @@ Returns the current hosts multiarch value as reported by
 `dpkg-architecture -qDEB_HOST_MULTIARCH`. The output of that
 command is parsed and cached in a global configuration option in the
 Fink::Config package so that multiple calls to this function do not
-result in repeated spawning of dpkg-architecture processes.
+result in repeated spawning of dpkg-architecture processes. If the
+command did not succeed, a null string is returned.
 
 =cut
 
+# FIXME: the cache cannot distinguish a failed command from a
+# never-run command, so if the command fails it will run again each
+# time. Is it possible that the command could start to succeed (or be
+# runnable after being not-runnable) in the middle of a long fink
+# session?
+
 sub get_host_multiarch {
-	if (not defined Fink::Config::get_option('host_multiarch', undef) and -x "$Fink::Config::basepath/bin/dpkg-architecture" && Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1')) {
+	if (!length Fink::Config::get_option('host_multiarch', '') and -x "$Fink::Config::basepath/bin/dpkg-architecture" && Fink::Services::version_cmp(Fink::Status->query_package('dpkg'), '>=', '1.16.0-1')) {
 		if (open(MYARCH, "dpkg-architecture -qDEB_HOST_MULTIARCH |")) {
-                        chomp(my $hostarch = <MYARCH>);
+			chomp(my $hostarch = <MYARCH>);
 			Fink::Config::set_options( { 'host_multiarch' => $hostarch } );
 			close(MYARCH);
 		}
 	}
 
-	return Fink::Config::get_option('host_multiarch', undef);
+	return Fink::Config::get_option('host_multiarch', '');
 }
 
 =item get_darwin_equiv

@@ -5465,13 +5465,13 @@ sub get_env {
 	}
 
 	# for dpkg 1.16.2+ and multiarch, we change LDFLAGS:
+	# get_host_multiarch() always returns a defined result, but it's a
+	# null-string if there is no available value. Weird API?
 	my $host_arch = Fink::Services::get_host_multiarch();
-	if (defined $host_arch) {
-		if ($host_arch eq "arm64") {
-			$defaults{"LDFLAGS"} = "-L\%p/lib/aarch64-darwin -L\%p/lib";
-		} else {
-			$defaults{"LDFLAGS"} = "-L\%p/lib/" . $host_arch . " -L\%p/lib";
-		}
+	if ($host_arch eq "arm64") {
+		$defaults{"LDFLAGS"} = "-L\%p/lib/aarch64-darwin -L\%p/lib";
+	} elsif (length $host_arch) {
+		$defaults{"LDFLAGS"} = "-L\%p/lib/$host_arch -L\%p/lib";
 	}
 
 	# uncomment this to be able to use distcc -- not officially supported!
