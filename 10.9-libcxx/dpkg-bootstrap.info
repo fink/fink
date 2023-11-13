@@ -11,7 +11,7 @@ SourceDirectory: dpkg-%v
 
 UpdateConfigGuessInDirs: build-aux
 PatchFile: dpkg.patch
-PatchFile-MD5: 9fb88eddbf7d830c448eb7771642bb3a
+PatchFile-MD5: 82f5c581d07a327c4bbd3ca1c7a39f28
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' -e 's,@ARCHITECTURE@,%m,g' %{PatchFile} | patch -p1
@@ -109,7 +109,7 @@ perl -pi -e "s,GNU patch,patch,g" configure
 SetCFLAGS: -g -O2 -fstack-protector -Wformat -fPIE -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-align -Wno-format-security
 SetCPPFLAGS: -D_FORTIFY_SOURCE=2
 SetCXXFLAGS: -g -O2 -fstack-protector -Wformat -fPIE
-SetLDFLAGS: -Wl,-read_only_stubs -Wl,-bind_at_load -fPIE -Wl,-pie
+SetLDFLAGS: -Wl,-bind_at_load -fPIE -Wl,-pie
 
 # Use %P for all state and admindirs for pre fink build
 ConfigureParams: <<

@@ -17,7 +17,7 @@ diff -ruN dpkg-1.19.7.orig/fink/buildflags.conf dpkg-1.19.7/fink/buildflags.conf
 +APPEND LDFLAGS -fPIE -Wl,-pie
 +
 +# debian relro
-+APPEND LDFLAGS -Wl,-read_only_stubs
++# APPEND LDFLAGS -Wl,-read_only_stubs
 +
 +# debian bindnow
 +APPEND LDFLAGS -Wl,-bind_at_load
