@@ -296,7 +296,7 @@ GCC_MSG
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "13.0";
-	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.[0-3]/) {
+	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.[0-4]/) {
 		&print_breaking("This system is supported and tested.");
 		$distribution = "14.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\./) {
