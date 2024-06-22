@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2023 The Fink Package Manager Team
+# Copyright (c) 2001-2024 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1547,6 +1547,7 @@ sub get_darwin_equiv {
 		return $darwin_osx{$kernel_vers} || '13.' . ($kernel_vers_minor-1);
 	} elsif ($kernel_vers >= 23) {
 		# darwin23.0 == 14.0 (beta)
+		# darwin23.1 == 14.1
 		return $darwin_osx{$kernel_vers} || '14.' . ($kernel_vers_minor);
 	}
 }
