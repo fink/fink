@@ -305,6 +305,12 @@ GCC_MSG
 			"of macOS might work with Fink, but there are no " .
 			"guarantees.");
 		$distribution = "14.0";
+	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\./) {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of macOS might work with Fink, but there are no " .
+			"guarantees.");
+		$distribution = "15.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
 			"supported by Fink.");
@@ -514,6 +520,7 @@ sub is_perl_supported {
 	} elsif ("$]" == "5.028002") {
 	} elsif ("$]" == "5.030002") {
 	} elsif ("$]" == "5.030003") {
+	} elsif ("$]" == "5.034001") {
 	} else {
 		# unsupported version of perl
 		return 0;
@@ -1151,6 +1158,7 @@ sub get_selfupdatetrees {
 		"12.0" => "10.9-libcxx",
 		"13.0" => "10.9-libcxx",
 		"14.0" => "10.9-libcxx",
+		"15.0" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};
