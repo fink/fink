@@ -8,7 +8,7 @@ CustomMirror: <<
 Source: mirror:custom:gettext-%v.tar.gz
 Source-MD5: 1245c87cfa0b123f55540681af396880
 PatchFile: libgettext8-shlibs.patch
-PatchFile-MD5: 40c5bb69aea2d78ca50c7bf011653a01
+PatchFile-MD5: 97f499e17812d2c4841669a58303149e
 PatchFile2: gettext-tools-tests.patch
 PatchFile2-MD5: f766ea0e37b9d2f68a49c51d7adea043
 PatchScript: <<
@@ -63,12 +63,10 @@ CompileScript: <<
 	pushd libtextstyle
 	env EMACS=no JAVA=/usr/bin/java PATH=../bin:$PATH ./configure --prefix=%b/localtree --enable-shared=no ac_cv_prog_AWK=/usr/bin/awk ac_cv_path_GREP=/usr/bin/grep ac_cv_path_SED=/usr/bin/sed
 	/usr/bin/make -w
-	popd
-	pushd gettext-runtime
+	pushd ../gettext-runtime
 	env PATH=../bin:%b/localtree/bin:$PATH ./configure %c
 	/usr/bin/make -w
-	popd
-	pushd gettext-tools
+	pushd ../gettext-tools
 	env EMACS=no JAVA=/usr/bin/java PATH=../bin:%b/localtree/bin:$PATH ./configure %c
 	/usr/bin/make -w
 	popd
