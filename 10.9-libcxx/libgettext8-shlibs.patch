@@ -1,18 +1,18 @@
-diff -ruN gettext-0.20.2-orig/gettext-runtime/libasprintf/Makefile.in gettext-0.20.2/gettext-runtime/libasprintf/Makefile.in
---- gettext-0.20.2-orig/gettext-runtime/libasprintf/Makefile.in	2020-04-13 23:45:32.000000000 -0500
-+++ gettext-0.20.2/gettext-runtime/libasprintf/Makefile.in	2021-01-01 06:21:30.000000000 -0600
-@@ -574,7 +574,7 @@
+diff -ruN gettext-0.22.5-orig/gettext-runtime/libasprintf/Makefile.in gettext-0.22.5/gettext-runtime/libasprintf/Makefile.in
+--- gettext-0.22.5-orig/gettext-runtime/libasprintf/Makefile.in	2024-02-21 17:35:57.000000000 +0200
++++ gettext-0.22.5/gettext-runtime/libasprintf/Makefile.in	2024-07-22 21:29:40.000000000 +0200
+@@ -1333,7 +1333,7 @@
  # How to build libasprintf.
  # With libtool 1.5.14, on some platforms, like BeOS, "libtool --tag=CXX" fails
  # to create a shared library, however "libtool --tag=CC" succeeds.
--libasprintf_la_LDFLAGS = @LTNOUNDEF@
-+libasprintf_la_LDFLAGS = @LTNOUNDEF@ -static
- libgnu_la_SOURCES = size_max.h xsize.h xsize.c
- libgnu_la_LIBADD = $(gl_LTLIBOBJS) @LTALLOCA@
- libgnu_la_DEPENDENCIES = $(gl_LTLIBOBJS) @LTALLOCA@
-diff -ruN gettext-0.20.2-orig/gettext-tools/src/Makefile.in gettext-0.20.2/gettext-tools/src/Makefile.in
---- gettext-0.20.2-orig/gettext-tools/src/Makefile.in	2020-04-13 23:46:32.000000000 -0500
-+++ gettext-0.20.2/gettext-tools/src/Makefile.in	2021-01-01 06:21:30.000000000 -0600
+-libasprintf_la_LDFLAGS = @LTNOUNDEF@ -export-symbols-regex $(LIBASPRINTF_EXPORTED_SYMBOLS_REGEX)
++libasprintf_la_LDFLAGS = @LTNOUNDEF@ -static -export-symbols-regex $(LIBASPRINTF_EXPORTED_SYMBOLS_REGEX)
+ 
+ # Documentation.
+
+diff -ruN gettext-0.22.5-orig/gettext-tools/src/Makefile.in gettext-0.22.5/gettext-tools/src/Makefile.in
+--- gettext-0.22.5-orig/gettext-tools/src/Makefile.in	2024-02-21 17:35:57.000000000 +0200
++++ gettext-0.22.5/gettext-tools/src/Makefile.in	2024-07-22 21:29:40.000000000 +0200
 @@ -3633,10 +3633,10 @@
  	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(urlget_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o urlget-urlget.obj `if test -f 'urlget.c'; then $(CYGPATH_W) 'urlget.c'; else $(CYGPATH_W) '$(srcdir)/urlget.c'; fi`
  
