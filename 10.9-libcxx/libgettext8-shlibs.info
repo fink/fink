@@ -113,7 +113,7 @@ DescPackaging: <<
 <<
 
 Shlibs: <<
-  %p/lib/libintl.8.dylib 10.0.0 %n (>= 0.18-1)
+  %p/lib/libintl.8.dylib 13.0.0 %n (>= 0.22-1)
 <<
 License: GPL/LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
