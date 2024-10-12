@@ -297,6 +297,8 @@ GCC_MSG
 			"guarantees.");
 		$distribution = "13.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.[0-5]/) {
+		# The bootstrap script itself works fine with darwin23.6;
+		# however, the resulting installation still doesn't quite work yet.
 		&print_breaking("This system is supported and tested.");
 		$distribution = "14.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\./) {
@@ -514,6 +516,9 @@ sub is_perl_supported {
 	} elsif ("$]" == "5.028002") {
 	} elsif ("$]" == "5.030002") {
 	} elsif ("$]" == "5.030003") {
+	} elsif ("$]" == "5.034001") {
+		# macOS 14.7 has /usr/bin/perl set to /usr/bin/perl5.34;
+		# however, /usr/bin/perl5.30 (== 5.030003) does also exist.
 	} else {
 		# unsupported version of perl
 		return 0;
