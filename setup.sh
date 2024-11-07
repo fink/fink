@@ -44,8 +44,10 @@ elif [ $osMajorVer -gt 13 -a $osMajorVer -le 19 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.18"
 elif [ $osMajorVer -eq 20 -a $osMinorVer -le 3 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.28"
-elif [ $osMajorVer -eq 20 -o $osMajorVer -ge 21 ]; then
+elif [ $osMajorVer -ge 20 -a $osMajorVer -le 22 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.30"
+elif [ $osMajorVer -ge 23 -a $osMajorVer -le 24 ]; then
+  perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.34"
 fi
 
 
