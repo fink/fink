@@ -5839,7 +5839,7 @@ sub get_perl_dir_arch {
 				# 12.0/13.0/14.0 system-perl is 5.30.3, but the only supplied
 				# interpreter is /usr/bin/perl5.30 (not perl5.30.3)
 				$perlcmd = "/usr/bin/arch -%m perl5.30";
-			} elsif ((&version_cmp($perlversion, '=', "5.34.1")) and Fink::Services::get_kernel_vers() == '24') {
+			} elsif ((&version_cmp($perlversion, '=', "5.34.1")) and Fink::Services::get_kernel_vers() >= '23') {
 				# 14.x/15.0 system-perl is 5.34.1, but the only supplied
 				# interpreter is /usr/bin/perl5.34 (not perl5.34.1)
 				$perlcmd = "/usr/bin/arch -%m perl5.34";
