@@ -63,10 +63,12 @@ CompileScript: <<
 	pushd libtextstyle
 	env EMACS=no JAVA=/usr/bin/java PATH=../bin:$PATH ./configure --prefix=%b/localtree --enable-shared=no ac_cv_prog_AWK=/usr/bin/awk ac_cv_path_GREP=/usr/bin/grep ac_cv_path_SED=/usr/bin/sed
 	/usr/bin/make -w
-	pushd ../gettext-runtime
+	popd
+	pushd gettext-runtime
 	env PATH=../bin:%b/localtree/bin:$PATH ./configure %c
 	/usr/bin/make -w
-	pushd ../gettext-tools
+	popd
+	pushd gettext-tools
 	env EMACS=no JAVA=/usr/bin/java PATH=../bin:%b/localtree/bin:$PATH ./configure %c
 	/usr/bin/make -w
 	popd
