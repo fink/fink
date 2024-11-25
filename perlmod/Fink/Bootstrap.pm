@@ -210,44 +210,41 @@ GCC_MSG
 	} elsif ($host =~ /^i386-apple-darwin12\./) {
 		&host_no_longer_supported("0.38.8");
 		$distribution = "10.8";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin13\.(.*)$/) {
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin13\.(\d+)\.\d+$/) {
 		&host_supported_if($1 eq "i386" and $2 =~ /^[0-5]$/);
 		$distribution = "10.9";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin14\.(.*)$/) {
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin14\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-5]$/);
 		$distribution = "10.10";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin15\.(.*)$/) {
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin15\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "10.11";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin16\.(.*)$/) {
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin16\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "10.12";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin17\.(.*)$/) {
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin17\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "10.13";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin18\.(.*)$/) {
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin18\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = ($2 =~ /^[0-5]$/) ? "10.14" : "10.14.5";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin19\.(.*)$/) {
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin19\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "10.15";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.(.*)$/) {
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = ($2 =~ /^[0-3]$/) ? "11.0" : "11.3";
-	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.(.*)$/) {
+	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "12.0";
-	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin22\.(.*)$/) {
+	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin22\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "13.0";
-	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.(.*)$/) {
+	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-5]$/);
 		$distribution = "14.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
+        &host_supported_if(0);
 		$distribution = "15.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
