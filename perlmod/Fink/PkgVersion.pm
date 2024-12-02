@@ -5557,7 +5557,7 @@ sub get_env {
 	}
 
 	# special case for LDFLAGS to always have headerpad_max_install_names
-	$script_env{'LDFLAGS'} = $script_env{'LDFLAGS'} . " -Wl,-headerpad_max_install_names";
+	$script_env{'LDFLAGS'} = (defined $script_env{'LDFLAGS'} ? $script_env{'LDFLAGS'} : "") . " -Wl,-headerpad_max_install_names";
 
 	# If UseMaxBuildJobs is absent or set to True, turn on MaxBuildJobs
 	# (unless phase is 'installing')
