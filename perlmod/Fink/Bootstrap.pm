@@ -232,19 +232,19 @@ GCC_MSG
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "10.15";
 	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-6]$/);
+		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = ($2 =~ /^[0-3]$/) ? "11.0" : "11.3";
 	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-6]$/);
+		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "12.0";
 	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin22\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-6]$/);
+		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "13.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-5]$/);
+		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "14.0";
-	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\./) {
-		&host_supported_if(0);
+	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-1]$/);
 		$distribution = "15.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
