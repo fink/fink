@@ -1560,6 +1560,7 @@ sub get_darwin_equiv {
 		return $darwin_osx{$kernel_vers} || '14.' . ($kernel_vers_minor);
 	} elsif ($kernel_vers >= 24) {
 		# darwin24.0 == 15.0 (beta)
+		# darwin24.1 == 15.1
 		return $darwin_osx{$kernel_vers} || '15.' . ($kernel_vers_minor);
 	}
 }
