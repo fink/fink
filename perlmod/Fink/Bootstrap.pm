@@ -145,6 +145,25 @@ Called by bootstrap and fink's postinstall.pl.
 
 =cut
 
+sub host_no_longer_supported {
+	my $last_supported_version = shift @_;
+	&print_breaking(
+		"\nThis system is no longer supported for current versions of fink.  " .
+		"Please use fink $last_supported_version or earlier.\n");
+}
+
+sub host_supported_if {
+	my $minor_version_is_tested = shift @_;
+	if ($minor_version_is_tested) {
+		&print_breaking("This system is supported and tested.");
+	} else {
+		&print_breaking("This system was not released at the time " .
+			"this Fink release was made.  Prerelease versions " .
+			"of OS X might work with Fink, but there are no " .
+			"guarantees.");
+	}
+}
+
 sub check_host {
 	my $host = shift @_;
 	my $bootstrap = shift @_ || 0;
@@ -165,151 +184,67 @@ GCC_MSG
 	}
 
 	if ($host =~ /^powerpc-apple-darwin1\./) {
-		&print_breaking("\nThis system is no longer supported " .
-			"for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
+		&host_no_longer_supported("0.12.1");
 		$distribution = "10.1";
 	} elsif ($host =~ /^powerpc-apple-darwin5\./) {
-		&print_breaking("\nThis system is no longer supported " .
-			"for current versions of fink.  Please use fink 0.12.1 or earlier.\n");
+		&host_no_longer_supported("0.12.1");
 		$distribution = "10.1";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin6\./) {
-		&print_breaking("\nThis system is no longer supported " .
-			"for current versions of fink.  Please use fink 0.24.7 or earlier.\n");
+		&host_no_longer_supported("0.24.7");
 		$distribution = "10.2"; # or 10.2-gcc3.3, but it doesn't matter as we refuse running anyway
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin7\./) {
-		&print_breaking("This system no longer supported " .
-			"for current versions of fink.  Please use fink 0.28.5 or earlier.\n");
+		&host_no_longer_supported("0.28.5");
 		$distribution = "10.3";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin8\./) {
-		&print_breaking("This system no longer supported " .
-			"for current versions of fink.  Please use fink 0.30.2 or earlier.\n");
+		&host_no_longer_supported("0.30.2");
 		$distribution = "10.4";
 	} elsif ($host =~ /^(powerpc|i386)-apple-darwin9\./) {
-		&print_breaking("This system no longer supported " .
-			"for current versions of fink.  Please use fink 0.34.10 or earlier.\n");
+		&host_no_longer_supported("0.34.10");
 		$distribution = "10.5";
 	} elsif ($host =~ /^i386-apple-darwin10\./) {
-		&print_breaking("This system no longer supported " .
-			"for current versions of fink.  Please use fink 0.34.10 or earlier.\n");
+		&host_no_longer_supported("0.34.10");
 		$distribution = "10.6";
 	} elsif ($host =~ /^i386-apple-darwin11\./) {
-		&print_breaking("This system no longer supported " .
-			"for current versions of fink.  Please use fink 0.38.8 or earlier.\n");
+		&host_no_longer_supported("0.38.8");
 		$distribution = "10.7";
 	} elsif ($host =~ /^i386-apple-darwin12\./) {
-		&print_breaking("This system no longer supported " .
-			"for current versions of fink.  Please use fink 0.38.8 or earlier.\n");
+		&host_no_longer_supported("0.38.8");
 		$distribution = "10.8";
-	} elsif ($host =~ /^i386-apple-darwin13\.[0-5]/) {
-		&print_breaking("This system is supported and tested.");
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin13\.(\d+)\.\d+$/) {
+		&host_supported_if($1 eq "i386" and $2 =~ /^[0-5]$/);
 		$distribution = "10.9";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin13\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of OS X might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "10.9";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin14\.[0-5]/) {
-		&print_breaking("This system is supported and tested.");
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin14\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-5]$/);
 		$distribution = "10.10";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin14\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of OS X might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "10.10";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin15\.[0-6]/) {
-		&print_breaking("This system is supported and tested.");
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin15\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "10.11";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin15\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of OS X might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "10.11";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin16\.[0-7]/) {
-		&print_breaking("This system is supported and tested.");
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin16\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "10.12";
-	} elsif ($host =~ /^i386-apple-darwin16\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "10.12";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin17\.[0-7]/) {
-		&print_breaking("This system is supported and tested.");
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin17\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "10.13";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin17\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "10.13";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin18\.[0-5]/) {
-		&print_breaking("This system is supported and tested.");
-		$distribution = "10.14";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin18\.[6-7]/) {
-		&print_breaking("This system is supported and tested.");
-		$distribution = "10.14.5";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin18\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "10.14.5";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin19\.[0-6]/) {
-		&print_breaking("This system is supported and tested.");
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin18\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-7]$/);
+		$distribution = ($2 =~ /^[0-5]$/) ? "10.14" : "10.14.5";
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin19\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "10.15";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin19\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "10.15";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.[0-3]/) {
-		&print_breaking("This system is supported and tested.");
-		$distribution = "11.0";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.[4-6]/) {
-		&print_breaking("This system is supported and tested.");
-		$distribution = "11.3";
-	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "11.3";
-	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.[0-6]/) {
-		&print_breaking("This system is supported and tested.");
+	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-6]$/);
+		$distribution = ($2 =~ /^[0-3]$/) ? "11.0" : "11.3";
+	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "12.0";
-	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "12.0";
-	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin22\.[0-6]/) {
-		&print_breaking("This system is supported and tested.");
+	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin22\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "13.0";
-	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin22\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
-		$distribution = "13.0";
-	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.[0-5]/) {
-		&print_breaking("This system is supported and tested.");
-		$distribution = "14.0";
-	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
+	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.(\d+)\.\d+$/) {
+		&host_supported_if($2 =~ /^[0-5]$/);
 		$distribution = "14.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\./) {
-		&print_breaking("This system was not released at the time " .
-			"this Fink release was made.  Prerelease versions " .
-			"of macOS might work with Fink, but there are no " .
-			"guarantees.");
+        &host_supported_if(0);
 		$distribution = "15.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
