@@ -1445,11 +1445,18 @@ sub get_osx_vers {
 	my $darwin_osx = get_darwin_equiv();
 	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
 	if ($sw_vers != $darwin_osx) {
-		if (($sw_vers == 11.6 && $darwin_osx == 11.5) || ($sw_vers == 11.7 && $darwin_osx == 11.5) || ($sw_vers == 12.6 && $darwin_osx == 12.5) || ($sw_vers == 12.7 && $darwin_osx == 12.5) || ($sw_vers == 13.6 && $darwin_osx == 13.5) || ($sw_vers == 14.7 && $darwin_osx == 14.6)) {
-			# special cases in Big Sur, Monterey, Ventura and Sonoma where it's OK to have a mismatch
-		} else {
-			die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink";
-		}
+		# Special cases in Big Sur, Monterey, Ventura, and Sonoma
+		# where it's OK to have a mismatch.
+		my %sw_to_darwin = (
+			'11.6' => 11.5,
+			'11.7' => 11.5,
+			'12.6' => 12.5,
+			'12.7' => 12.5,
+			'13.6' => 13.5,
+			'13.7' => 13.5,
+			'14.7' => 14.6);
+		die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink"
+			unless $sw_to_darwin{$sw_vers} == $darwin_osx;
 	}
 	return $sw_vers;
 }
@@ -1549,6 +1556,7 @@ sub get_darwin_equiv {
 	} elsif ($kernel_vers == 23) {
 		# darwin23.0 == 14.0 (beta)
 		# darwin23.1 == 14.1
+		# darwin23.6 == 14.7 handled in get_osx_vers()
 		return $darwin_osx{$kernel_vers} || '14.' . ($kernel_vers_minor);
 	} elsif ($kernel_vers >= 24) {
 		# darwin24.0 == 15.0 (beta)
