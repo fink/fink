@@ -244,7 +244,7 @@ GCC_MSG
 		&host_supported_if($2 =~ /^[0-5]$/);
 		$distribution = "14.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\./) {
-        &host_supported_if(0);
+		&host_supported_if(0);
 		$distribution = "15.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
