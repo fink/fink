@@ -4193,6 +4193,9 @@ sub phase_build {
 		}
 	}
 
+	# switch everything back to sandbox builds if we were --build-in-sandbox
+	my $build_wo_sandbox = $self->get_family_parent()->param_boolean("NoSandbox", 0);
+
 	# put the info file into the debian directory
 	if (-d "$destdir/DEBIAN") {
 		my $infofile = $self->get_filename();
@@ -5625,6 +5628,7 @@ sub run_script {
 	my $phase = shift;
 	my $no_expand = shift || 0;
 	my $nonroot_okay = shift || 0;
+	my $no_sandbox_okay = shift || 0;
 	my $ignore_result = shift || 0;
 
 	# Expand percent shortcuts
@@ -5634,10 +5638,13 @@ sub run_script {
 	my $result;
 	# Don't build as nobody if BuildAsNobody: false
 	my $build_as_nobody = $self->get_family_parent()->param_boolean("BuildAsNobody", 1);
+	# Build in sandbox if NoSandbox: false
+	my $build_wo_sandbox = $self->get_family_parent()->param_boolean("NoSandbox", 0);
 	$nonroot_okay = $nonroot_okay && $build_as_nobody;
+	$no_sandbox_okay = $build_wo_sandbox;
 	{
 		local %ENV = %{$self->get_env($phase)};
-		$result = &execute($script, nonroot_okay=>$nonroot_okay);
+		$result = &execute($script, nonroot_okay=>$nonroot_okay, no_sandbox_okay=>$no_sandbox_okay);
 	}
 	if ($result and !$ignore_result) {
 		$self->package_error( phase => $phase );
