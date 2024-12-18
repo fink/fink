@@ -233,7 +233,7 @@ GCC_MSG
 		$distribution = "10.15";
 	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-7]$/);
-		$distribution = ($2 =~ /^[0-3]$/) ? "11.0" : "11.3";
+		$distribution = ($2 =~ /^[0-2]$/) ? "11.0" : "11.3";
 	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "12.0";
