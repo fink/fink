@@ -242,7 +242,7 @@ GCC_MSG
 		$distribution = "13.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-7]$/);
-		$distribution = "14.0";
+		$distribution = ($2 =~ /^[0-3]$/) ? "14.0" : "14.4";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-1]$/);
 		$distribution = "15.0";
@@ -1094,6 +1094,7 @@ sub get_selfupdatetrees {
 		"12.0" => "10.9-libcxx",
 		"13.0" => "10.9-libcxx",
 		"14.0" => "10.9-libcxx",
+		"14.4" => "10.9-libcxx",
 		"15.0" => "10.9-libcxx",
 		);
 
