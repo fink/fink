@@ -226,14 +226,16 @@ GCC_MSG
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "10.13";
 	} elsif ($host =~ /^(x86_64|i386)-apple-darwin18\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-7]$/);
-		$distribution = ($2 =~ /^[0-5]$/) ? "10.14" : "10.14.5";
+		my $host_minor_ver = $2;
+		&host_supported_if($host_minor_ver =~ /^[0-7]$/);
+		$distribution = ($host_minor_ver =~ /^[0-5]$/) ? "10.14" : "10.14.5";
 	} elsif ($host =~ /^(x86_64|i386)-apple-darwin19\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "10.15";
 	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-7]$/);
-		$distribution = ($2 =~ /^[0-2]$/) ? "11.0" : "11.3";
+		my $host_minor_ver = $2;
+		&host_supported_if($host_minor_ver =~ /^[0-7]$/);
+		$distribution = ($host_minor_ver =~ /^[0-2]$/) ? "11.0" : "11.3";
 	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "12.0";
