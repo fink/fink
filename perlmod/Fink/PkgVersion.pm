@@ -5781,6 +5781,9 @@ sub get_perl_dir_arch {
 	###
 	my $perlcmd;
 	if ($perlversion) {
+		# c.f. for system-perl %v
+		# https://opensource.apple.com/releases/
+		# https://github.com/briandfoy/mac-perl-versions 
 		if ((&version_cmp($perlversion, '>=', "5.10.0")) and $config->param('Architecture') ne 'powerpc') {
 			$perlcmd = "/usr/bin/arch -%m perl".$perlversion ;
 			### FIXME: instead of hardcoded expectation of system-perl
