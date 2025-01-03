@@ -226,14 +226,16 @@ GCC_MSG
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "10.13";
 	} elsif ($host =~ /^(x86_64|i386)-apple-darwin18\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-7]$/);
-		$distribution = ($2 =~ /^[0-5]$/) ? "10.14" : "10.14.5";
+		my $host_minor_ver = $2;
+		&host_supported_if($host_minor_ver =~ /^[0-7]$/);
+		$distribution = ($host_minor_ver =~ /^[0-5]$/) ? "10.14" : "10.14.5";
 	} elsif ($host =~ /^(x86_64|i386)-apple-darwin19\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "10.15";
 	} elsif ($host =~ /^(x86_64|i386)-apple-darwin20\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-7]$/);
-		$distribution = ($2 =~ /^[0-3]$/) ? "11.0" : "11.3";
+		my $host_minor_ver = $2;
+		&host_supported_if($host_minor_ver =~ /^[0-7]$/);
+		$distribution = ($host_minor_ver =~ /^[0-2]$/) ? "11.0" : "11.3";
 	} elsif ($host =~ /^(aarch64|x86_64|i386)-apple-darwin21\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "12.0";
@@ -241,10 +243,11 @@ GCC_MSG
 		&host_supported_if($2 =~ /^[0-7]$/);
 		$distribution = "13.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin23\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-7]$/);
-		$distribution = "14.0";
+		my $host_minor_ver = $2;
+		&host_supported_if($host_minor_ver =~ /^[0-7]$/);
+		$distribution = ($host_minor_ver =~ /^[0-3]$/) ? "14.0" : "14.4";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\.(\d+)\.\d+$/) {
-		&host_supported_if($2 =~ /^[0-1]$/);
+		&host_supported_if($2 =~ /^[0-2]$/);
 		$distribution = "15.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
@@ -1094,6 +1097,7 @@ sub get_selfupdatetrees {
 		"12.0" => "10.9-libcxx",
 		"13.0" => "10.9-libcxx",
 		"14.0" => "10.9-libcxx",
+		"14.4" => "10.9-libcxx",
 		"15.0" => "10.9-libcxx",
 		);
 
