@@ -1287,7 +1287,7 @@ sub dep_in_lol {
 
 		# simple-minded function cannot handle arbirary range-comp,
 		# just thresholds
-		$ver =~ s/([>=<])*\s*//;	# ver is v-string
+		$ver =~ s/\s*([>=<])*\s*//;	# ver is v-string
 		next unless ($1 eq '>=' or $1 eq '=');
 		if (version_cmp($ver, '>=', $req_deps->{$atom})) {
 			# pkg dep is at least as strict as req dep
