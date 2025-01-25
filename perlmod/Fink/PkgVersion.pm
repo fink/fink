@@ -550,7 +550,7 @@ sub initialize {
 				# paradoxically, no special library location is required for
 				# -64bit variants under arm64 architecture
 			} else {
-				print_breaking_stderr "Skipping $self->{_filename}\n";
+				print_breaking_stderr "No Package defined for local architecture. Skipping $self->{_filename}\n";
 				delete $self->{package};
 				return;
 			}
@@ -574,7 +574,7 @@ sub initialize {
 						'err_action' => 'undef',
 						'err_info'   => "$self->{_filename} \"package\""
 					))) {
-		print_breaking_stderr "Skipping $self->{_filename}\n";
+		print_breaking_stderr "No Package defined! Skipping $self->{_filename}\n";
 		delete $self->{package};
 		return;
 	};
