@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2023 The Fink Package Manager Team
+# Copyright (c) 2001-2025 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -2354,7 +2354,7 @@ sub _validate_dpkg {
 		#discard runtime path portion of the install_name
 		($named_file) = $shlibs_file =~ /^\@[a-z,_]*path\/(.*)/ ; 
 		if ( $named_file ) {
-			find ({wanted => sub {$file = $File::Find::name if m,$named_file,}, no_chdir=>1 }, $destdir);
+			find ({wanted => sub {$file = $File::Find::name if m,\Q$named_file\E,}, no_chdir=>1 }, $destdir);
 		} else {
 			$file = resolve_rooted_symlink($destdir, $shlibs_file);
 		}
