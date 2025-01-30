@@ -1,6 +1,6 @@
 Package: libiconv
-Version: 1.16
-Revision: 3
+Version: 1.17
+Revision: 1
 Description: Character set conversion library
 License: LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
@@ -15,15 +15,12 @@ CustomMirror: <<
 	Secondary: http://downloads.sourceforge.net/fink/
 <<
 Source: mirror:custom:libiconv-%v.tar.gz
-Source-MD5: 7d2a800b952942bb2880efb00cfd524c
-Source2: mirror:sourceforge:fink/gettext-0.20.2.tar.gz
-#Source2: mirror:gnu:gettext/gettext-0.20.2.tar.gz
-Source2-MD5: 30fec34a895fab4c02584449c500aac2
+Source-MD5: d718cd5a59438be666d1575855be72c3
+Source2: mirror:sourceforge:fink/gettext-0.22.5.tar.gz
+#Source2: mirror:gnu:gettext/gettext-0.22.5.tar.gz
+Source2-MD5: 1245c87cfa0b123f55540681af396880
 PatchFile: %n.patch
-PatchFile-MD5: 5e7d6a1b9c563b71d1ac08a6ad2106cf
-PatchScript: <<
-	cd %b/..; patch -p0 < %{PatchFile}
-<<
+PatchFile-MD5: b4e5dfc26337f538e35c645128d5e30b
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
 CompileScript: <<
@@ -32,7 +29,7 @@ CompileScript: <<
 ### If gettext gets updated, make sure these ./configure parameters 
 ### match the new package parameters (except build static only here).
 ### Not necessary, but will avoid unforeseen consequences.
-cd %b/../gettext-0.20.2/gettext-runtime
+cd %b/../gettext-0.22.5/gettext-runtime
 EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" am_cv_func_iconv=no ./configure \
 	--prefix=%p \
 	--infodir='${prefix}/share/info' \
@@ -42,6 +39,8 @@ EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" am_cv_
 	--disable-rpath \
 	--disable-libasprintf \
 	--disable-shared \
+	--disable-java \
+	--disable-native-java \
 	--with-included-glib \
 	--with-included-libcroco \
 	--with-included-libxml \
@@ -167,5 +166,10 @@ our build system.
  /usr/bin/groff and fink's groff is heavy and gives circular dep.
 
  Externalize gperf
+
+2024-07-22 Derek Homeier
+* Update to 1.17
+* Patch utf8mac.h to fix incompatible pointer errors on macOS 15 / Xcode 16.
+* Bump internal gettext to latest 0.22.5
 <<
 Homepage: http://www.gnu.org/software/libiconv/

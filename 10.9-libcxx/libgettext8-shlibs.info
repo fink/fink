@@ -1,16 +1,16 @@
 Package: libgettext8-shlibs
-Version: 0.20.2
+Version: 0.22.5
 Revision: 1
 CustomMirror: <<
 	Primary: http://ftpmirror.gnu.org/gettext/
 	Secondary: http://downloads.sourceforge.net/fink/
 <<
 Source: mirror:custom:gettext-%v.tar.gz
-Source-MD5: 30fec34a895fab4c02584449c500aac2
+Source-MD5: 1245c87cfa0b123f55540681af396880
 # libgettext8-shlibs.patch must be regenerated for every update since
 # dpkg uses it and needs the correct full file headers for patch -p0 
 PatchFile: %n.patch
-PatchFile-MD5: 8ebf1b7c276059b0d3a334f60a2f705e
+PatchFile-MD5: 40c5bb69aea2d78ca50c7bf011653a01
 PatchScript: <<
  patch -p1 < %{PatchFile}
 <<
@@ -55,7 +55,8 @@ InstallScript: <<
 	#!/bin/sh -ev
 	cd gettext-runtime
 	make install DESTDIR=%d
-	#No need for dependency_libs in .la files if not building static libs
+	# .la install sometimes fails after `test -n "$dependencies"`
+	[ -f %i/lib/libintl.la ] || /usr/bin/install -c -m 644 intl/.libs/libintl.lai %i/lib/libintl.la
 	perl -pi -e "s/dependency_libs=.*$/dependency_libs=''/" %i/lib/libintl.la
 <<
 DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog* 
@@ -111,7 +112,7 @@ DescPackaging: <<
 <<
 
 Shlibs: <<
-  %p/lib/libintl.8.dylib 10.0.0 %n (>= 0.18-1)
+  %p/lib/libintl.8.dylib 13.0.0 %n (>= 0.22.5-1)
 <<
 License: GPL/LGPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>

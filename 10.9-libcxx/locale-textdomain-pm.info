@@ -1,13 +1,13 @@
 Package: locale-textdomain-pm
-Version: 1.33
+Version: 1.35
 Revision: 1.1
 Essential: yes
 Depends: file-sharedir-pm
 Source: mirror:cpan:authors/id/G/GU/GUIDO/libintl-perl-%v.tar.gz
-Source-MD5: 2bf35c850af534b506330950f096ac03
+Source-Checksum: SHA256(64abed956aa07d1c8cc816c91cf78642c02faf03ab704ed38031baa07f06b16a)
 Type: perl
 PatchFile: %n.patch
-PatchFile-MD5: c44514779fabbde4c2d50af552c28aa4
+PatchFile-MD5: e91c4bdc86f546abddb7d39e2089ee94
 PatchScript: sed "s|FINKPATH|%p|g" < %{PatchFile} | patch -p1
 DocFiles: COPYING Changes Credits FAQ NEWS README REFERENCES THANKS TODO
 UpdatePOD: true

@@ -1660,7 +1660,7 @@ diff -ruN libiconv-1.16-orig/lib/utf8mac.h libiconv-1.16/lib/utf8mac.h
 +}
 +
 +static int
-+utf8mac_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, int n)
++utf8mac_mbtowc (conv_t conv, ucs4_t *pwc, const unsigned char *s, size_t n)
 +{
 +    u_int16_t ucsp[13];
 +    size_t ucslen = 0, consumed = 0;
@@ -1675,7 +1675,7 @@ diff -ruN libiconv-1.16-orig/lib/utf8mac.h libiconv-1.16/lib/utf8mac.h
 +    flags |= UTF_REVERSE_ENDIAN;
 +#endif
 +
-+    ret = utf8_decodestr(s, n, ucsp, &ucslen, sizeof(ucsp), NULL, flags, &consumed);
++    ret = utf8_decodestr(s, n, ucsp, &ucslen, sizeof(ucsp), '/', flags, &consumed);
 +
 +    if (ret == ENAMETOOLONG)	/* Name didn't fit; only ucslen chars were decoded */
 +	return RET_TOOFEW(0);
@@ -1690,7 +1690,7 @@ diff -ruN libiconv-1.16-orig/lib/utf8mac.h libiconv-1.16/lib/utf8mac.h
 +}
 +
 +static int
-+utf8mac_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, int n) /* n == 0 is acceptable */
++utf8mac_wctomb (conv_t conv, unsigned char *r, ucs4_t wc, size_t n) /* n == 0 is acceptable */
 +{
 +    int ret;
 +    size_t len;

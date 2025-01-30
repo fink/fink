@@ -1,20 +1,20 @@
-diff -ruNp gettext-0.19.3-orig/gettext-tools/tests/lang-bash gettext-0.19.3/gettext-tools/tests/lang-bash
---- gettext-0.19.3-orig/gettext-tools/tests/lang-bash	2014-04-14 20:52:10.000000000 -0500
-+++ gettext-0.19.3/gettext-tools/tests/lang-bash	2014-06-18 20:26:48.000000000 -0500
-@@ -10,6 +10,8 @@
- # output when accessing any .mo file not generated from a .po file in UTF-8
- # encoding.
+diff -ruN gettext-0.22.5-orig/gettext-tools/tests/lang-bash gettext-0.22.5/gettext-tools/tests/lang-bash
+--- gettext-0.22.5-orig/gettext-tools/tests/lang-bash	2019-05-11 06:29:32.000000000 -0500
++++ gettext-0.22.5/gettext-tools/tests/lang-bash	2024-12-02 03:50:42.000000000 -0600
+@@ -14,6 +14,8 @@
+ # because in this case the gettext-runtime/src/gettext program does not do
+ # any message catalog lookups.
  
 +echo "Skipping test: Darwin's bash lacks iconv support"; rm -fr $tmpfiles; exit 77;
 +
  cat <<\EOF > prog.bash
  #! /bin/bash
  
-diff -ruNp gettext-0.19.8.1-orig/gettext-tools/tests/lang-vala gettext-0.19.8.1/gettext-tools/tests/lang-vala
---- gettext-0.19.8.1-orig/gettext-tools/tests/lang-vala	2016-06-09 17:56:00.000000000 -0500
-+++ gettext-0.19.8.1/gettext-tools/tests/lang-vala	2016-06-12 15:35:03.000000000 -0500
-@@ -22,7 +22,7 @@ test $? -le 1 \
-   || { echo "Skipping test: valac not found"; Exit 77; }
+diff -ruN gettext-0.22.5-orig/gettext-tools/tests/lang-vala gettext-0.22.5/gettext-tools/tests/lang-vala
+--- gettext-0.22.5-orig/gettext-tools/tests/lang-vala	2022-10-09 02:30:42.000000000 -0500
++++ gettext-0.22.5/gettext-tools/tests/lang-vala	2024-12-02 03:50:42.000000000 -0600
+@@ -40,7 +40,7 @@
+ EOF
  
  : ${VALAC=valac}
 -${VALAC} --Xcc=-DGETTEXT_PACKAGE=\"prog\" prog.vala 2>prog.err \

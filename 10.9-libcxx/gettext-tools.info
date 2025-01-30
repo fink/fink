@@ -1,29 +1,29 @@
 Package: gettext-tools
-Version: 0.20.2
+Version: 0.22.5
 Revision: 1
 CustomMirror: <<
 	Primary: http://ftpmirror.gnu.org/gettext/
 	Secondary: http://downloads.sourceforge.net/fink/
 <<
 Source: mirror:custom:gettext-%v.tar.gz
-Source-MD5: 30fec34a895fab4c02584449c500aac2
+Source-MD5: 1245c87cfa0b123f55540681af396880
 PatchFile: libgettext8-shlibs.patch
-PatchFile-MD5: 8ebf1b7c276059b0d3a334f60a2f705e
+PatchFile-MD5: 40c5bb69aea2d78ca50c7bf011653a01
 PatchFile2: gettext-tools-tests.patch
-PatchFile2-MD5: 6051a92acfc5ba9bf2274c258dbd6c7e
+PatchFile2-MD5: f766ea0e37b9d2f68a49c51d7adea043
 PatchScript: <<
  patch -p1 < %{PatchFile}
  sed 's|@FINKPREFIX@|%p|g' < %{PatchFile2} | patch -p1
 <<
 Depends: <<
-	expat1-shlibs (>= 2.0.1-1),
+	expat1-shlibs (>= 2.6.0-1),
 	libgettext8-shlibs (>= %v-1),
 	libiconv (>= 1.14-6),
 	libncurses5-shlibs (>= 5.4-20041023-1011)
 <<
 Suggests: gettext-doc
 BuildDepends: <<
-	expat1 (>= 2.0.1-1),
+	expat1 (>= 2.6.0-1),
 	fink (>= 0.30.0),
 	libgettext8-dev (>= %v-1),
 	libiconv-dev (>= 1.14-6),
@@ -60,21 +60,31 @@ CompileScript: <<
 	#!/bin/sh -ev
 	mkdir bin
 	ln -s /usr/bin/javac bin/gcj
-	cd libtextstyle
+	pushd libtextstyle
 	env EMACS=no JAVA=/usr/bin/java PATH=../bin:$PATH ./configure --prefix=%b/localtree --enable-shared=no ac_cv_prog_AWK=/usr/bin/awk ac_cv_path_GREP=/usr/bin/grep ac_cv_path_SED=/usr/bin/sed
 	/usr/bin/make -w
-	cd ..
-	cd gettext-tools
+	popd
+	pushd gettext-runtime
+	env PATH=../bin:%b/localtree/bin:$PATH ./configure %c
+	/usr/bin/make -w
+	popd
+	pushd gettext-tools
 	env EMACS=no JAVA=/usr/bin/java PATH=../bin:%b/localtree/bin:$PATH ./configure %c
 	/usr/bin/make -w
+	popd
 <<
 InfoTest: <<
 	### https://savannah.gnu.org/support/index.php?108122
 	TestConflicts: <<
 		fpc
 	<<
+	# Possible failures in French locale tests
 	TestScript: <<
-		cd gettext-tools; LC_ALL=C /usr/bin/make -w -k check || exit 2
+		#!/bin/sh -ev
+		cd gettext-tools
+		LC_ALL=C /usr/bin/make -w -k check || echo "Checking for expected failures in test suites"
+		# https://savannah.gnu.org/bugs/?66461
+		grep ^FAIL */test-suite.log | grep -E -v 'lang-perl-1|lang-perl-2|lang-python-1|lang-python-2' && exit 2
 	<<
 <<
 InstallScript: <<
@@ -82,15 +92,15 @@ InstallScript: <<
 	cd gettext-tools; make install DESTDIR=%d
 	rm %i/lib/libgettextlib.*
 	rm %i/lib/libgettextsrc.*
-	rm %i/lib/libintl*
-	rm %i/include/libintl.h
-	rm %i/share/locale/locale.alias
+	# libintl does not seem to be installed from under gettext-tools anymore
+	find %i/lib %i/include -name "libintl*" -delete
+	find %i/share/locale -name locale.alias -delete
 <<
 DocFiles: README* AUTHORS COPYING* NEWS THANKS ChangeLog* 
 InfoDocs: gettext.info
 Shlibs: <<
-  !%p/lib/libgettextlib-0.20.2.dylib
-  !%p/lib/libgettextsrc-0.20.2.dylib
+  !%p/lib/libgettextlib-0.22.5.dylib
+  !%p/lib/libgettextsrc-0.22.5.dylib
 <<
 Description: GNU Internationalization utils
 
