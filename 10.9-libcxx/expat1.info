@@ -1,7 +1,6 @@
 Package: expat1
 Version: 2.6.1
 Revision: 1
-BuildDepends: fink-package-precedence
 Depends: %N-shlibs (= %v-%r)
 Replaces: expat
 Conflicts: expat
@@ -15,10 +14,10 @@ ConfigureParams: --without-docbook --disable-static
 SetCFLAGS: -g -O2 -fshort-wchar
 CompileScript: <<
 	%{default_script}
-	fink-package-precedence --prohibit-bdep=%n .
 <<
 InfoTest: <<
 	TestScript: <<
+		TestDepends: fink-package-precedence
 		make check || exit 2
 		fink-package-precedence --prohibit-bdep=%n . || exit 2
 	<<
