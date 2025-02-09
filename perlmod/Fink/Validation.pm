@@ -67,7 +67,7 @@ our @splitoff_required_fields = map {lc $_}
 # All fields that expect a boolean value
 our %boolean_fields = map {$_, 1}
 	(
-		qw(builddependsonly essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests usemaxbuildjobs buildasnobody),
+		qw(builddependsonly essential nosourcedirectory updateconfigguess updatelibtool updatepod noperltests usemaxbuildjobs buildasnobody nosandbox),
 		map {"noset".$_} @set_vars
 	);
 
@@ -204,6 +204,7 @@ our %valid_fields = map {$_, 1}
 		 'noperltests',
 		 'usemaxbuildjobs',
 		 'buildasnobody',
+		 'nosandbox',
 #  install phase:
 		 'updatepod',
 		 'installscript',
