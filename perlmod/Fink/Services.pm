@@ -14,7 +14,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -1430,35 +1430,35 @@ sub enforce_gcc {
 
 =item get_osx_vers
 
-    my $os_x_version = get_osx_vers();
+	my $osx_version = get_osx_vers();
 
-Returns macOS major and minor versions (if that's what this platform
-appears to be, as indicated by being able to run /usr/bin/sw_vers).
+Returns macOS major and minor version (if that's what this platform
+appears to be, as indicated by being able to run C</usr/bin/sw_vers>).
 The output of that command is parsed and cached in a global configuration
-option in the Fink::Config package so that multiple calls to this function
-do not result in repeated spawning of sw_vers processes.
+option in the L<Fink::Config> package so that multiple calls to this function
+do not result in repeated spawning of C<sw_vers> processes.
 
 =cut
 
+# TODO(wrengr): Should we move the check against L<get_darwin_equiv>
+# into L<get_osx_vers_long> itself? That would change the semantics of
+# L<get_osx_vers_long> since it could now die in addition to returning
+# a falsy string.  But it would mean caching the comparison too, so that
+# L<get_osx_vers> just becomes that simple regex to drop any lower-order
+# versioning or patch suffix.
 sub get_osx_vers {
-	my $sw_vers = get_osx_vers_long();
-	my $darwin_osx = get_darwin_equiv();
-	$sw_vers =~ s/^(\d+\.\d+).*$/$1/;
-	if ($sw_vers != $darwin_osx) {
-		# Special cases in Big Sur, Monterey, Ventura, and Sonoma
-		# where it's OK to have a mismatch.
-		my %sw_to_darwin = (
-			'11.6' => 11.5,
-			'11.7' => 11.5,
-			'12.6' => 12.5,
-			'12.7' => 12.5,
-			'13.6' => 13.5,
-			'13.7' => 13.5,
-			'14.7' => 14.6);
-		die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink"
-			unless $sw_to_darwin{$sw_vers} == $darwin_osx;
-	}
-	return $sw_vers;
+	my ($sw_vers) = get_osx_vers_long() =~ m/^(\d+\.\d+)/;
+	my @equivs = get_darwin_equiv();
+	return $sw_vers
+		if grep { $_ == $sw_vers } @equivs;
+		# TODO(wrengr): or use L<List::Util/any> to make the meaning clearer.
+
+	my $plural = @equivs > 1;
+	die "$sw_vers does not match "
+		. ($plural ? 'any of ' : '')
+		. 'the expected value' . ($plural ? 's' : '') . ' '
+		. ($plural ? '[' . join(', ', @equivs) . ']' : $equivs[0]) . '. '
+		. 'Please run `fink selfupdate` to download a newer version of fink';
 }
 
 =item get_osx_vers_long
@@ -1522,23 +1522,26 @@ sub get_host_multiarch {
 
 =item get_darwin_equiv
 
-	my $os_x_version = get_darwin_equiv();
+	my @all_osx_versions = get_darwin_equiv();
+	my $the_first_osx_version = get_darwin_equiv();
 
 For the kernel major and minor version (i.e., the "8.6" of "8.6.1") as
 computed by L<get_kernel_vers_long|Fink::Services/get_kernel_vers_long>,
-return the macOS major and minor version expected to be used on it.
-Returns C<undef> if it couldn't be determined.
+return either the first or all macOS major and minor versions which
+are expected to be used on that kernel version.  Returns C<undef>
+if the macOS versions cannot be determined.
 
 =cut
 
-sub get_darwin_equiv {
+sub get_darwin_equivs {
 	my ($kernel_vers, $kernel_vers_minor) = get_kernel_vers_long() =~ m/^(\d+)\.(\d+)/;
+	my $osx_guess = undef;
 	if ($kernel_vers == 1) {
-		return '10.0';
-	} elsif ($kernel_vers <= 19) {
+		$osx_guess = '10.0';
+	} elsif (2 <= $kernel_vers and $kernel_vers <= 19) {
 		# darwin19 == 10.15
-		return '10.' . ($kernel_vers - 4);
-	} elsif (20 <= $kernel_vers && $kernel_vers <= 22) {
+		$osx_guess = '10.' . ($kernel_vers - 4);
+	} elsif (20 <= $kernel_vers and $kernel_vers <= 22) {
 		# darwin20.1 == 11.0
 		# darwin20.2 == 11.1
 		# darwin20.6 == 11.5, 11.6, 11.7 handled in get_osx_vers()
@@ -1547,14 +1550,30 @@ sub get_darwin_equiv {
 		# darwin21.6 == 12.5, 12.6, or 12.7 handled in get_osx_vers()
 		# darwin22.1 == 13.0
 		# darwin22.6 == 13.5 or 13.6 handled in get_osx_vers()
-		return ($kernel_vers - 9) . '.' . ($kernel_vers_minor - 1);
-	} elsif ($kernel_vers >= 23) {
+		$osx_guess = ($kernel_vers - 9) . '.' . ($kernel_vers_minor - 1);
+	} elsif (23 <= $kernel_vers) {
 		# darwin23.0 == 14.0 (beta)
 		# darwin23.1 == 14.1
 		# darwin23.6 == 14.7 handled in get_osx_vers()
 		# darwin24.0 == 15.0 (beta)
 		# darwin24.1 == 15.1
-		return ($kernel_vers - 9) . '.' . $kernel_vers_minor;
+		$osx_guess = ($kernel_vers - 9) . '.' . $kernel_vers_minor;
+	}
+
+	# In scalar context we just return the canonical macOS version.
+	return $osx_guess if not wantarray;
+
+	# In list context we return all the macOS versions which have
+	# the same Darwin version.
+	my %darwin_to_osx = (
+		'11.5' => [11.5, 11.6, 11.7],
+		'12.5' => [12.5, 12.6, 12.7],
+		'13.5' => [13.5, 13.6, 13.7],
+		'14.6' => [14.6, 14.7]);
+	if (exists $darwin_to_osx{$osx_guess}) {
+		return @{$darwin_to_osx{$osx_guess}};
+	} else {
+		return $osx_guess;
 	}
 }
 
