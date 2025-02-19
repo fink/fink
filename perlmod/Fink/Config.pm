@@ -220,7 +220,7 @@ my %option_defaults = (
 		maintainermode showversion showprefix use_binary) ),
 	map( { $_ => 1 } qw(build_as_nobody) ),
 	map( { $_ => "" } qw(tests validate) ),
-	map ( { $_ => [] } qw(include_trees exclude_trees) ),
+	map( { $_ => [] } qw(include_trees exclude_trees) ),
 	map( { $_ => -1 } qw(use_binary) ),
 );
 

@@ -1531,37 +1531,29 @@ couldn't be determined.
 =cut
 
 sub get_darwin_equiv {
-	my %darwin_osx = (
-		'1' => '10.0',
-	);
-	my $kernel_vers = get_kernel_vers();
-	my $kernel_vers_minor = get_kernel_vers_minor();
-	if ($kernel_vers <= 19) {
+	my ($kernel_vers, $kernel_vers_minor) = get_kernel_vers_long() =~ m/^(\d+)\.(\d+)/;
+	if ($kernel_vers == 1) {
+		return '10.0';
+	} elsif ($kernel_vers <= 19) {
 		# darwin19 == 10.15
-		return $darwin_osx{$kernel_vers} || '10.' . ($kernel_vers-4);
-	} elsif ($kernel_vers == 20) {
+		return '10.' . ($kernel_vers - 4);
+	} elsif (20 <= $kernel_vers && $kernel_vers <= 22) {
 		# darwin20.1 == 11.0
 		# darwin20.2 == 11.1
 		# darwin20.6 == 11.5, 11.6, 11.7 handled in get_osx_vers()
-		return $darwin_osx{$kernel_vers} || '11.' . ($kernel_vers_minor-1);
-	} elsif ($kernel_vers == 21) {
 		# darwin21.1 == 12.0
 		# darwin21.2 == 12.1
 		# darwin21.6 == 12.5, 12.6, or 12.7 handled in get_osx_vers()
-		return $darwin_osx{$kernel_vers} || '12.' . ($kernel_vers_minor-1);
-	} elsif ($kernel_vers == 22) {
 		# darwin22.1 == 13.0
 		# darwin22.6 == 13.5 or 13.6 handled in get_osx_vers()
-		return $darwin_osx{$kernel_vers} || '13.' . ($kernel_vers_minor-1);
-	} elsif ($kernel_vers == 23) {
+		return ($kernel_vers - 9) . '.' . ($kernel_vers_minor - 1);
+	} elsif ($kernel_vers >= 23) {
 		# darwin23.0 == 14.0 (beta)
 		# darwin23.1 == 14.1
 		# darwin23.6 == 14.7 handled in get_osx_vers()
-		return $darwin_osx{$kernel_vers} || '14.' . ($kernel_vers_minor);
-	} elsif ($kernel_vers >= 24) {
 		# darwin24.0 == 15.0 (beta)
 		# darwin24.1 == 15.1
-		return $darwin_osx{$kernel_vers} || '15.' . ($kernel_vers_minor);
+		return ($kernel_vers - 9) . '.' . $kernel_vers_minor;
 	}
 }
 
@@ -1595,14 +1587,6 @@ sub get_kernel_vers_minor {
 
 sub get_kernel_vers_long {
 	return lc((uname())[2]);
-}
-
-sub get_system_version {
-	if (get_osx_vers()) {
-		return get_osx_vers();
-	} else {
-		return get_darwin_equiv();
-	}
 }
 
 =item get_system_perl_version
