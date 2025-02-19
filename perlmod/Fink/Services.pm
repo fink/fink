@@ -1522,11 +1522,12 @@ sub get_host_multiarch {
 
 =item get_darwin_equiv
 
-	my $os_x_version = get_darwin_equiv($kernel_major_version);
+	my $os_x_version = get_darwin_equiv();
 
-For a given kernel major version (i.e., the "8" of "8.6.1"), return
-the macOS version expected to be used on it. Returns undef if it
-couldn't be determined.
+For the kernel major and minor version (i.e., the "8.6" of "8.6.1") as
+computed by L<get_kernel_vers_long|Fink::Services/get_kernel_vers_long>,
+return the macOS major and minor version expected to be used on it.
+Returns C<undef> if it couldn't be determined.
 
 =cut
 
