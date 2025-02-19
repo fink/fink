@@ -5479,7 +5479,7 @@ sub get_env {
 
 	# Special feature: SetMACOSX_DEPLOYMENT_TARGET does an implicit NoSet:true
 	if (not $self->has_param("SetMACOSX_DEPLOYMENT_TARGET")) {
-		my $sw_vers = Fink::Services::get_osx_vers() || Fink::Services::get_darwin_equiv();
+		my $sw_vers = Fink::Services::get_osx_vers();
 		if (defined $sw_vers) {
 			$defaults{'MACOSX_DEPLOYMENT_TARGET'} = $sw_vers;
 		}
