@@ -5,7 +5,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2024 The Fink Package Manager Team
+# Copyright (c) 2001-2025 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1414,6 +1414,11 @@ sub enforce_gcc {
 		'15.0' => '4.2',
 		'15.1' => '4.2',
 		'15.2' => '4.2',
+		'15.3' => '4.2',
+		'15.4' => '4.2',
+		'15.5' => '4.2',
+		'15.6' => '4.2',
+		'26.0' => '4.2',
 	);
 
 	if (my $sw_vers = get_osx_vers_long()) {
@@ -1575,10 +1580,13 @@ sub get_darwin_equiv {
 		# darwin23.1 == 14.1
 		# darwin23.6 == 14.7 handled in get_osx_vers()
 		return $darwin_osx{$kernel_vers} || '14.' . ($kernel_vers_minor);
-	} elsif ($kernel_vers >= 24) {
+	} elsif ($kernel_vers = 24) {
 		# darwin24.0 == 15.0 (beta)
 		# darwin24.1 == 15.1
 		return $darwin_osx{$kernel_vers} || '15.' . ($kernel_vers_minor);
+	} elsif ($kernel_vers >= 25) {
+		# darwin25.0 == 26.0 (beta)
+		return $darwin_osx{$kernel_vers} || ($kernel_vers+1) . ($kernel_vers_minor);
 	}
 }
 

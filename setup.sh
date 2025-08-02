@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2024 The Fink Package Manager Team
+# Copyright (c) 2001-2025 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -48,7 +48,7 @@ elif [ $osMajorVer -ge 20 -a $osMajorVer -le 22 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.30"
 elif [ $osMajorVer -eq 23 -a $osMinorVer -le 3 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.30"
-elif [ $osMajorVer -ge 23 -a $osMajorVer -le 24 ]; then
+elif [ $osMajorVer -ge 23 -a $osMajorVer -le 25 ]; then
   perlexe="/usr/bin/arch -arch $architecture /usr/bin/perl5.34"
 fi
 

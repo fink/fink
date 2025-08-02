@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2024 The Fink Package Manager Team
+# Copyright (c) 2001-2025 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -249,6 +249,10 @@ GCC_MSG
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin24\.(\d+)\.\d+$/) {
 		&host_supported_if($2 =~ /^[0-6]$/);
 		$distribution = "15.0";
+	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin25\.(\d+)\.\d+$/) {
+		# last macOS version that will support x86_64
+		&host_supported_if($2 =~ /^[0]$/);
+		$distribution = "26.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
 			"supported by Fink.");
@@ -1099,6 +1103,7 @@ sub get_selfupdatetrees {
 		"14.0" => "10.9-libcxx",
 		"14.4" => "10.9-libcxx",
 		"15.0" => "10.9-libcxx",
+		"26.0" => "10.9-libcxx",
 		);
 
 	return $selfupdatetrees{$distribution};
