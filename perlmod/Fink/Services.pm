@@ -1477,6 +1477,7 @@ sub get_osx_vers {
 			'13.6' => 13.5,
 			'13.7' => 13.5,
 			'14.7' => 14.6,
+			'14.8' => 14.6,
 			'15.7' => 15.6);
 		die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink"
 			unless $sw_to_darwin{$sw_vers} == $darwin_osx;
