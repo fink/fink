@@ -1582,13 +1582,13 @@ sub get_darwin_equiv {
 		# darwin23.1 == 14.1
 		# darwin23.6 == 14.7 handled in get_osx_vers()
 		return $darwin_osx{$kernel_vers} || '14.' . ($kernel_vers_minor);
-	} elsif ($kernel_vers = 24) {
+	} elsif ($kernel_vers == 24) {
 		# darwin24.0 == 15.0 (beta)
 		# darwin24.1 == 15.1
 		return $darwin_osx{$kernel_vers} || '15.' . ($kernel_vers_minor);
 	} elsif ($kernel_vers >= 25) {
 		# darwin25.0 == 26.0 (beta)
-		return $darwin_osx{$kernel_vers} || ($kernel_vers+1) . ($kernel_vers_minor);
+		return $darwin_osx{$kernel_vers} || ($kernel_vers+1) . '.' . ($kernel_vers_minor);
 	}
 }
 
