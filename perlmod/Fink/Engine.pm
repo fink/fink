@@ -4,7 +4,7 @@
 #
 # Fink - a package manager that downloads source and installs it
 # Copyright (c) 2001 Christoph Pfisterer
-# Copyright (c) 2001-2021 The Fink Package Manager Team
+# Copyright (c) 2001-2023 The Fink Package Manager Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1221,6 +1221,7 @@ sub cmd_cleanup {
 		[ 'debs'              => \$modes{debs},
 			"Delete .deb (compiled binary package) files." ],
 		[ 'sources|srcs'      => \$modes{srcs},	"Delete source files." ],
+		[ 'buildtrees'      => \$modes{buildtrees},	"Delete unfinished package build trees." ],
 		[ 'buildlocks|bl'     => \$modes{bl},	"Delete stale buildlock packages." ],
 		[ 'dpkg-status'       => \$modes{dpkg},
 			"Remove uninstalled packages from dpkg status database." ],
@@ -1233,7 +1234,7 @@ sub cmd_cleanup {
 	], \@_, helpformat => <<HELPFORMAT,
 %intro{[mode(s) and options]}
 The following modes can be specified:
-%opts{debs,sources,buildlocks,dpkg-status,obsolete-packages,all}
+%opts{debs,sources,buildtrees,buildlocks,dpkg-status,obsolete-packages,all}
 
 If no mode is specified, the default is --debs --sources.
 
@@ -1247,11 +1248,12 @@ HELPFORMAT
 	# (must not fail...this is how FinkCommander calls it)
 	$modes{srcs} = $modes{debs} = 1 if !scalar(grep { $_ } values %modes);
 
-	($modes{srcs} || $modes{all}) && &cleanup_sources(%opts);
-	($modes{debs} || $modes{all}) && &cleanup_debs(%opts);
-	($modes{bl}   || $modes{all}) && &cleanup_buildlocks(%opts, internally=>0);
-	($modes{obs}  || $modes{all}) && &cleanup_obsoletes(%opts);
-	($modes{dpkg} || $modes{all}) && &cleanup_dpkg_status(%opts);
+	($modes{srcs}       || $modes{all}) && &cleanup_sources(%opts);
+	($modes{buildtrees} || $modes{all}) && &cleanup_buildtrees(%opts);
+	($modes{debs}       || $modes{all}) && &cleanup_debs(%opts);
+	($modes{bl}         || $modes{all}) && &cleanup_buildlocks(%opts, internally=>0);
+	($modes{obs}        || $modes{all}) && &cleanup_obsoletes(%opts);
+	($modes{dpkg}       || $modes{all}) && &cleanup_dpkg_status(%opts);
 }
 
 =item cleanup_*
@@ -1358,6 +1360,54 @@ sub cleanup_sources {
 		print 'Obsolete sources ',
 			  ($opts{keep_old} ? "moved to $oldsrcdir" : "deleted from $srcdir"),
 			  ": $file_count\n\n";
+	}
+}
+
+=item cleanup_buildtrees
+
+Remove directories from %p/src/fink.build (or as set in fink.conf). The 
+following options are known:
+
+=over 4
+
+=item dryrun
+
+If true, just print the names of the directories, don't actually delete them.
+
+=back
+
+=cut
+
+sub cleanup_buildtrees {
+	my %opts = (dryrun => 0, @_);
+
+	my $srcdir = "$basepath/src";
+	my $build_path = $config->param_default("Buildpath", "$basepath/src/fink.build");
+
+	my $file_count = 0;
+
+	# Get the list of directories inside $build_path that will be removed.
+	opendir(DIR, $build_path) or die "Can't access $build_path: $!";
+	my @old_buildtrees = readdir(DIR);
+	closedir(DIR);
+
+	my $print_it = $opts{dryrun} || $config->verbosity_level() > 1;
+
+	my $verb;
+	if ($opts{dryrun}) {
+		$verb = 'Obsolete';
+	} else {
+		$verb = 'Removing obsolete';
+	}
+
+	foreach my $directory (sort @old_buildtrees) {
+		if (-d "$build_path/$directory" && $directory ne q(.) && $directory ne q(..)) {
+			# This will kill an active build process.
+			print "$verb source tree: $build_path/$directory\n" if $print_it;
+			if (!$opts{dryrun}) {
+				unlink "$build_path/$directory" and $file_count++;
+			}
+		}
 	}
 }
 
