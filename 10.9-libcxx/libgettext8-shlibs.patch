@@ -1,6 +1,6 @@
 diff -ruN gettext-0.22.5-orig/gettext-runtime/libasprintf/Makefile.in gettext-0.22.5/gettext-runtime/libasprintf/Makefile.in
---- gettext-0.22.5-orig/gettext-runtime/libasprintf/Makefile.in	2024-02-21 17:35:57.000000000 +0200
-+++ gettext-0.22.5/gettext-runtime/libasprintf/Makefile.in	2024-07-22 21:29:40.000000000 +0200
+--- gettext-0.22.5-orig/gettext-runtime/libasprintf/Makefile.in	2024-02-21 10:35:57.000000000 -0600
++++ gettext-0.22.5/gettext-runtime/libasprintf/Makefile.in	2024-12-02 03:18:37.000000000 -0600
 @@ -1333,7 +1333,7 @@
  # How to build libasprintf.
  # With libtool 1.5.14, on some platforms, like BeOS, "libtool --tag=CXX" fails
@@ -9,11 +9,11 @@ diff -ruN gettext-0.22.5-orig/gettext-runtime/libasprintf/Makefile.in gettext-0.
 +libasprintf_la_LDFLAGS = @LTNOUNDEF@ -static -export-symbols-regex $(LIBASPRINTF_EXPORTED_SYMBOLS_REGEX)
  
  # Documentation.
-
+ 
 diff -ruN gettext-0.22.5-orig/gettext-tools/src/Makefile.in gettext-0.22.5/gettext-tools/src/Makefile.in
---- gettext-0.22.5-orig/gettext-tools/src/Makefile.in	2024-02-21 17:35:57.000000000 +0200
-+++ gettext-0.22.5/gettext-tools/src/Makefile.in	2024-07-22 21:29:40.000000000 +0200
-@@ -3633,10 +3633,10 @@
+--- gettext-0.22.5-orig/gettext-tools/src/Makefile.in	2024-02-21 10:36:32.000000000 -0600
++++ gettext-0.22.5/gettext-tools/src/Makefile.in	2024-12-02 03:18:37.000000000 -0600
+@@ -4940,10 +4940,10 @@
  	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(urlget_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o urlget-urlget.obj `if test -f 'urlget.c'; then $(CYGPATH_W) 'urlget.c'; else $(CYGPATH_W) '$(srcdir)/urlget.c'; fi`
  
  xgettext-xgettext.o: xgettext.c

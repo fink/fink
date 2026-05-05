@@ -10,7 +10,7 @@ Source-MD5: 1245c87cfa0b123f55540681af396880
 # libgettext8-shlibs.patch must be regenerated for every update since
 # dpkg uses it and needs the correct full file headers for patch -p0 
 PatchFile: %n.patch
-PatchFile-MD5: 97f499e17812d2c4841669a58303149e
+PatchFile-MD5: 40c5bb69aea2d78ca50c7bf011653a01
 PatchScript: <<
  patch -p1 < %{PatchFile}
 <<
