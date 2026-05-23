@@ -251,7 +251,7 @@ GCC_MSG
 		$distribution = "15.0";
 	} elsif ($host =~ /^(aarch64|x86_64)-apple-darwin25\.(\d+)\.\d+$/) {
 		# last macOS version that will support x86_64
-		&host_supported_if($2 =~ /^[0]$/);
+		&host_supported_if($2 =~ /^[0-5]$/);
 		$distribution = "26.0";
 	} else {
 		&print_breaking("This system is unrecognized and not ".
