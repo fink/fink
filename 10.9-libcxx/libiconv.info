@@ -16,11 +16,11 @@ CustomMirror: <<
 <<
 Source: mirror:custom:libiconv-%v.tar.gz
 Source-MD5: d718cd5a59438be666d1575855be72c3
-Source2: mirror:sourceforge:fink/gettext-0.22.5.tar.gz
-#Source2: mirror:gnu:gettext/gettext-0.22.5.tar.gz
+#Source2: mirror:sourceforge:fink/gettext-0.22.5.tar.gz
+Source2: mirror:gnu:gettext/gettext-0.22.5.tar.gz
 Source2-MD5: 1245c87cfa0b123f55540681af396880
 PatchFile: %n.patch
-PatchFile-MD5: b4e5dfc26337f538e35c645128d5e30b
+PatchFile-MD5: 4b19aee9e5f80847ff5386a136f15801
 NoSetLDFLAGS: true
 NoSetCPPFLAGS: true
 CompileScript: <<
