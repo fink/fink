@@ -1,6 +1,6 @@
-diff -Nurd libintl-perl-1.35.orig/Makefile.PL libintl-perl-1.35/Makefile.PL
---- libintl-perl-1.35.orig/Makefile.PL	2022-12-14 03:04:51.000000000 -0500
-+++ libintl-perl-1.35/Makefile.PL	2025-01-29 21:43:02.000000000 -0500
+diff -Nurd libintl-perl-1.37.orig/Makefile.PL libintl-perl-1.37/Makefile.PL
+--- libintl-perl-1.37.orig/Makefile.PL	2026-02-08 10:38:32
++++ libintl-perl-1.37/Makefile.PL	2026-06-11 21:21:29
 @@ -92,7 +92,10 @@
  }
  EOF
@@ -46,9 +46,9 @@ diff -Nurd libintl-perl-1.35.orig/Makefile.PL libintl-perl-1.35/Makefile.PL
      push @cmd, $Config{ccflags};
      push @cmd, $Config{ldflags};
      push @cmd, $Config{perllibs};
-diff -Nurd libintl-perl-1.35.orig/gettext_xs/Makefile.PL libintl-perl-1.35/gettext_xs/Makefile.PL
---- libintl-perl-1.35.orig/gettext_xs/Makefile.PL	2022-12-02 06:30:23.000000000 -0500
-+++ libintl-perl-1.35/gettext_xs/Makefile.PL	2025-01-29 21:43:02.000000000 -0500
+diff -Nurd libintl-perl-1.37.orig/gettext_xs/Makefile.PL libintl-perl-1.37/gettext_xs/Makefile.PL
+--- libintl-perl-1.37.orig/gettext_xs/Makefile.PL	2026-02-08 10:40:50
++++ libintl-perl-1.37/gettext_xs/Makefile.PL	2026-06-11 21:21:29
 @@ -37,7 +37,8 @@
      ),
      PREREQ_PM => { File::Spec => 0 },
