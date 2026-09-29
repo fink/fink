@@ -57,6 +57,7 @@ InstallScript: <<
 	make install DESTDIR=%d
 	# .la install sometimes fails after `test -n "$dependencies"`
 	[ -f %i/lib/libintl.la ] || /usr/bin/install -c -m 644 intl/.libs/libintl.lai %i/lib/libintl.la
+	# No need for dependency_libs in .la files if not building static libs
 	perl -pi -e "s/dependency_libs=.*$/dependency_libs=''/" %i/lib/libintl.la
 <<
 DocFiles: README* AUTHORS gettext-runtime/BUGS COPYING* NEWS THANKS ChangeLog* 

@@ -1675,7 +1675,7 @@ diff -ruN libiconv-1.16-orig/lib/utf8mac.h libiconv-1.16/lib/utf8mac.h
 +    flags |= UTF_REVERSE_ENDIAN;
 +#endif
 +
-+    ret = utf8_decodestr(s, n, ucsp, &ucslen, sizeof(ucsp), '/', flags, &consumed);
++    ret = utf8_decodestr(s, n, ucsp, &ucslen, sizeof(ucsp), 0, flags, &consumed);
 +
 +    if (ret == ENAMETOOLONG)	/* Name didn't fit; only ucslen chars were decoded */
 +	return RET_TOOFEW(0);
