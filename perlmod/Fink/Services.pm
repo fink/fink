@@ -1418,6 +1418,8 @@ sub enforce_gcc {
 		'15.4' => '4.2',
 		'15.5' => '4.2',
 		'15.6' => '4.2',
+		'15.7' => '4.2',
+		'15.8' => '4.2',
 		'26.0' => '4.2',
 		'27.0' => '4.2',
 	);
@@ -1480,6 +1482,7 @@ sub get_osx_vers {
 			'14.7' => 14.6,
 			'14.8' => 14.6,
 			'15.7' => 15.6,
+			'15.8' => 15.6,
 			'26.7' => 26.6);
 		die "$sw_vers does not match the expected value of $darwin_osx. Please run `fink selfupdate` to download a newer version of fink"
 			unless $sw_to_darwin{$sw_vers} == $darwin_osx;
