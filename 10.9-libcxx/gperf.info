@@ -1,6 +1,6 @@
 Package: gperf
-Version: 3.1
-Revision: 2
+Version: 3.3
+Revision: 1
 Essential: yes
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 CustomMirror: <<
@@ -8,7 +8,7 @@ CustomMirror: <<
 	Secondary: http://downloads.sourceforge.net/fink/
 <<
 Source: mirror:custom:%n-%v.tar.gz
-Source-Checksum: SHA256(588546b945bba4b70b6a3a616e80b4ab466e3f33024a352fc2198112cdbb3ae2)
+Source-Checksum: SHA256(fd87e0aba7e43ae054837afd6cd4db03a3f2693deb3619085e6ed9d8d9604ad8)
 ConfigureParams: --docdir=%p/share/doc/%n
 # There are external deps but mis-orders -I flags, so don't bother
 # setting fink's to avoid needlessly-disconcerting compiler commands.
@@ -42,12 +42,12 @@ the form of the input, what options are available, and hints on
 choosing the best options for particular key words set.
 <<
 DescPackaging: <<
-Test suite is not parallelized because tests clobber each other's
-object files and output files... lame.  
+	Test suite is not parallelized because tests clobber each
+	other's object files and output files... lame.
 
-Former maintainer: Chuck Robey <chuckr@chuckr.org>
+	Former maintainer: Chuck Robey <chuckr@chuckr.org>
 
-Former maintainer: David Fang <fangism@users.sourceforge.net>
+	Former maintainer: David Fang <fangism@users.sourceforge.net>
 <<
 Homepage: https://www.gnu.org/software/gperf/gperf.html
 License: GPL
