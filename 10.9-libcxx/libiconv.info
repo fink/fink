@@ -1,5 +1,5 @@
 Package: libiconv
-Version: 1.17
+Version: 1.19
 Revision: 1
 Description: Character set conversion library
 License: LGPL
@@ -15,69 +15,72 @@ CustomMirror: <<
 	Secondary: http://downloads.sourceforge.net/fink/
 <<
 Source: mirror:custom:libiconv-%v.tar.gz
-Source-MD5: d718cd5a59438be666d1575855be72c3
+Source-MD5: c04d0fa4cae4e9a4febc457fc00ee519
 Source2: mirror:sourceforge:fink/gettext-0.22.5.tar.gz
 #Source2: mirror:gnu:gettext/gettext-0.22.5.tar.gz
 Source2-MD5: 1245c87cfa0b123f55540681af396880
 PatchFile: %n.patch
-PatchFile-MD5: b4e5dfc26337f538e35c645128d5e30b
-NoSetLDFLAGS: true
+PatchFile-MD5: 2cdd80ba89aeaabde8b0b2a3f56afd03
 NoSetCPPFLAGS: true
+NoSetLDFLAGS: true
+SetCPPFLAGS: -I%b/../_inst%p/include
+SetLDFLAGS: -L%b/../_inst%p/lib
 CompileScript: <<
 #! /bin/sh -ex
-### Build our local gettext-runtime.
-### If gettext gets updated, make sure these ./configure parameters 
-### match the new package parameters (except build static only here).
-### Not necessary, but will avoid unforeseen consequences.
-cd %b/../gettext-0.22.5/gettext-runtime
-EMACS=no CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" am_cv_func_iconv=no ./configure \
-	--prefix=%p \
-	--infodir='${prefix}/share/info' \
-	--mandir='%p/share/man' \
-	--with-included-gettext \
-	--disable-csharp \
-	--disable-rpath \
-	--disable-libasprintf \
-	--disable-shared \
-	--disable-java \
-	--disable-native-java \
-	--with-included-glib \
-	--with-included-libcroco \
-	--with-included-libxml \
-	--with-included-libunistring \
-	--without-git \
-	--without-cvs \
-	ac_cv_prog_AWK=/usr/bin/awk \
-	ac_cv_path_GREP=/usr/bin/grep \
-	ac_cv_path_SED=/usr/bin/sed
-make
-rm -rf %b/../_inst
-make install DESTDIR=%b/../_inst
+	### Build our local gettext-runtime.
+	### If gettext gets updated, make sure these ./configure
+	### parameters match the new package parameters (except build
+	### static only here).  Not necessary, but will avoid
+	### unforeseen consequences.
+	rm -rf ../_inst
+	pushd ../gettext-0.22.5/gettext-runtime
+		./configure %c \
+			--with-included-gettext \
+			--disable-csharp \
+			--disable-rpath \
+			--disable-libasprintf \
+			--disable-shared \
+			--disable-java \
+			--disable-native-java \
+			--with-included-glib \
+			--with-included-libcroco \
+			--with-included-libxml \
+			--with-included-libunistring \
+			--without-git \
+			--without-cvs \
+			am_cv_func_iconv=no \
+			EMACS=no \
+			ac_cv_prog_AWK=/usr/bin/awk \
+			ac_cv_path_GREP=/usr/bin/grep \
+			ac_cv_path_SED=/usr/bin/sed
+		make
+		make install DESTDIR=%b/../_inst
+	popd
 
-### now build iconv
-cd %b/../libiconv-%v
-make -f Makefile.devel
-am_cv_func_iconv="yes"
-am_cv_proto_iconv=""
-export am_cv_func_iconv am_cv_proto_iconv
-CPPFLAGS="-I%b/../_inst%p/include" LDFLAGS="-L%b/../_inst%p/lib" ./configure --prefix=%p --mandir='${prefix}/share/man' --enable-extra-encodings
-find . -name Makefile | xargs perl -pi -e 's|\@LIBINTL_STATIC\@|%b/../_inst%p/lib/libintl.a -Wl,-framework,CoreFoundation|g'
-make
+	### now build iconv
+	make -f Makefile.devel
+	./configure %c \
+		--docdir=%p/share/doc/libiconv \
+		--enable-extra-encodings \
+		am_cv_func_iconv=yes \
+		am_cv_proto_iconv=""
+	make
 <<
 InfoTest: <<
 	TestScript: make check || exit 2
 <<
 InstallScript: <<
-mkdir -p %i/share/man %i/share/doc/%n
-make install prefix=%i docdir=%i/share/doc/%n
-perl -pi -e "s,^dependency_libs=.*,dependency_libs=' -L%p/lib'," %i/lib/libcharset.la %i/lib/libiconv.la
-rm -rf %i/doc
-rm -f %i/lib/charset.alias
+#! /bin/sh -ex
+	make install DESTDIR=%d
+	perl -pi -e "s,^dependency_libs=.*,dependency_libs=' -L%p/lib'," %i/lib/libcharset.la %i/lib/libiconv.la
+	pushd %i
+		rm -f lib/charset.alias
+	popd
 <<
 DocFiles: README* AUTHORS COPYING.LIB DESIGN NEWS NOTES THANKS
 Shlibs: <<
 	%p/lib/libcharset.1.dylib 2.0.0 %n (>= 1.7-7)
-	%p/lib/libiconv.2.dylib 9.0.0 %n (>= 1.15-1)
+	%p/lib/libiconv.2.dylib 10.0.0 %n (>= 1.19-1)
 <<
 #
 PostInstScript: <<
@@ -145,31 +148,33 @@ our build system.
   Build is -jN safe afterwards.
 
 2017-08-23 Jack Howarth
- With format string strictness, High Sierra also enforces that
- %n isn't used in dynamic format strings, but we should just
- disable its use on darwin in general. (libiconv-gettext.patch)
- 
- PatchFile updated to solve build failure:
- In file included from ./iconv.c:71:
- In file included from ./converters.h:125:
- ./utf8mac.h:161:8: error: hexadecimal floating constant requires an exponent
-        0x1.15, 0xA344,   0x1E15, 0xA346,   0x1E16, 0xA348,   0x1E17, 0xA34A,
- 
- Patching solution for exponent described at 
- 
- https://stackoverflow.com/questions/24288691/
- why-does-hexadecimal-floating-point-need-to-have-a-specified-exponent
+* With format string strictness, High Sierra also enforces that
+  %n isn't used in dynamic format strings, but we should just
+  disable its use on darwin in general. (libiconv-gettext.patch)
+* PatchFile updated to solve build failure:
+  In file included from ./iconv.c:71:
+  In file included from ./converters.h:125:
+  ./utf8mac.h:161:8: error: hexadecimal floating constant requires an exponent
+         0x1.15, 0xA344,   0x1E15, 0xA346,   0x1E16, 0xA348,   0x1E17, 0xA34A,
+* Patching solution for exponent described at 
+  https://stackoverflow.com/questions/24288691/
+  why-does-hexadecimal-floating-point-need-to-have-a-specified-exponent
 
 2023-01-08 Daniel Macks
- Patching iconv.1.html as well as iconv.1 so we don't need to run
- groff for .1 -> .1.html regeneration. Apple seems to be dropping
- /usr/bin/groff and fink's groff is heavy and gives circular dep.
-
- Externalize gperf
+* Patching iconv.1.html as well as iconv.1 so we don't need to run
+  groff for .1 -> .1.html regeneration. Apple seems to be dropping
+  /usr/bin/groff and fink's groff is heavy and gives circular dep.
+* Externalize gperf
 
 2024-07-22 Derek Homeier
 * Update to 1.17
 * Patch utf8mac.h to fix incompatible pointer errors on macOS 15 / Xcode 16.
 * Bump internal gettext to latest 0.22.5
+
+2026-10-23 Daniel Macks
+* Update to 1.19
+* Use pushd/popd to clarify CWD
+* Use "pushd %i;rm [dir]" instead of "rm %i/[dir]" to protect against
+  whitespace in %p
 <<
 Homepage: http://www.gnu.org/software/libiconv/

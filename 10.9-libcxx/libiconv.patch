@@ -1,20 +1,20 @@
-diff -ruN libiconv-1.16-orig/Makefile.devel libiconv-1.16/Makefile.devel
---- libiconv-1.16-orig/Makefile.devel	2019-04-26 14:00:57.000000000 -0500
-+++ libiconv-1.16/Makefile.devel	2019-09-08 18:27:39.000000000 -0500
-@@ -19,9 +19,7 @@
- all : srclib/Makefile.gnulib srclib/Makefile.in \
+diff -Nurd libiconv-1.19.orig/Makefile.devel libiconv-1.19/Makefile.devel
+--- libiconv-1.19.orig/Makefile.devel	2026-03-06 10:08:44
++++ libiconv-1.19/Makefile.devel	2026-10-23 12:01:10
+@@ -44,9 +44,7 @@
+ all : srclib/Makefile.in \
        configures config.h.in \
        include/iconv.h.build.in \
--      lib/aliases.h lib/aliases_sysaix.h lib/aliases_syshpux.h lib/aliases_sysosf1.h lib/aliases_syssolaris.h \
+-      lib/aliases.h lib/aliases_sysaix.h lib/aliases_syshpux.h lib/aliases_sysosf1.h lib/aliases_syssolaris.h lib/aliases_sysos2.h \
 -      lib/aliases_aix.h lib/aliases_aix_sysaix.h \
 -      lib/aliases_osf1.h lib/aliases_osf1_sysosf1.h \
 +      lib/aliases.h \
        lib/aliases_dos.h \
-       lib/aliases_extra.h \
-       lib/flags.h lib/translit.h \
-diff -ruN libiconv-1.16-orig/lib/aliases.gperf libiconv-1.16/lib/aliases.gperf
---- libiconv-1.16-orig/lib/aliases.gperf	2019-04-26 13:59:59.000000000 -0500
-+++ libiconv-1.16/lib/aliases.gperf	2019-09-08 18:27:39.000000000 -0500
+       lib/aliases_os2.h lib/aliases_os2_sysos2.h \
+       lib/aliases_zos.h \
+diff -Nurd libiconv-1.19.orig/lib/aliases.gperf libiconv-1.19/lib/aliases.gperf
+--- libiconv-1.19.orig/lib/aliases.gperf	2026-03-07 03:26:16
++++ libiconv-1.19/lib/aliases.gperf	2026-10-23 12:00:17
 @@ -21,6 +21,9 @@
  US, ei_ascii
  CSASCII, ei_ascii
@@ -25,10 +25,10 @@ diff -ruN libiconv-1.16-orig/lib/aliases.gperf libiconv-1.16/lib/aliases.gperf
  UCS-2, ei_ucs2
  ISO-10646-UCS-2, ei_ucs2
  CSUNICODE, ei_ucs2
-diff -ruN libiconv-1.16-orig/lib/converters.h libiconv-1.16/lib/converters.h
---- libiconv-1.16-orig/lib/converters.h	2018-09-17 11:06:33.000000000 -0500
-+++ libiconv-1.16/lib/converters.h	2019-09-08 18:27:39.000000000 -0500
-@@ -122,6 +122,7 @@
+diff -Nurd libiconv-1.19.orig/lib/converters.h libiconv-1.19/lib/converters.h
+--- libiconv-1.19.orig/lib/converters.h	2024-12-15 06:53:15
++++ libiconv-1.19/lib/converters.h	2026-10-23 12:00:17
+@@ -130,6 +130,7 @@
  /* General multi-byte encodings */
  #include "utf8.h"
  #include "ucs2.h"
@@ -36,10 +36,10 @@ diff -ruN libiconv-1.16-orig/lib/converters.h libiconv-1.16/lib/converters.h
  #include "ucs2be.h"
  #include "ucs2le.h"
  #include "ucs4.h"
-diff -ruN libiconv-1.16-orig/lib/encodings.def libiconv-1.16/lib/encodings.def
---- libiconv-1.16-orig/lib/encodings.def	2018-09-17 11:06:32.000000000 -0500
-+++ libiconv-1.16/lib/encodings.def	2019-09-08 18:27:39.000000000 -0500
-@@ -68,6 +68,12 @@
+diff -Nurd libiconv-1.19.orig/lib/encodings.def libiconv-1.19/lib/encodings.def
+--- libiconv-1.19.orig/lib/encodings.def	2026-03-06 08:07:08
++++ libiconv-1.19/lib/encodings.def	2026-10-23 12:00:17
+@@ -76,6 +76,12 @@
              utf8)
  #endif
  
@@ -52,9 +52,9 @@ diff -ruN libiconv-1.16-orig/lib/encodings.def libiconv-1.16/lib/encodings.def
  DEFENCODING(( "UCS-2",                  /* glibc */
                "ISO-10646-UCS-2",        /* IANA */
                "csUnicode",              /* IANA */
-diff -ruN libiconv-1.16-orig/lib/flags.h libiconv-1.16/lib/flags.h
---- libiconv-1.16-orig/lib/flags.h	2019-04-26 14:00:04.000000000 -0500
-+++ libiconv-1.16/lib/flags.h	2019-09-08 18:27:39.000000000 -0500
+diff -Nurd libiconv-1.19.orig/lib/flags.h libiconv-1.19/lib/flags.h
+--- libiconv-1.19.orig/lib/flags.h	2026-03-07 03:26:20
++++ libiconv-1.19/lib/flags.h	2026-10-23 12:00:17
 @@ -14,6 +14,7 @@
  
  #define ei_ascii_oflags (0)
@@ -63,10 +63,10 @@ diff -ruN libiconv-1.16-orig/lib/flags.h libiconv-1.16/lib/flags.h
  #define ei_ucs2_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
  #define ei_ucs2be_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
  #define ei_ucs2le_oflags (HAVE_ACCENTS | HAVE_QUOTATION_MARKS | HAVE_HANGUL_JAMO)
-diff -ruN libiconv-1.16-orig/lib/iconv.c libiconv-1.16/lib/iconv.c
---- libiconv-1.16-orig/lib/iconv.c	2018-09-17 11:07:16.000000000 -0500
-+++ libiconv-1.16/lib/iconv.c	2019-09-08 18:27:39.000000000 -0500
-@@ -609,6 +609,29 @@
+diff -Nurd libiconv-1.19.orig/lib/iconv.c libiconv-1.19/lib/iconv.c
+--- libiconv-1.19.orig/lib/iconv.c	2026-03-06 08:14:22
++++ libiconv-1.19/lib/iconv.c	2026-10-23 12:04:23
+@@ -691,4 +691,27 @@
  strong_alias (libiconv_open, iconv_open)
  strong_alias (libiconv, iconv)
  strong_alias (libiconv_close, iconv_close)
@@ -94,11 +94,9 @@ diff -ruN libiconv-1.16-orig/lib/iconv.c libiconv-1.16/lib/iconv.c
 +	return libiconv_close(cd);
 +}
  #endif
- 
- #endif
-diff -ruN libiconv-1.16-orig/lib/utf8mac.h libiconv-1.16/lib/utf8mac.h
---- libiconv-1.16-orig/lib/utf8mac.h	1969-12-31 18:00:00.000000000 -0600
-+++ libiconv-1.16/lib/utf8mac.h	2019-09-08 18:27:39.000000000 -0500
+diff -Nurd libiconv-1.19.orig/lib/utf8mac.h libiconv-1.19/lib/utf8mac.h
+--- libiconv-1.19.orig/lib/utf8mac.h	1969-12-31 19:00:00
++++ libiconv-1.19/lib/utf8mac.h	2026-10-23 12:00:17
 @@ -0,0 +1,1608 @@
 +/*
 + * Copyright (C) 2003 Apple Computer, Inc. All rights reserved.
@@ -1708,20 +1706,20 @@ diff -ruN libiconv-1.16-orig/lib/utf8mac.h libiconv-1.16/lib/utf8mac.h
 +
 +    return len;
 +}
-diff -ruN libiconv-1.16-orig/man/iconv.1 libiconv-1.16/man/iconv.1
---- libiconv-1.16-orig/man/iconv.1	2014-01-02 16:23:02.000000000 -0600
-+++ libiconv-1.16/man/iconv.1	2019-09-08 18:27:39.000000000 -0500
-@@ -104,5 +104,4 @@
+diff -Nurd libiconv-1.19.orig/man/iconv.1 libiconv-1.19/man/iconv.1
+--- libiconv-1.19.orig/man/iconv.1	2024-12-15 06:53:15
++++ libiconv-1.19/man/iconv.1	2026-10-23 12:05:17
+@@ -108,5 +108,4 @@
  .SH "CONFORMING TO"
- POSIX:2001
+ POSIX:2024
  .SH "SEE ALSO"
 -.BR iconv_open (3),
 -.BR locale (7)
 +.BR iconv_open (3)
-diff -ruN libiconv-1.16-orig/man/iconv.1.html libiconv-1.16/man/iconv.1.html
---- libiconv-1.16-orig/man/iconv.1.html	2019-04-26 15:00:05.000000000 -0400
-+++ libiconv-1.16/man/iconv.1.html	2023-01-08 22:04:09.000000000 -0500
-@@ -198,8 +198,7 @@
+diff -Nurd libiconv-1.19.orig/man/iconv.1.html libiconv-1.19/man/iconv.1.html
+--- libiconv-1.19.orig/man/iconv.1.html	2026-03-07 03:26:20
++++ libiconv-1.19/man/iconv.1.html	2026-10-23 12:00:17
+@@ -210,8 +210,7 @@
  
  
  
@@ -1731,22 +1729,22 @@ diff -ruN libiconv-1.16-orig/man/iconv.1.html libiconv-1.16/man/iconv.1.html
  <hr>
  </body>
  </html>
-diff -ruN libiconv-1.16-orig/src/Makefile.in libiconv-1.16/src/Makefile.in
---- libiconv-1.16-orig/src/Makefile.in	2019-01-27 16:07:13.000000000 -0600
-+++ libiconv-1.16/src/Makefile.in	2019-09-08 18:27:39.000000000 -0500
-@@ -113,7 +113,7 @@
+diff -Nurd libiconv-1.19.orig/src/Makefile.in libiconv-1.19/src/Makefile.in
+--- libiconv-1.19.orig/src/Makefile.in	2025-07-07 05:26:22
++++ libiconv-1.19/src/Makefile.in	2026-10-23 12:06:43
+@@ -115,7 +115,7 @@
  	if [ ! -d $(DESTDIR)$(bindir) ] ; then $(mkinstalldirs) $(DESTDIR)$(bindir) ; fi
  	case "@host_os@" in \
  	  hpux*) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a -L$(DESTDIR)$(libdir) -liconv @LIBINTL@ $(OBJECTS_RES_@WOE32@) `if test -n '$(DESTDIR)'; then echo " -Wl,+b -Wl,$(libdir)"; fi` -o iconv$(EXEEXT);; \
--	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a $(DESTDIR)$(libdir)/libiconv.la @LTLIBINTL@ $(OBJECTS_RES_@WOE32@) -o iconv$(EXEEXT);; \
-+	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a ../lib/libiconv.la @LIBINTL_STATIC@ $(OBJECTS_RES_@WOE32@) -o iconv$(EXEEXT);; \
+-	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a @LTLIBINTL@ $(DESTDIR)$(libdir)/libiconv.la $(OBJECTS_RES_@WOE32@) -o iconv$(EXEEXT);; \
++	  *) $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) $(iconv_LDFLAGS) iconv.@OBJEXT@ ../srclib/libicrt.a @LTLIBINTL@ ../lib/libiconv.la $(OBJECTS_RES_@WOE32@) -o iconv$(EXEEXT);; \
  	esac
  	$(INSTALL_PROGRAM_ENV) $(LIBTOOL_INSTALL) $(INSTALL_PROGRAM) iconv$(EXEEXT) $(DESTDIR)$(bindir)/iconv$(EXEEXT)
  
-diff -ruN libiconv-1.16-orig/src/iconv.c libiconv-1.16/src/iconv.c
---- libiconv-1.16-orig/src/iconv.c	2019-04-26 13:50:13.000000000 -0500
-+++ libiconv-1.16/src/iconv.c	2019-09-08 18:27:39.000000000 -0500
-@@ -991,6 +991,10 @@
+diff -Nurd libiconv-1.19.orig/src/iconv.c libiconv-1.19/src/iconv.c
+--- libiconv-1.19.orig/src/iconv.c	2026-03-07 03:24:31
++++ libiconv-1.19/src/iconv.c	2026-10-23 12:00:17
+@@ -1001,6 +1001,10 @@
        const char *option = argv[i] + 1;
        if (*option == '\0')
          usage(1);
