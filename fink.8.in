@@ -765,7 +765,7 @@ https://www.finkproject.org/
 .\"
 .Sh BUGS
 Check out fink's bug tracker at
-http://sourceforge.net/tracker/?group_id=17203&atid=117203
+https://github.com/fink/fink/issues
 for a current list of known bugs.
 .\"
 .\"
