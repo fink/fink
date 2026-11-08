@@ -343,7 +343,7 @@ HELPFORMAT
 		print <<"EOF";
 
 Copyright (c) 2001 Christoph Pfisterer
-Copyright (c) 2001-2019 The Fink Package Manager Team
+Copyright (c) 2001-2026 The Fink Package Manager Team
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
